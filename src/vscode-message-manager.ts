@@ -24,4 +24,8 @@ export class VsCodeMessageManager extends Messages.MessageManager {
         vscode.postMessage({command: 'rmStatus', data: { messageKey }});
     }
 
+    notifyReady(): void {
+        vscode.postMessage({command: 'webviewReady'});
+    }
+
 }

@@ -14,7 +14,7 @@ cd theia-trace-extension
 yarn
 ```
 
-Then from this repo, add symlinks to the trace viewer packages after having run `yarn` on the project
+Then from this repo, add symlinks to the trace viewer packages after having run `yarn` on the project. To avoid conflicts with the `tspClient`, the exact same files should be used in both repos, so `tsp-typescript-client` package needs to be symlinked to the one used in `theia-trace-extension`, even if it is the exact same version.
 
 ```
 yarn
@@ -22,7 +22,10 @@ mkdir node_modules/@trace-viewer
 cd node_modules/@trace-viewer
 ln -s /path/to/theia-trace-extension/packages/base ./
 ln -s /path/to/theia-trace-extension/packages/react-components ./
-cd ../..
+cd ..
+rm -rf tsp-typescript-client
+ln -s /path/to/theia-trace-extension/node_modules/tsp-typescript-client ./
+cd ..
 ```
 
 After making changes on this repo and before running the vscode extension, run the `yarn build` command
