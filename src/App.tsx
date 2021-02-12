@@ -40,6 +40,10 @@ class App extends React.Component<{}, VscodeAppState>  {
     this.onOutputRemoved = this.onOutputRemoved.bind(this);
   }
 
+  componentDidMount() {
+    this._signalHandler.notifyReady();
+  }
+
   private onOutputRemoved(outputId: string) {
     const outputToKeep = this.state.outputs.filter(output => output.id !== outputId);
     this.setState({outputs: outputToKeep});

@@ -101,8 +101,22 @@
     }
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.17",
+    "@fortawesome/free-solid-svg-icons": "^5.8.1",
+    "@fortawesome/react-fontawesome": "^0.1.4",
+    "ag-grid-community": "^20.2.0",
+    "ag-grid-react": "^20.2.0",
+    "chart.js": "^2.8.0",
+    "lodash": "^4.17.15",
     "react": "^16.3.2",
+    "react-chartjs-2": "^2.7.6",
     "react-dom": "^16.3.2",
+    "react-grid-layout": "^1.1.0",
+    "react-modal": "^3.8.1",
+    "react-virtualized": "^9.21.0",
+    "semantic-ui-css": "^2.4.1",
+    "semantic-ui-react": "^0.86.0",
+    "timeline-chart": "next",
     "terser": "3.16.0",
     "tsp-typescript-client": "next",
     "vsce": "^1.85.0"

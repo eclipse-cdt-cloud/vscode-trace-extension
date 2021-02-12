@@ -65,9 +65,6 @@ export class TraceViewerPanel {
 			]
 		});
 
-		// Post the tspTypescriptClient
-		this._panel.webview.postMessage({command: 'set-tspClient', data: getTspClientUrl()});
-
 		// Set the webview's initial html content
 		this._panel.webview.html = this._getHtmlForWebview();
 
@@ -98,6 +95,13 @@ export class TraceViewerPanel {
 					return;
 				case 'rmStatus':
 					handleRemoveMessage(name, message.data);
+					return;
+				case 'webviewReady':
+					// Post the tspTypescriptClient
+					this._panel.webview.postMessage({command: 'set-tspClient', data: getTspClientUrl()});
+					if (this._experiment) {
+						this._panel.webview.postMessage({command: 'set-experiment', data: this._experiment});
+					}
 					return;
 			}
 		}, undefined, this._disposables);
