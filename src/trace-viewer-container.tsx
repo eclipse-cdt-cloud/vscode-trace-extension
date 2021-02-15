@@ -56,7 +56,7 @@ class App extends React.Component<{}, VscodeAppState>  {
 
   public render(): React.ReactNode {
     return (
-      <div className="App">
+      <div className="trace-viewer-container">
         { this.state.experiment && this.state.tspClient && <TraceContextComponent
           experiment={this.state.experiment}
           tspClient={this.state.tspClient}
