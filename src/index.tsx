@@ -1,9 +1,9 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import App from './App';
+import TraceViewerContainer from './trace-viewer-container';
 import './index.css';
 
 ReactDOM.render(
-  <App />,
+  <TraceViewerContainer />,
   (document.getElementById('root') as HTMLElement)
 );
