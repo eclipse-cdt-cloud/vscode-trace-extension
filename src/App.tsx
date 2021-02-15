@@ -4,6 +4,11 @@ import { TspClient } from 'tsp-typescript-client/lib/protocol/tsp-client';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
 import { TraceContextComponent } from '@trace-viewer/react-components/lib/components/trace-context-component';
 import { VsCodeMessageManager } from './vscode-message-manager';
+import 'ag-grid-community/dist/styles/ag-grid.css';
+import 'ag-grid-community/dist/styles/ag-theme-balham-dark.css';
+import 'ag-grid-community/dist/styles/ag-theme-balham.css';
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
 
 interface VscodeAppState {
   experiment: Experiment | undefined;
