@@ -52,6 +52,31 @@ The analysis tab should be populated. Again, click on the icon to open the view 
 
 ![open-output](https://raw.githubusercontent.com/tahini/vscode-trace-extension/master/doc/images/OpenOutput.png)
 
+## Running the extension in Theia
+
+To get this extension running in a theia environment, it should first be packaged as an extension by running `yarn vsce:package`. If you get errors about case-sensitive files, just delete the node_modules folder and run `yarn` again, then make sure all the trace extension packages are symlinked.
+
+The packaging will produce a `vscode-trace-extension-x.x.x.vsix` file in the root of the repo.
+
+This file can be symlinked in the theia-trace-extension example app's plugins folder
+
+```
+cd <theia-trace-extension root>/examples/plugins
+ln -s <vscode-trace-extension root>/vscode-trace-extension-x.x.x.vsix ./
+```
+
+Then, again, in order to avoid problems with the Webview, cross domain and the trace server, the **theia server should be run with SSL**, so one can add a script like this in the `<theia-trace-extension>/examples/browser/package.json` file:
+
+```
+"start:ssl": "theia start --ssl --cert /path/to/cert.pem --certkey /path/to/privkey.pem --plugins=local-dir:../plugins",
+```
+
+which is a variation on the `start` script, with the `--ssl` parameter and path to the certificate and key.
+
+This also requires the **trace server to run using SSL**. See the instructions [to run the trace server with SSL](https://github.com/tracecompass/tracecompass-incubator/tree/master/trace-server#run-the-server-with-ssl).
+
+***Current status***: Not working because there is no way to link to the user's trace open command. In the theia-trace-extension, trace opening has specific steps and commands so the vscode extension can't hook to them and it doesn't use the default file opening scheme of vscode that the extension can hook to. Also, there are runtime errors about missing packages `@trace-viewer/base`. Is it related to the plugins not being published? Or is it linked to the symlinked module when building vscode?
+
 ## Developping the extension
 
 When having to modify the code of the extension (in the `ext-src` folder), on can simply run the `yarn build:extension` command. It is also possible to watch for changes to have no manual steps to do before re-running the extension: `yarn watch:extension` or `ctrl-shift-b` and select the task `tsc: watch - tsconfig.extension.json`.
@@ -75,3 +100,4 @@ Right-click on the vscode activity bar and make sure `Trace Explorer` is checked
 ![trace-explorer-activity-bar](https://raw.githubusercontent.com/tahini/vscode-trace-extension/master/doc/images/TraceExplorerActivityBar.png)
 
 _It is still a prototype, don't try anything fancy._
+
