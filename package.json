@@ -116,10 +116,10 @@
     "react-virtualized": "^9.21.0",
     "semantic-ui-css": "^2.4.1",
     "semantic-ui-react": "^0.86.0",
-    "timeline-chart": "next",
     "terser": "3.16.0",
+    "timeline-chart": "next",
     "tsp-typescript-client": "next",
-    "vsce": "^1.85.0"
+    "vsce": "^1.85.1"
   },
   "devDependencies": {
     "@types/jest": "^23.3.13",
