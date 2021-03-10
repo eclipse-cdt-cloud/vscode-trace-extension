@@ -2,10 +2,10 @@ const path = require("path");
 
 module.exports = {
   entry: {
-    tracePanel: "./src/index.tsx"
+    trace_panel: "./src/index.tsx"
   },
   output: {
-    path: path.resolve(__dirname, "build"),
+    path: path.resolve(__dirname, "../vscode-trace-extension/pack"),
     filename: "[name].js"
   },
   devtool: "eval-source-map",

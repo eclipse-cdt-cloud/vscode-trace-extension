@@ -1,0 +1,149 @@
+{
+  "name": "vscode-trace-extension",
+  "displayName": "VsCode Trace Extension",
+  "description": "VsCode trace extension for visualizing traces analysed by a trace server and data provide over the Trace Server Protocol (TSP)",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.52.0"
+  },
+  "publisher": "tracecompass-community",
+  "categories": [
+    "Other"
+  ],
+  "repository": "https://github.com/theia-ide/vscode-trace-extension/",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./lib/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "traces.openTrace",
+        "title": "Open Trace",
+        "icon": "src/assets/media/dep.svg"
+      },
+      {
+        "command": "outputs.openOutput",
+        "title": "Open Output",
+        "icon": "src/assets/media/chart-line-solid.svg"
+      },
+      {
+        "command": "traces.openTraceFile",
+        "title": "Open Trace",
+        "icon": "src/assets/media/dep.svg"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "trace-explorer",
+          "title": "Trace Explorer",
+          "icon": "src/assets/media/chart-line-solid.svg"
+        }
+      ]
+    },
+    "views": {
+      "trace-explorer": [
+        {
+          "id": "traces",
+          "name": "Traces",
+          "icon": "src/assets/media/dep.svg"
+        },
+        {
+          "id": "analysis",
+          "name": "Analysis",
+          "icon": "src/assets/media/chart-line-solid.svg"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "traces",
+        "contents": "No traces found [learn more](https://www.eclipse.org/tracecompass/).\n[Add traces](command:nodeDependencies.addEntry)"
+      },
+      {
+        "view": "analysis",
+        "contents": "No trace selected [learn more](https://www.eclipse.org/tracecompass/)"
+      }
+    ],
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "traces.openTrace",
+          "when": "view == traces",
+          "group": "inline"
+        },
+        {
+          "command": "outputs.openOutput",
+          "when": "view == analysis",
+          "group": "inline"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "traces.openTraceFile",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Trace Compass",
+      "properties": {
+        "trace-compass.traceserver.url": {
+          "type": "string",
+          "default": "http://localhost:8080",
+          "description": "Enter the trace server's URL, including port. Eg: http://localhost:8080."
+        },
+        "trace-compass.traceserver.apiPath": {
+          "type": "string",
+          "default": "tsp/api",
+          "description": "Enter the trace server's API path, to be appended to the server URL. Eg: 'tsp/api'."
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.17",
+    "@fortawesome/free-solid-svg-icons": "^5.8.1",
+    "@fortawesome/react-fontawesome": "^0.1.4",
+    "ag-grid-community": "^20.2.0",
+    "ag-grid-react": "^20.2.0",
+    "chart.js": "^2.8.0",
+    "lodash": "^4.17.15",
+    "terser": "3.16.0",
+    "tsp-typescript-client": "next",
+    "vsce": "^1.85.1",
+    "vscode-trace-webviews": "0.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^23.3.13",
+    "@types/node": "^10.1.2",
+    "@types/vscode": "^1.52.0",
+    "rimraf": "^2.6.3",
+    "source-map-loader": "^1.0.2",
+    "css-loader": "^5.0.1",
+    "rewire": "^4.0.1",
+    "style-loader": "^2.0.0",
+    "svg-url-loader": "^7.1.1",
+    "ts-loader": "^8.0.14",
+    "typescript": "^4.1.3"
+  },
+  "resolutions": {
+    "terser": "3.14.1"
+  },
+  "scripts": {
+    "prepare": "yarn run clean && yarn run build",
+    "clean": "rimraf extension/lib extension/pack",
+    "vscode:prepublish": "yarn prepare",
+    "build": "tsc -p tsconfig.json",
+    "test": "react-scripts test --env=jsdom",
+    "vsce:package": "vsce package --yarn",
+    "watch": "tsc -w -p tsconfig.json"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}

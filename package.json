@@ -1,158 +1,16 @@
 {
-  "name": "vscode-trace-extension",
-  "version": "0.1.0",
-  "engines": {
-    "vscode": "^1.52.0"
-  },
-  "publisher": "tracecompass-community",
-  "categories": [
-    "Other"
-  ],
-  "repository": "https://github.com/tahini/vscode-trace-extension/",
-  "activationEvents": [
-    "onStartupFinished"
-  ],
-  "main": "./build/ext-src/extension.js",
-  "contributes": {
-    "commands": [
-      {
-        "command": "traces.openTrace",
-        "title": "Open Trace",
-        "icon": "ext-src/assets/media/dep.svg"
-      },
-      {
-        "command": "outputs.openOutput",
-        "title": "Open Output",
-        "icon": "ext-src/assets/media/chart-line-solid.svg"
-      },
-      {
-        "command": "traces.openTraceFile",
-        "title": "Open Trace",
-        "icon": "ext-src/assets/media/dep.svg"
-      }
-    ],
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "trace-explorer",
-          "title": "Trace Explorer",
-          "icon": "ext-src/assets/media/chart-line-solid.svg"
-        }
-      ]
-    },
-    "views": {
-      "trace-explorer": [
-        {
-          "id": "traces",
-          "name": "Traces",
-          "icon": "ext-src/assets/media/dep.svg"
-        },
-        {
-          "id": "analysis",
-          "name": "Analysis",
-          "icon": "ext-src/assets/media/chart-line-solid.svg"
-        }
-      ]
-    },
-    "viewsWelcome": [
-      {
-        "view": "traces",
-        "contents": "No traces found [learn more](https://www.eclipse.org/tracecompass/).\n[Add traces](command:nodeDependencies.addEntry)"
-      },
-      {
-        "view": "analysis",
-        "contents": "No trace selected [learn more](https://www.eclipse.org/tracecompass/)"
-      }
-    ],
-    "menus": {
-      "view/item/context": [
-        {
-          "command": "traces.openTrace",
-          "when": "view == traces",
-          "group": "inline"
-        },
-        {
-          "command": "outputs.openOutput",
-          "when": "view == analysis",
-          "group": "inline"
-        }
-      ],
-      "explorer/context": [
-        {
-          "command": "traces.openTraceFile",
-          "group": "navigation"
-        }
-      ]
-    },
-    "configuration": {
-      "title": "Trace Compass",
-      "properties": {
-        "trace-compass.traceserver.url": {
-          "type": "string",
-          "default": "http://localhost:8080",
-          "description": "Enter the trace server's URL, including port. Eg: http://localhost:8080."
-        },
-        "trace-compass.traceserver.apiPath": {
-          "type": "string",
-          "default": "tsp/api",
-          "description": "Enter the trace server's API path, to be appended to the server URL. Eg: 'tsp/api'."
-        }
-      }
-    }
-  },
-  "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^1.2.17",
-    "@fortawesome/free-solid-svg-icons": "^5.8.1",
-    "@fortawesome/react-fontawesome": "^0.1.4",
-    "ag-grid-community": "^20.2.0",
-    "ag-grid-react": "^20.2.0",
-    "chart.js": "^2.8.0",
-    "lodash": "^4.17.15",
-    "react": "^16.3.2",
-    "react-chartjs-2": "^2.7.6",
-    "react-dom": "^16.3.2",
-    "react-grid-layout": "^1.1.0",
-    "react-modal": "^3.8.1",
-    "react-virtualized": "^9.21.0",
-    "semantic-ui-css": "^2.4.1",
-    "semantic-ui-react": "^0.86.0",
-    "terser": "3.16.0",
-    "timeline-chart": "next",
-    "tsp-typescript-client": "next",
-    "vsce": "^1.85.1"
+  "private": true,
+  "scripts": {
+  "prepare": "lerna run prepare",
+  "watch": "lerna run watch",
+  "clean": "lerna run clean",
+  "vsce:package": "lerna run vsce:package"
   },
   "devDependencies": {
-    "@types/jest": "^23.3.13",
-    "@types/node": "^10.1.2",
-    "@types/react": "^16.3.14",
-    "@types/react-dom": "^16.0.5",
-    "@types/vscode": "^1.52.0",
-    "css-loader": "^5.0.1",
-    "rewire": "^4.0.1",
-    "style-loader": "^2.0.0",
-    "svg-url-loader": "^7.1.1",
-    "ts-loader": "^8.0.14",
-    "typescript": "^4.1.3",
-    "webpack": "^5.20.2",
-    "webpack-cli": "^4.5.0"
+    "lerna": "^3.20.2"
   },
-  "resolutions": {
-    "terser": "3.14.1"
-  },
-  "scripts": {
-    "vscode:prepublish": "yarn build",
-    "build": "yarn build:react && yarn build:extension",
-    "build:react": "webpack --mode development",
-    "build:extension": "tsc -p tsconfig.extension.json",
-    "test": "react-scripts test --env=jsdom",
-    "vsce:package": "vsce package",
-    "watch:extension": "tsc -w -p tsconfig.extension.json",
-    "watch:react": "webpack --watch --mode development"
-  },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
+  "workspaces": [
+    "vscode-trace-webviews",
+    "vscode-trace-extension"
   ]
 }

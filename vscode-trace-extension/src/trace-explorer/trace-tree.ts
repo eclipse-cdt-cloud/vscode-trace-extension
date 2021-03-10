@@ -151,7 +151,7 @@ const findTraces = async (directory: string): Promise<string[]> => {
       traces.push(directory);
   } else {
     // Look at the sub-directories of this 
-    const fileStat = await vscode.workspace.fs.stat(uri);
+    await vscode.workspace.fs.stat(uri);
     const childrenArr = await vscode.workspace.fs.readDirectory(uri);
     for (const child of childrenArr) {
       if (child[1] === vscode.FileType.Directory) {

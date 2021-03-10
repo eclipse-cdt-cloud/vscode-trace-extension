@@ -61,7 +61,7 @@ export class TraceViewerPanel {
 
 			// And restric the webview to only loading content from our extension's `media` directory.
 			localResourceRoots: [
-				vscode.Uri.file(path.join(this._extensionPath, 'build'))
+				vscode.Uri.file(path.join(this._extensionPath, 'pack'))
 			]
 		});
 
@@ -149,7 +149,7 @@ export class TraceViewerPanel {
 				<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
 				<meta name="theme-color" content="#000000">
 				<title>React App</title>
-				<base href="${vscode.Uri.file(path.join(this._extensionPath, 'build')).with({ scheme: 'vscode-resource' })}/">
+				<base href="${vscode.Uri.file(path.join(this._extensionPath, 'pack')).with({ scheme: 'vscode-resource' })}/">
 			</head>
 
 			<body>
@@ -164,9 +164,7 @@ export class TraceViewerPanel {
 	private _getReactHtmlForWebview(): string {
 		// TODO Script he path.join. Had to change it in way too many places for its own good
 		// eslint-disable-next-line @typescript-eslint/no-var-requires
-		const mainScript = 'tracePanel.js';
-
-		const scriptPathOnDisk = vscode.Uri.file(path.join(this._extensionPath, 'build', 'tracePanel.js'));
+		const scriptPathOnDisk = vscode.Uri.file(path.join(this._extensionPath, 'pack', 'trace_panel.js'));
 		const scriptUri = scriptPathOnDisk.with({ scheme: 'vscode-resource' });
 		//const stylePathOnDisk = vscode.Uri.file(path.join(this._extensionPath, 'build', mainStyle));
 		//const styleUri = stylePathOnDisk.with({ scheme: 'vscode-resource' });
@@ -182,7 +180,7 @@ export class TraceViewerPanel {
 				<meta name="theme-color" content="#000000">
 				<title>React App</title>
 				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src vscode-resource: https:; script-src 'nonce-${nonce}' 'unsafe-eval';style-src vscode-resource: 'unsafe-inline' http: https: data:;connect-src ${getTraceServerUrl()};">
-				<base href="${vscode.Uri.file(path.join(this._extensionPath, 'build')).with({ scheme: 'vscode-resource' })}/">
+				<base href="${vscode.Uri.file(path.join(this._extensionPath, 'pack')).with({ scheme: 'vscode-resource' })}/">
 			</head>
 
 			<body>

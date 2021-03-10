@@ -1,0 +1,58 @@
+{
+  "name": "vscode-trace-webviews",
+  "private": "true",
+  "version": "0.0.0",
+  "engines": {
+    "vscode": "^1.52.0"
+  },
+  "publisher": "tracecompass-community",
+  "categories": [
+    "Other"
+  ],
+  "repository": "https://github.com/theia-ide/vscode-trace-extension/",
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.17",
+    "@fortawesome/free-solid-svg-icons": "^5.8.1",
+    "@fortawesome/react-fontawesome": "^0.1.4",
+    "ag-grid-community": "^20.2.0",
+    "ag-grid-react": "^20.2.0",
+    "chart.js": "^2.8.0",
+    "lodash": "^4.17.15",
+    "react": "^16.3.2",
+    "react-chartjs-2": "^2.7.6",
+    "react-dom": "^16.3.2",
+    "react-grid-layout": "^1.1.0",
+    "react-modal": "^3.8.1",
+    "react-virtualized": "^9.21.0",
+    "semantic-ui-css": "^2.4.1",
+    "semantic-ui-react": "^0.86.0",
+    "timeline-chart": "next",
+    "terser": "3.16.0",
+    "tsp-typescript-client": "next"
+    },
+  "devDependencies": {
+    "@types/jest": "^23.3.13",
+    "@types/node": "^10.1.2",
+    "@types/react": "^16.3.14",
+    "@types/react-dom": "^16.0.5",
+    "css-loader": "^5.0.1",
+    "rewire": "^4.0.1",
+    "style-loader": "^2.0.0",
+    "svg-url-loader": "^7.1.1",
+    "ts-loader": "^8.0.14",
+    "typescript": "^4.1.3",
+    "webpack": "^5.20.2",
+    "webpack-cli": "^4.5.0"
+  },
+  "resolutions": {
+    "terser": "3.14.1"
+  },
+  "scripts": {
+    "prepare": "yarn run clean && yarn run build",
+    "clean": "rimraf lib pack",
+    "build": "tsc && webpack --mode development",
+    "vsce:package": "yarn run prepare",
+    "test": "react-scripts test --env=jsdom",
+    "watch": "webpack --watch --mode development"
+  }
+}
