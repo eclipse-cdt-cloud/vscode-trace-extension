@@ -48,5 +48,5 @@ class Analysis extends vscode.TreeItem {
 }
 
 export const analysisHandler = (context: vscode.ExtensionContext, analysis: Analysis) => {
-  const panel = TraceViewerPanel.addOutputToCurrent(analysis._descriptor);
+  TraceViewerPanel.addOutputToCurrent(analysis._descriptor);
 };

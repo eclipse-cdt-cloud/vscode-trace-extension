@@ -1,37 +1,45 @@
 # VSCode Trace Extension
 
-This project started from the [vscode webview react project](https://github.com/rebornix/vscode-webview-react). It works this way, with the extension itself being in the `ext-src` directory and the react application being in the `src` directory.
+This project started from the [vscode webview react project](https://github.com/rebornix/vscode-webview-react). It works this way, with the extension itself being in the `vscode-trace-extension` directory and the react application being in the `vscode-trace-webapps` directory.
 
 ## Installation instructions
 
 The code was migrated from the [PR in theia-trace-extension](https://github.com/theia-ide/theia-trace-extension/pull/124)
 
-It depends on the trace viewer plugins from the [theia trace extension package](https://github.com/theia-ide/theia-trace-extension/). So it needs to be cloned and built before building the vscode extension.
+It depends on the trace viewer plugins from the [theia trace extension package](https://github.com/theia-ide/theia-trace-extension/) and the [tsp typescript client](https://github.com/theia-ide/tsp-typescript-client/). So it needs to be cloned, built and linked to the `vscode-trace-extension` before building the vscode extension
+
+```
+git clone git@github.com:theia-ide/tsp-typescript-client.git
+cd tsp-typescript-client
+yarn
+yarn link
+```
 
 ```
 git clone git@github.com:theia-ide/theia-trace-extension.git
 cd theia-trace-extension
+yarn link "tsp-typescript-client"
 yarn
+cd packages/base
+yarn link
+cd ../react-components
+yarn link
 ```
 
-Then from this repo, add symlinks to the trace viewer packages after having run `yarn` on the project. To avoid conflicts with the `tspClient`, the exact same files should be used in both repos, so `tsp-typescript-client` package needs to be symlinked to the one used in `theia-trace-extension`, even if it is the exact same version.
+The `yarn link` commands above make sure that the dependencies are available locally and can be link in the `vscode-trace-extension`. This also avoids conflicts with the `tspClient`, the exact same files should be used in both repos, so `tsp-typescript-client` package is symlinked to the one used in `theia-trace-extension`, even if it is the exact same version.
+
+To link the local dependencies to this repository, run the following commands:
+
+```
+yarn link "tsp-typescript-client"
+yarn link "@trace-viewer/base"
+yarn link "@trace-viewer/react-components"
+```
+
+After linking the local dependencies on this repo and before running the vscode extension, run the `yarn` command:
 
 ```
 yarn
-mkdir node_modules/@trace-viewer
-cd node_modules/@trace-viewer
-ln -s /path/to/theia-trace-extension/packages/base ./
-ln -s /path/to/theia-trace-extension/packages/react-components ./
-cd ..
-rm -rf tsp-typescript-client
-ln -s /path/to/theia-trace-extension/node_modules/tsp-typescript-client ./
-cd ..
-```
-
-After making changes on this repo and before running the vscode extension, run the `yarn build` command
-
-```
-yarn build
 ```
 
 ## Running the extension
@@ -79,13 +87,13 @@ This also requires the **trace server to run using SSL**. See the instructions [
 
 ## Developping the extension
 
-When having to modify the code of the extension (in the `ext-src` folder), on can simply run the `yarn build:extension` command. It is also possible to watch for changes to have no manual steps to do before re-running the extension: `yarn watch:extension` or `ctrl-shift-b` and select the task `tsc: watch - tsconfig.extension.json`.
+When having to modify the code of the extension (in the `vscode-trace-extension` folder), on can simply run the `yarn` command. It is also possible to watch for changes to have no manual steps to do before re-running the extension: `yarn watch` or `ctrl-shift-b` and select the task `npm: watch - vscode-trace-extension`.
 
-For changes in the webview part, you can run the `yarn build:react` command, simply re-opening a trace should show the changes. It is also possible to watch for changes with `yart watch:react` or `ctrl-shift-b` and selecting the task `npm: watch:react`.
+For changes in the webview part (in the `vscode-trace-webviews` folder), you can run the `yarn` command, simply re-opening a trace should show the changes. It is also possible to watch for changes with `yarn watch` or `ctrl-shift-b` and selecting the task `npm: watch - vscode-trace-webviews`.
 
 ### Debugging the extension
 
-It is straightforward to debug the code of the vscode extension itself (the code in `ext-src`) by just putting breakpoints in vscode and running the extension with `f5`.
+It is straightforward to debug the code of the vscode extension itself (the code in `vscode-trace-extension`) by just putting breakpoints in vscode and running the extension with `f5`.
 
 The react-app is another matter. The panel is a webview that is running in its own context, so current vscode does not have access to it. _(Patches welcome!)_ 
 

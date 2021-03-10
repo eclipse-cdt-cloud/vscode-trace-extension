@@ -1,0 +1,14 @@
+{
+  "version": "independent",
+  "useWorkspaces": true,
+  "npmClient": "yarn",
+  "command": {
+    "run": {
+      "stream": true
+    }
+  },
+  "packages": [
+    "vscode-*"
+  ]
+}
+
