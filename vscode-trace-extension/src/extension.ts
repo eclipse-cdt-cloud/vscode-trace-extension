@@ -1,28 +1,22 @@
 'use strict';
 import * as vscode from 'vscode';
-import { TracesProvider, traceHandler, fileHandler } from './trace-explorer/trace-tree';
-import { AnalysisProvider, analysisHandler } from './trace-explorer/analysis-tree';
+import { AnalysisProvider } from './trace-explorer/analysis-tree';
+import { TraceExplorerAvailableViewsProvider } from './trace-explorer/views/trace-explorer-available-views-webview-provider';
+import { TraceExplorerOpenedTracesViewProvider } from './trace-explorer/opened-traces/trace-explorer-opened-traces-webview-provider';
+import { fileHandler } from './trace-explorer/trace-tree';
 import { updateTspClient } from './utils/tspClient';
 
 export function activate(context: vscode.ExtensionContext) {
 
-  vscode.window.createTreeView('traces', {
-    treeDataProvider: new TracesProvider(vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri.fsPath : '')
-  });
+  const tracesProvider = new TraceExplorerOpenedTracesViewProvider(context.extensionUri);
+  context.subscriptions.push(
+  vscode.window.registerWebviewViewProvider(TraceExplorerOpenedTracesViewProvider.viewType, tracesProvider));
+
+  const myAnalysisProvider = new TraceExplorerAvailableViewsProvider(context.extensionUri);
+  context.subscriptions.push(
+  vscode.window.registerWebviewViewProvider(TraceExplorerAvailableViewsProvider.viewType, myAnalysisProvider));
+
   const analysisProvider = new AnalysisProvider();
-  vscode.window.createTreeView('analysis', {
-    treeDataProvider: analysisProvider
-  });
-  const handler = traceHandler(analysisProvider);
-
-  context.subscriptions.push(vscode.commands.registerCommand('traces.openTrace', trace => {
-    handler(context, trace);
-  }));
-
-  context.subscriptions.push(vscode.commands.registerCommand('outputs.openOutput', output => {
-    analysisHandler(context, output);
-  }));
-
   // TODO: For now, a different command opens traces from file explorer. Remove when we have a proper trace finder
   const fileOpenHandler = fileHandler(analysisProvider);
   context.subscriptions.push(vscode.commands.registerCommand('traces.openTraceFile', file => {
@@ -31,11 +25,9 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Listening to configuration change for the trace server URL
 	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
-
 		if (e.affectsConfiguration('trace-compass.traceserver.url') || e.affectsConfiguration('trace-compass.traceserver.apiPath')) {
       updateTspClient();
 		}
-
 	}));
 
 }

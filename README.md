@@ -46,19 +46,17 @@ yarn
 
 Then from vscode, press `f5` to run the extension.
 
-For now, only traces at the root of the workspace will be 
+To open a trace use the VSCode file explorer to navigate to the trace directory. Then right mouse click on the trace and select menu option `Open with Trace Viewer`. 
 
-Open the `Trace Explorer` view (`View` -> `Open view...`).
+Open the `Trace Viewer` view (`View` -> `Open view...`).
 
-Only the directories at the root of the folder are considered as traces and will appear under `Traces` in the Trace Explorer.
+![open-trace](https://raw.githubusercontent.com/theia-ide/vscode-trace-extension/master/doc/images/vscode-open-with-trace-viewer-001.png)
 
-To open the trace, click on the icon link at the right of the view, next to the selected trace.
+2 tabs will be visible: `Traces` and `Views`. The `Traces` tab will show all available traces on the trace server. 
 
-![open-trace](https://raw.githubusercontent.com/tahini/vscode-trace-extension/master/doc/images/OpenTrace.png)
+The `Views` tab shows all the available views for the selected trace. Click on a view to open the view under the timeline.
 
-The analysis tab should be populated. Again, click on the icon to open the view in the webview panel.
-
-![open-output](https://raw.githubusercontent.com/tahini/vscode-trace-extension/master/doc/images/OpenOutput.png)
+![open-output](https://raw.githubusercontent.com/theia-ide/vscode-trace-extension/master/doc/images/vscode-trace-extension-001.png)
 
 ## Running the extension in Theia
 
@@ -101,11 +99,11 @@ Each panel is its own small web application, so to debug, while in the context o
 
 ### Troubleshooting
 
- * The `Trace explorer` panel is not there, or disappears when switching panel.
+ * The `Trace Viewer` panel is not there, or disappears when switching panel.
 
-Right-click on the vscode activity bar and make sure `Trace Explorer` is checked.
+Right-click on the vscode activity bar and make sure `Trace Viewer` is checked.
 
-![trace-explorer-activity-bar](https://raw.githubusercontent.com/tahini/vscode-trace-extension/master/doc/images/TraceExplorerActivityBar.png)
+![trace-explorer-activity-bar](https://raw.githubusercontent.com/theia-ide/vscode-trace-extension/master/doc/images/vscode-show-trace-viewer-001.png)
 
 _It is still a prototype, don't try anything fancy._
 
