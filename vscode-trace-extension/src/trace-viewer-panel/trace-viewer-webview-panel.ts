@@ -1,9 +1,9 @@
-import * as path from 'path';
 import * as vscode from 'vscode';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { getTspClientUrl, getTraceServerUrl } from '../utils/tspClient';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
-import { handleStatusMessage, handleRemoveMessage, setStatusFromPanel } from '../trace-explorer/trace-message';
+import { handleStatusMessage, handleRemoveMessage, setStatusFromPanel } from '../common/trace-message';
+import { signalManager, Signals } from '@trace-viewer/base/lib/signals/signal-manager';
 
 // TODO: manage mutiple panels (currently just a hack around, need to be fixed)
 
@@ -22,11 +22,12 @@ export class TraceViewerPanel {
 	private static currentPanel: TraceViewerPanel | undefined;
 
 	private readonly _panel: vscode.WebviewPanel;
-	private readonly _extensionPath: string;
+	private readonly _extensionUri: vscode.Uri;
 	private _disposables: vscode.Disposable[] = [];
 	private _experiment: Experiment | undefined = undefined;
+	private _onExperimentSelected = (openedExperiment: Experiment | undefined): void => this.doHandleExperimentSelectedSignal(openedExperiment);
 
-	public static createOrShow(extensionPath: string, name: string): TraceViewerPanel {
+	public static createOrShow(extensionUri: vscode.Uri, name: string): TraceViewerPanel {
 
 		const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
 
@@ -36,7 +37,7 @@ export class TraceViewerPanel {
 		if (openedPanel) {
 			openedPanel._panel.reveal(column);
 		} else {
-			openedPanel = new TraceViewerPanel(extensionPath, column || vscode.ViewColumn.One, name);
+			openedPanel = new TraceViewerPanel(extensionUri, column || vscode.ViewColumn.One, name);
 			TraceViewerPanel.activePanels[name] = openedPanel;
 			setStatusFromPanel(name);
 		}
@@ -44,12 +45,23 @@ export class TraceViewerPanel {
 		return openedPanel;
 	}
 
+	public static disposePanel(extensionUri: vscode.Uri, name: string): void {
+		// If we already have a panel, show it.
+		// Otherwise, create a new panel.
+		let openedPanel = TraceViewerPanel.activePanels[name];
+		if (openedPanel) {
+			openedPanel._panel.dispose();
+			TraceViewerPanel.activePanels[name] = undefined;
+			TraceViewerPanel.currentPanel = undefined;
+		} 
+	}
+
 	public static addOutputToCurrent(descriptor: OutputDescriptor) {
 		TraceViewerPanel.currentPanel!.addOutput(descriptor);
 	}
 
-	private constructor(extensionPath: string, column: vscode.ViewColumn, name: string) {
-		this._extensionPath = extensionPath;
+	private constructor(extensionUri: vscode.Uri, column: vscode.ViewColumn, name: string) {
+		this._extensionUri = extensionUri;
 		// Create and show a new webview panel
 		this._panel = vscode.window.createWebviewPanel(TraceViewerPanel.viewType, name, column, {
 			// Enable javascript in the webview
@@ -61,7 +73,7 @@ export class TraceViewerPanel {
 
 			// And restric the webview to only loading content from our extension's `media` directory.
 			localResourceRoots: [
-				vscode.Uri.file(path.join(this._extensionPath, 'pack'))
+				vscode.Uri.joinPath(this._extensionUri, 'pack')
 			]
 		});
 
@@ -81,6 +93,9 @@ export class TraceViewerPanel {
 			if (e.webviewPanel.active) {
 				TraceViewerPanel.currentPanel = this;
 				setStatusFromPanel(name);
+				if (this._experiment) {
+					signalManager().fireTraceViewerTabActivatedSignal(this._experiment);
+				}
 			}
 		});
 
@@ -105,6 +120,7 @@ export class TraceViewerPanel {
 					return;
 			}
 		}, undefined, this._disposables);
+		signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
 	}
 
 	public doRefactor() {
@@ -125,10 +141,15 @@ export class TraceViewerPanel {
 				x.dispose();
 			}
 		}
-
-		// TODO close experiment
+		signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
 	}
 
+	protected doHandleExperimentSelectedSignal(experiment: Experiment | undefined): void {
+		if (this._experiment && experiment && this._experiment.UUID === experiment.UUID) {
+			this._panel.reveal();
+		}
+    }
+	
 	setExperiment(experiment: Experiment) {
 		this._experiment = experiment;
 		this._panel.webview.postMessage({command: 'set-experiment', data: experiment});
@@ -149,7 +170,7 @@ export class TraceViewerPanel {
 				<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
 				<meta name="theme-color" content="#000000">
 				<title>React App</title>
-				<base href="${vscode.Uri.file(path.join(this._extensionPath, 'pack')).with({ scheme: 'vscode-resource' })}/">
+				<base href="${vscode.Uri.joinPath(this._extensionUri, 'pack').with({ scheme: 'vscode-resource' })}/">
 			</head>
 
 			<body>
@@ -162,9 +183,8 @@ export class TraceViewerPanel {
 
 	/* eslint-disable max-len */
 	private _getReactHtmlForWebview(): string {
-		// TODO Script he path.join. Had to change it in way too many places for its own good
 		// eslint-disable-next-line @typescript-eslint/no-var-requires
-		const scriptPathOnDisk = vscode.Uri.file(path.join(this._extensionPath, 'pack', 'trace_panel.js'));
+		const scriptPathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'pack', 'trace_panel.js');
 		const scriptUri = scriptPathOnDisk.with({ scheme: 'vscode-resource' });
 		//const stylePathOnDisk = vscode.Uri.file(path.join(this._extensionPath, 'build', mainStyle));
 		//const styleUri = stylePathOnDisk.with({ scheme: 'vscode-resource' });
@@ -180,7 +200,7 @@ export class TraceViewerPanel {
 				<meta name="theme-color" content="#000000">
 				<title>React App</title>
 				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src vscode-resource: https:; script-src 'nonce-${nonce}' 'unsafe-eval';style-src vscode-resource: 'unsafe-inline' http: https: data:;connect-src ${getTraceServerUrl()};">
-				<base href="${vscode.Uri.file(path.join(this._extensionPath, 'pack')).with({ scheme: 'vscode-resource' })}/">
+				<base href="${vscode.Uri.joinPath(this._extensionUri, 'pack').with({ scheme: 'vscode-resource' })}/">
 			</head>
 
 			<body>

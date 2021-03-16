@@ -29,7 +29,7 @@
       },
       {
         "command": "traces.openTraceFile",
-        "title": "Open Trace",
+        "title": "Open with Trace Viewer",
         "icon": "src/assets/media/dep.svg"
       }
     ],
@@ -37,7 +37,7 @@
       "activitybar": [
         {
           "id": "trace-explorer",
-          "title": "Trace Explorer",
+          "title": "Trace Viewer",
           "icon": "src/assets/media/chart-line-solid.svg"
         }
       ]
@@ -45,14 +45,14 @@
     "views": {
       "trace-explorer": [
         {
-          "id": "traces",
-          "name": "Traces",
-          "icon": "src/assets/media/dep.svg"
+          "type": "webview",
+          "id": "traceExplorer.openedTracesView",
+          "name": "Traces"
         },
         {
-          "id": "analysis",
-          "name": "Analysis",
-          "icon": "src/assets/media/chart-line-solid.svg"
+          "type": "webview",
+          "id": "traceExplorer.availableViews",
+          "name": "Views"
         }
       ]
     },
@@ -62,23 +62,11 @@
         "contents": "No traces found [learn more](https://www.eclipse.org/tracecompass/).\n[Add traces](command:nodeDependencies.addEntry)"
       },
       {
-        "view": "analysis",
+        "view": "views",
         "contents": "No trace selected [learn more](https://www.eclipse.org/tracecompass/)"
       }
     ],
     "menus": {
-      "view/item/context": [
-        {
-          "command": "traces.openTrace",
-          "when": "view == traces",
-          "group": "inline"
-        },
-        {
-          "command": "outputs.openOutput",
-          "when": "view == analysis",
-          "group": "inline"
-        }
-      ],
       "explorer/context": [
         {
           "command": "traces.openTraceFile",

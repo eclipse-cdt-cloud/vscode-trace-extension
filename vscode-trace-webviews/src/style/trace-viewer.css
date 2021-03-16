@@ -1,0 +1,12 @@
+:root {
+    --theia-layout-color0: #1d1d1d;
+    --theia-layout-color1: #252526;
+    --theia-layout-color2: #333333;
+    --theia-layout-color3: #383838;
+    --theia-layout-color4: #383838;
+    --theia-list-hoverBackground: var(--vscode-list-hoverBackground);
+    --theia-selection-background: var(--vscode-list-activeSelectionBackground);
+    --theia-ui-font-color2: #f0f8ff;
+    --theia-ui-button-color: var(--vscode-button-background);
+    --theia-accent-color3: var(--vscode-button-background);
+}
