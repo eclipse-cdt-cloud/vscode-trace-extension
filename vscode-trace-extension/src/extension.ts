@@ -6,28 +6,28 @@ import { TraceExplorerOpenedTracesViewProvider } from './trace-explorer/opened-t
 import { fileHandler } from './trace-explorer/trace-tree';
 import { updateTspClient } from './utils/tspClient';
 
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext): void {
 
-  const tracesProvider = new TraceExplorerOpenedTracesViewProvider(context.extensionUri);
-  context.subscriptions.push(
-  vscode.window.registerWebviewViewProvider(TraceExplorerOpenedTracesViewProvider.viewType, tracesProvider));
+    const tracesProvider = new TraceExplorerOpenedTracesViewProvider(context.extensionUri);
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider(TraceExplorerOpenedTracesViewProvider.viewType, tracesProvider));
 
-  const myAnalysisProvider = new TraceExplorerAvailableViewsProvider(context.extensionUri);
-  context.subscriptions.push(
-  vscode.window.registerWebviewViewProvider(TraceExplorerAvailableViewsProvider.viewType, myAnalysisProvider));
+    const myAnalysisProvider = new TraceExplorerAvailableViewsProvider(context.extensionUri);
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider(TraceExplorerAvailableViewsProvider.viewType, myAnalysisProvider));
 
-  const analysisProvider = new AnalysisProvider();
-  // TODO: For now, a different command opens traces from file explorer. Remove when we have a proper trace finder
-  const fileOpenHandler = fileHandler(analysisProvider);
-  context.subscriptions.push(vscode.commands.registerCommand('traces.openTraceFile', file => {
-    fileOpenHandler(context, file);
-  }));
+    const analysisProvider = new AnalysisProvider();
+    // TODO: For now, a different command opens traces from file explorer. Remove when we have a proper trace finder
+    const fileOpenHandler = fileHandler(analysisProvider);
+    context.subscriptions.push(vscode.commands.registerCommand('traces.openTraceFile', file => {
+        fileOpenHandler(context, file);
+    }));
 
-  // Listening to configuration change for the trace server URL
-	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
-		if (e.affectsConfiguration('trace-compass.traceserver.url') || e.affectsConfiguration('trace-compass.traceserver.apiPath')) {
-      updateTspClient();
-		}
-	}));
+    // Listening to configuration change for the trace server URL
+    context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
+        if (e.affectsConfiguration('trace-compass.traceserver.url') || e.affectsConfiguration('trace-compass.traceserver.apiPath')) {
+            updateTspClient();
+        }
+    }));
 
 }

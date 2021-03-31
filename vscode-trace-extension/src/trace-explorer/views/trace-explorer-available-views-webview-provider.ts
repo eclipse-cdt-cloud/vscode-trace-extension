@@ -20,73 +20,74 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
 	) { }
 
 	public resolveWebviewView(
-		webviewView: vscode.WebviewView,
-		context: vscode.WebviewViewResolveContext,
-		_token: vscode.CancellationToken,
-	) {
-		this._view = webviewView;
+	    webviewView: vscode.WebviewView,
+	    _context: vscode.WebviewViewResolveContext,
+	    _token: vscode.CancellationToken,
+	): void {
+	    this._view = webviewView;
 
-		webviewView.webview.options = {
-			// Allow scripts in the webview
-			enableScripts: true,
+	    webviewView.webview.options = {
+	        // Allow scripts in the webview
+	        enableScripts: true,
 
-			localResourceRoots: [
-				vscode.Uri.joinPath(this._extensionUri, 'pack')
-			]
-		};
+	        localResourceRoots: [
+	            vscode.Uri.joinPath(this._extensionUri, 'pack')
+	        ]
+	    };
 
-		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+	    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
-		// Handle messages from the webview
-		webviewView.webview.onDidReceiveMessage(message => {
-			switch (message.command) {
-				case 'webviewReady':
-					// Post the tspTypescriptClient
-					webviewView.webview.postMessage({command: 'set-tspClient', data: getTspClientUrl()});
-					return;
-				case 'outputAdded':
-					if (message.data && message.data.descriptor) {
-						const descriptor: OutputDescriptor = message.data.descriptor as OutputDescriptor
-						// TODO: Don't use static current panel, i.e. find better design to add output...
-						TraceViewerPanel.addOutputToCurrent(descriptor);
-						// const panel = TraceViewerPanel.createOrShow(this._extensionUri, message.data.experiment.name);
-						// panel.setExperiment(message.data.experiment);
-					} 
-					return;
-				case 'experimentSelected': {
-					if (message.data && message.data.experiment) {
-						try {
-							// Avoid endless forwarding of signal
-							this._selectionOngoing = true;
-							signalManager().fireExperimentSelectedSignal(message.data.experiment);
-						} finally {
-							this._selectionOngoing = false;
-						}
-					}
-				}
-			}
-		}, undefined, this._disposables);
+	    // Handle messages from the webview
+	    webviewView.webview.onDidReceiveMessage(message => {
+	        switch (message.command) {
+	        case 'webviewReady':
+	            // Post the tspTypescriptClient
+	            webviewView.webview.postMessage({command: 'set-tspClient', data: getTspClientUrl()});
+	            return;
+	        case 'outputAdded':
+	            if (message.data && message.data.descriptor) {
+	                const descriptor: OutputDescriptor = message.data.descriptor as OutputDescriptor;
+	                // TODO: Don't use static current panel, i.e. find better design to add output...
+	                TraceViewerPanel.addOutputToCurrent(descriptor);
+	                // const panel = TraceViewerPanel.createOrShow(this._extensionUri, message.data.experiment.name);
+	                // panel.setExperiment(message.data.experiment);
+	            }
+	            return;
+	        case 'experimentSelected': {
+	            if (message.data && message.data.experiment) {
+	                try {
+	                    // Avoid endless forwarding of signal
+	                    this._selectionOngoing = true;
+	                    signalManager().fireExperimentSelectedSignal(message.data.experiment);
+	                } finally {
+	                    this._selectionOngoing = false;
+	                }
+	            }
+	        }
+	        }
+	    }, undefined, this._disposables);
 
-		signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
-		webviewView.onDidDispose(e => {
-			signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
-		}, undefined, this._disposables);signalManager().off(Signals.EXPERIMENT_SELECTED, (experiment: Experiment | undefined) => this._onExperimentSelected(experiment));
+	    signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
+	    webviewView.onDidDispose(_event => {
+	        signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
+	    }, undefined, this._disposables);signalManager().off(Signals.EXPERIMENT_SELECTED, (experiment: Experiment | undefined) => this._onExperimentSelected(experiment));
 	}
 
 	protected doHandleExperimentSelectedSignal(experiment: Experiment | undefined): void {
-		if (!this._selectionOngoing && this._view) {
-			this._view.webview.postMessage({command: 'experimentSelected', data: experiment});
-		}
-    }
+	    if (!this._selectionOngoing && this._view) {
+	        this._view.webview.postMessage({command: 'experimentSelected', data: experiment});
+	    }
+	}
 
+	/* eslint-disable max-len */
 	private _getHtmlForWebview(webview: vscode.Webview) {
-		// Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
-		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'pack', 'analysisPanel.js'));
+	    // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
+	    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'pack', 'analysisPanel.js'));
 
-		// Use a nonce to only allow a specific script to be run.
-		const nonce = getNonce();
+	    // Use a nonce to only allow a specific script to be run.
+	    const nonce = getNonce();
 
-		return `<!DOCTYPE html>
+	    return `<!DOCTYPE html>
 			<html lang="en">
 			<head>
 				<meta charset="utf-8">
@@ -111,10 +112,10 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
 }
 
 function getNonce() {
-	let text = '';
-	const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-	for (let i = 0; i < 32; i++) {
-		text += possible.charAt(Math.floor(Math.random() * possible.length));
-	}
-	return text;
+    let text = '';
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0; i < 32; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
 }

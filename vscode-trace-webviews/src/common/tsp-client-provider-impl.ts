@@ -41,7 +41,7 @@ export class TspClientProvider implements ITspClientProvider {
      * @param listener The listener function to be called when the url is
      * changed
      */
-    addTspClientChangeListener(listener: (tspClient: TspClient) => void): void {
+    addTspClientChangeListener(_listener: (tspClient: TspClient) => void): void {
         // this._listeners.push(listener);
     }
 }

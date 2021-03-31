@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import * as React from 'react';
 import { ReactOpenTracesWidget } from '@trace-viewer/react-components/lib/trace-explorer/trace-explorer-opened-traces-widget';
 import { VsCodeMessageManager } from '../../common/vscode-message-manager';
-import { Menu, Item, useContextMenu, ItemParams } from "react-contexify";
+import { Menu, Item, useContextMenu, ItemParams } from 'react-contexify';
 import { TspClientProvider } from '../../common/tsp-client-provider-impl';
 import { ITspClientProvider } from '@trace-viewer/base/lib/tsp-client-provider';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
@@ -27,66 +28,66 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
   private _onExperimentSelected = (openedExperiment: Experiment | undefined): void => this.doHandleExperimentSelectedSignal(openedExperiment);
 
   constructor(props: {}) {
-    super(props);
-    this.state = {
-      tspClientProvider: undefined,
-    };
-    this._signalHandler = new VsCodeMessageManager();
-    window.addEventListener('message', event => {
+      super(props);
+      this.state = {
+          tspClientProvider: undefined,
+      };
+      this._signalHandler = new VsCodeMessageManager();
+      window.addEventListener('message', event => {
 
-      const message = event.data; // The JSON data our extension sent
-      switch (message.command) {
-        case 'set-tspClient':
-          const tspClientProvider: ITspClientProvider = new TspClientProvider(message.data);
-          this._experimentManager = tspClientProvider.getExperimentManager();
-          this.setState({ tspClientProvider: tspClientProvider });
-          if (this.state.tspClientProvider) {
-            this.state.tspClientProvider.addTspClientChangeListener(() => {
-              if (this.state.tspClientProvider) { 
-                this._experimentManager = this.state.tspClientProvider.getExperimentManager();
+          const message = event.data; // The JSON data our extension sent
+          switch (message.command) {
+          case 'set-tspClient':
+              const tspClientProvider: ITspClientProvider = new TspClientProvider(message.data);
+              this._experimentManager = tspClientProvider.getExperimentManager();
+              this.setState({ tspClientProvider: tspClientProvider });
+              if (this.state.tspClientProvider) {
+                  this.state.tspClientProvider.addTspClientChangeListener(() => {
+                      if (this.state.tspClientProvider) {
+                          this._experimentManager = this.state.tspClientProvider.getExperimentManager();
+                      }
+                  });
               }
-           });
-          }
-          break;
-        case 'traceViewerTabActivated':
-          if(message.data) {
-            const experiment = message.data as Experiment;
-            signalManager().fireTraceViewerTabActivatedSignal(experiment);
-          }
-          break;
-        case 'openedTracesUpdated':
-          if (message.numberOfOpenedTraces) {
+              break;
+          case 'traceViewerTabActivated':
+              if (message.data) {
+                  const experiment = message.data as Experiment;
+                  signalManager().fireTraceViewerTabActivatedSignal(experiment);
+              }
+              break;
+          case 'openedTracesUpdated':
+              if (message.numberOfOpenedTraces) {
               // TODO: Render a "Open Trace" button if numberOfOpenedTraces is 0
+              }
+              break;
           }
-        break;
-      }
-    });
-    // this.onOutputRemoved = this.onOutputRemoved.bind(this);
-    signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
+      });
+      // this.onOutputRemoved = this.onOutputRemoved.bind(this);
+      signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
   }
 
-  componentDidMount() {
-    this._signalHandler.notifyReady();
+  componentDidMount(): void {
+      this._signalHandler.notifyReady();
   }
 
-  componentWillUnmount() {
-    signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
+  componentWillUnmount(): void {
+      signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
   }
 
   protected doHandleContextMenuEvent(event: React.MouseEvent<HTMLDivElement>, experiment: Experiment): void {
-    const { show } = useContextMenu({
-      id: MENU_ID,
-    });
+      const { show } = useContextMenu({
+          id: MENU_ID,
+      });
 
-    show(event, {
-      props: {
-        experiment: experiment,
-      }
-    });
+      show(event, {
+          props: {
+              experiment: experiment,
+          }
+      });
   }
 
   protected doHandleDoubleClickEvent(event: React.MouseEvent<HTMLDivElement>, experiment: Experiment): void {
-    this._signalHandler.reOpenTrace(experiment);
+      this._signalHandler.reOpenTrace(experiment);
   }
 
   protected doHandleExperimentSelectedSignal(experiment: Experiment | undefined): void {
@@ -94,44 +95,44 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
   }
 
   public render(): React.ReactNode {
-    return (<><div>
-      {this.state.tspClientProvider && <ReactOpenTracesWidget
-        id={TraceExplorerOpenedTraces.ID}
-        title={TraceExplorerOpenedTraces.LABEL}
-        tspClientProvider={this.state.tspClientProvider}
-        contextMenuRenderer={(event, experiment) => this.doHandleContextMenuEvent(event, experiment)}
-        onDoubleClick={(event, experiment) => this.doHandleDoubleClickEvent(event, experiment) }
-      ></ReactOpenTracesWidget>
-      }
-    </div>
+      return (<><div>
+          {this.state.tspClientProvider && <ReactOpenTracesWidget
+              id={TraceExplorerOpenedTraces.ID}
+              title={TraceExplorerOpenedTraces.LABEL}
+              tspClientProvider={this.state.tspClientProvider}
+              contextMenuRenderer={(event, experiment) => this.doHandleContextMenuEvent(event, experiment)}
+              onDoubleClick={(event, experiment) => this.doHandleDoubleClickEvent(event, experiment) }
+          ></ReactOpenTracesWidget>
+          }
+      </div>
       <Menu id={MENU_ID} theme={'dark'} animation={'fade'}>
-        <Item id="open-id" onClick={this.handleItemClick}>Open Trace</Item>
-        <Item id="close-id" onClick={this.handleItemClick}>Close Trace</Item>
-        <Item id="delete-id" onClick={this.handleItemClick}>Delete Trace</Item>
+          <Item id="open-id" onClick={this.handleItemClick}>Open Trace</Item>
+          <Item id="close-id" onClick={this.handleItemClick}>Close Trace</Item>
+          <Item id="delete-id" onClick={this.handleItemClick}>Delete Trace</Item>
       </Menu>
-    </>
-    );
+      </>
+      );
   }
 
-  protected handleItemClick = (args: ItemParams) => {
-    switch (args.event.currentTarget.id) {
+  protected handleItemClick = (args: ItemParams): void => {
+      switch (args.event.currentTarget.id) {
       case 'open-id':
-        this._signalHandler.reOpenTrace(args.props.experiment as Experiment);
-        return;
+          this._signalHandler.reOpenTrace(args.props.experiment as Experiment);
+          return;
       case 'close-id':
-        this._signalHandler.closeTrace(args.props.experiment as Experiment);  
-        return;
+          this._signalHandler.closeTrace(args.props.experiment as Experiment);
+          return;
       case 'delete-id':
-        this._signalHandler.deleteTrace(args.props.experiment as Experiment);
-        if (this._experimentManager) {
-          this._experimentManager.closeExperiment((args.props.experiment as Experiment).UUID);
-        }
+          this._signalHandler.deleteTrace(args.props.experiment as Experiment);
+          if (this._experimentManager) {
+              this._experimentManager.closeExperiment((args.props.experiment as Experiment).UUID);
+          }
 
-        return;
+          return;
       default:
         // Do nothing
-    }
-  }
+      }
+  };
 }
 
 export default TraceExplorerOpenedTraces;

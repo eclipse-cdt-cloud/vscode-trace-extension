@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { OutputAddedSignalPayload } from '@trace-viewer/base/lib/signals/output-added-signal-payload';
 import { signalManager, Signals } from '@trace-viewer/base/lib/signals/signal-manager';
 import { ITspClientProvider } from '@trace-viewer/base/lib/tsp-client-provider';
@@ -24,59 +25,58 @@ class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppStat
   private _onOutputAdded = (payload: OutputAddedSignalPayload): void => this.doHandleOutputAddedSignal(payload);
 
   constructor(props: {}) {
-    super(props);
-    this.state = {
-      tspClientProvider: undefined,
-    };
-    this._signalHandler = new VsCodeMessageManager();
-    window.addEventListener('message', event => {
+      super(props);
+      this.state = {
+          tspClientProvider: undefined,
+      };
+      this._signalHandler = new VsCodeMessageManager();
+      window.addEventListener('message', event => {
 
-      const message = event.data; // The JSON data our extension sent
-      switch (message.command) {
-        case 'set-tspClient':
-          this.setState({ tspClientProvider: new TspClientProvider(message.data) });
-          break;
-        case 'experimentSelected':
-          if (message.data) {
-            signalManager().fireExperimentSelectedSignal(message.data);
+          const message = event.data; // The JSON data our extension sent
+          switch (message.command) {
+          case 'set-tspClient':
+              this.setState({ tspClientProvider: new TspClientProvider(message.data) });
+              break;
+          case 'experimentSelected':
+              if (message.data) {
+                  signalManager().fireExperimentSelectedSignal(message.data);
+              }
+              break;
           }
-          break;
-      }
-    });
+      });
   }
 
-  componentDidMount() {
-    this._signalHandler.notifyReady();
-    signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
-    signalManager().on(Signals.OUTPUT_ADDED, this._onOutputAdded);
+  componentDidMount(): void {
+      this._signalHandler.notifyReady();
+      signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
+      signalManager().on(Signals.OUTPUT_ADDED, this._onOutputAdded);
   }
 
-  componentWillUnmount() {
-    signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
-    signalManager().off(Signals.OUTPUT_ADDED, this._onOutputAdded);
+  componentWillUnmount(): void {
+      signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
+      signalManager().off(Signals.OUTPUT_ADDED, this._onOutputAdded);
   }
 
-
-	protected doHandleExperimentSelectedSignal(experiment: Experiment | undefined): void {
-			this._signalHandler.experimentSelected(experiment);
+  protected doHandleExperimentSelectedSignal(experiment: Experiment | undefined): void {
+      this._signalHandler.experimentSelected(experiment);
   }
 
   protected doHandleOutputAddedSignal(payload: OutputAddedSignalPayload): void {
-    if (payload) {
-      this._signalHandler.outputAdded(payload);
-    }
+      if (payload) {
+          this._signalHandler.outputAdded(payload);
+      }
   }
 
   public render(): React.ReactNode {
-    return (<div>
-      {this.state.tspClientProvider && <ReactAvailableViewsWidget
-        id={TraceExplorerViewsWidget.ID}
-        title={TraceExplorerViewsWidget.LABEL}
-        tspClientProvider={this.state.tspClientProvider}
-      ></ReactAvailableViewsWidget>
-      }
-    </div>
-    );
+      return (<div>
+          {this.state.tspClientProvider && <ReactAvailableViewsWidget
+              id={TraceExplorerViewsWidget.ID}
+              title={TraceExplorerViewsWidget.LABEL}
+              tspClientProvider={this.state.tspClientProvider}
+          ></ReactAvailableViewsWidget>
+          }
+      </div>
+      );
   }
 }
 
