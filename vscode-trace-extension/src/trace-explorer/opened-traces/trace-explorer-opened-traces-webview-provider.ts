@@ -20,81 +20,82 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 	private _onOpenedTracesChanged = (payload: OpenedTracesUpdatedSignalPayload): void => this.doHandleOpenedTracesChangedSignal(payload);
 
 	protected doHandleTracesWidgetActivatedSignal(experiment: Experiment): void {
-		if (this._view && experiment) {
-			this._view.webview.postMessage({command: 'traceViewerTabActivated', data: experiment});
-		}
+	    if (this._view && experiment) {
+	        this._view.webview.postMessage({command: 'traceViewerTabActivated', data: experiment});
+	    }
 	}
 	protected doHandleOpenedTracesChangedSignal(payload: OpenedTracesUpdatedSignalPayload): void {
-		if (this._view && payload) {
-			this._view.webview.postMessage({command: 'openedTracesUpdated', numberOfOpenedTraces: payload.getNumberOfOpenedTraces()});
-		}
+	    if (this._view && payload) {
+	        this._view.webview.postMessage({command: 'openedTracesUpdated', numberOfOpenedTraces: payload.getNumberOfOpenedTraces()});
+	    }
 	}
 
 	public resolveWebviewView(
-		webviewView: vscode.WebviewView,
-		context: vscode.WebviewViewResolveContext,
-		_token: vscode.CancellationToken,
-	) {
-		this._view = webviewView;
+	    webviewView: vscode.WebviewView,
+	    _context: vscode.WebviewViewResolveContext,
+	    _token: vscode.CancellationToken,
+	): void {
+	    this._view = webviewView;
 
-		webviewView.webview.options = {
-			// Allow scripts in the webview
-			enableScripts: true,
+	    webviewView.webview.options = {
+	        // Allow scripts in the webview
+	        enableScripts: true,
 
-			localResourceRoots: [
-				vscode.Uri.joinPath(this._extensionUri, 'pack')
-			]
-		};
+	        localResourceRoots: [
+	            vscode.Uri.joinPath(this._extensionUri, 'pack')
+	        ]
+	    };
 
-		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+	    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
-		// Handle messages from the webview
-		webviewView.webview.onDidReceiveMessage(message => {
-			switch (message.command) {
-				case 'webviewReady':
-					// Post the tspTypescriptClient
-					webviewView.webview.postMessage({command: 'set-tspClient', data: getTspClientUrl()});
-					return;
-				case 'reopenTrace':
-					if (message.data && message.data.experiment) {
-						const panel = TraceViewerPanel.createOrShow(this._extensionUri, message.data.experiment.name);
-						panel.setExperiment(message.data.experiment);
-					} 
-					return;
-				case 'closeTrace':
-					if (message.data && message.data.experiment) {
-						TraceViewerPanel.disposePanel(this._extensionUri, message.data.experiment.name);
-					} 
-					return;
-				case 'deleteTrace':
-					if (message.data && message.data.experiment) {
-						// just remove the panel here
-						TraceViewerPanel.disposePanel(this._extensionUri, message.data.experiment.name);
-					} 
-					return;
-				case 'experimentSelected': {
-					if (message.data && message.data.experiment) {
-						signalManager().fireExperimentSelectedSignal(message.data.experiment);
-					}
-				}
-			}
-		}, undefined, this._disposables);
-		signalManager().on(Signals.TRACEVIEWERTAB_ACTIVATED, this._onOpenedTracesWidgetActivated);
-		signalManager().on(Signals.OPENED_TRACES_UPDATED, this._onOpenedTracesChanged);
-		webviewView.onDidDispose(e => {
-			signalManager().off(Signals.TRACEVIEWERTAB_ACTIVATED, this._onOpenedTracesWidgetActivated);
-			signalManager().off(Signals.OPENED_TRACES_UPDATED, this._onOpenedTracesChanged);
-		}, undefined, this._disposables);
+	    // Handle messages from the webview
+	    webviewView.webview.onDidReceiveMessage(message => {
+	        switch (message.command) {
+	        case 'webviewReady':
+	            // Post the tspTypescriptClient
+	            webviewView.webview.postMessage({command: 'set-tspClient', data: getTspClientUrl()});
+	            return;
+	        case 'reopenTrace':
+	            if (message.data && message.data.experiment) {
+	                const panel = TraceViewerPanel.createOrShow(this._extensionUri, message.data.experiment.name);
+	                panel.setExperiment(message.data.experiment);
+	            }
+	            return;
+	        case 'closeTrace':
+	            if (message.data && message.data.experiment) {
+	                TraceViewerPanel.disposePanel(this._extensionUri, message.data.experiment.name);
+	            }
+	            return;
+	        case 'deleteTrace':
+	            if (message.data && message.data.experiment) {
+	                // just remove the panel here
+	                TraceViewerPanel.disposePanel(this._extensionUri, message.data.experiment.name);
+	            }
+	            return;
+	        case 'experimentSelected': {
+	            if (message.data && message.data.experiment) {
+	                signalManager().fireExperimentSelectedSignal(message.data.experiment);
+	            }
+	        }
+	        }
+	    }, undefined, this._disposables);
+	    signalManager().on(Signals.TRACEVIEWERTAB_ACTIVATED, this._onOpenedTracesWidgetActivated);
+	    signalManager().on(Signals.OPENED_TRACES_UPDATED, this._onOpenedTracesChanged);
+	    webviewView.onDidDispose(_event => {
+	        signalManager().off(Signals.TRACEVIEWERTAB_ACTIVATED, this._onOpenedTracesWidgetActivated);
+	        signalManager().off(Signals.OPENED_TRACES_UPDATED, this._onOpenedTracesChanged);
+	    }, undefined, this._disposables);
 	}
 
+	/* eslint-disable max-len */
 	private _getHtmlForWebview(webview: vscode.Webview) {
-		// Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
-		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'pack', 'openedTracesPanel.js'));
+	    // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
+	    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'pack', 'openedTracesPanel.js'));
 
-		// Use a nonce to only allow a specific script to be run.
-		const nonce = getNonce();
+	    // Use a nonce to only allow a specific script to be run.
+	    const nonce = getNonce();
 
-		return `<!DOCTYPE html>
+	    return `<!DOCTYPE html>
 			<html lang="en">
 			<head>
 				<meta charset="utf-8">
@@ -119,10 +120,10 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 }
 
 function getNonce() {
-	let text = '';
-	const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-	for (let i = 0; i < 32; i++) {
-		text += possible.charAt(Math.floor(Math.random() * possible.length));
-	}
-	return text;
+    let text = '';
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0; i < 32; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
 }

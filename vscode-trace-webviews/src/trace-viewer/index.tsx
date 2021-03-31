@@ -4,6 +4,6 @@ import TraceViewerContainer from './vscode-trace-viewer-container';
 import './index.css';
 
 ReactDOM.render(
-  <TraceViewerContainer />,
-  (document.getElementById('root') as HTMLElement)
+    <TraceViewerContainer />,
+    (document.getElementById('root') as HTMLElement)
 );

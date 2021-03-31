@@ -10,24 +10,24 @@ export class AnalysisProvider implements vscode.TreeDataProvider<Analysis> {
   readonly onDidChangeTreeData: vscode.Event<Analysis | undefined> = this._onDidChangeTreeData.event;
 
   getTreeItem(element: Analysis): vscode.TreeItem {
-    return element;
+      return element;
   }
 
   getChildren(element?: Analysis): Thenable<Analysis[]> {
-    if (element) {
-      return Promise.resolve([]);
-    } else {
-      if (this.descriptors.length === 0) {
-        return Promise.resolve([]);
+      if (element) {
+          return Promise.resolve([]);
       } else {
-        return Promise.resolve(this.descriptors.map(d => new Analysis(d)));
+          if (this.descriptors.length === 0) {
+              return Promise.resolve([]);
+          } else {
+              return Promise.resolve(this.descriptors.map(d => new Analysis(d)));
+          }
       }
-    }
   }
 
   refresh(descriptors: OutputDescriptor[]): void {
-    this.descriptors = descriptors;
-    this._onDidChangeTreeData.fire(undefined);
+      this.descriptors = descriptors;
+      this._onDidChangeTreeData.fire(undefined);
   }
 }
 
@@ -36,17 +36,17 @@ class Analysis extends vscode.TreeItem {
   constructor(
     public readonly descriptor: OutputDescriptor,
   ) {
-    super(descriptor.name);
-    this._descriptor = descriptor;
-    this.tooltip = `${this._descriptor.description}`;
+      super(descriptor.name);
+      this._descriptor = descriptor;
+      this.tooltip = `${this._descriptor.description}`;
   }
 
   iconPath = {
-    light: path.join(__dirname, '..', '..', '..', 'resources', 'light', 'refresh.svg'),
-    dark: path.join(__dirname, '..', '..', '..', 'resources', 'dark', 'refresh.svg')
+      light: path.join(__dirname, '..', '..', '..', 'resources', 'light', 'refresh.svg'),
+      dark: path.join(__dirname, '..', '..', '..', 'resources', 'dark', 'refresh.svg')
   };
 }
 
-export const analysisHandler = (context: vscode.ExtensionContext, analysis: Analysis) => {
-  TraceViewerPanel.addOutputToCurrent(analysis._descriptor);
+export const analysisHandler = (context: vscode.ExtensionContext, analysis: Analysis): void => {
+    TraceViewerPanel.addOutputToCurrent(analysis._descriptor);
 };

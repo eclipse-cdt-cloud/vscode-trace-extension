@@ -4,6 +4,6 @@ import './index.css';
 import TraceExplorerViewsWidget from './vscode-trace-explorer-views-widget';
 
 ReactDOM.render(
-  <TraceExplorerViewsWidget />,
-  (document.getElementById('root') as HTMLElement)
+    <TraceExplorerViewsWidget />,
+    (document.getElementById('root') as HTMLElement)
 );

@@ -30,32 +30,34 @@ function removeStatusForPanel(panelName: string, messageKey: string) {
     delete expStatus[messageKey];
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function handleStatusMessage(panelName: string, {
     text = '',
     category = Messages.MessageCategory.SERVER_MESSAGE,
     severity = Messages.MessageSeverity.INFO,
     messageKey = ''
-}) {
+}): void {
     switch (severity) {
-        case Messages.MessageSeverity.ERROR:
-            vscode.window.showErrorMessage(text);
-            return;
-        case Messages.MessageSeverity.WARNING:
-        case Messages.MessageSeverity.INFO:
-            const barItem = getOrCreateBarItem(messageKey, category);
-            barItem.text = text;
-            barItem.show();
-            if (messageKey) {
-                setStatusForPanel(panelName, messageKey, text);
-            }
-            return;
-        case Messages.MessageSeverity.DEBUG:
-            console.log('Status message ' + messageKey + '(' + category + '): ' + text);
-            return;
+    case Messages.MessageSeverity.ERROR:
+        vscode.window.showErrorMessage(text);
+        return;
+    case Messages.MessageSeverity.WARNING:
+    case Messages.MessageSeverity.INFO:
+        const barItem = getOrCreateBarItem(messageKey, category);
+        barItem.text = text;
+        barItem.show();
+        if (messageKey) {
+            setStatusForPanel(panelName, messageKey, text);
+        }
+        return;
+    case Messages.MessageSeverity.DEBUG:
+        console.log('Status message ' + messageKey + '(' + category + '): ' + text);
+        return;
     }
 }
 
-export function handleRemoveMessage(panelName: string, {messageKey = ''}) {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function handleRemoveMessage(panelName: string, {messageKey = '' }): void {
     const barItem = getBarItem(messageKey);
     if (barItem) {
         barItem.text = '';
@@ -64,7 +66,7 @@ export function handleRemoveMessage(panelName: string, {messageKey = ''}) {
     removeStatusForPanel(panelName, messageKey);
 }
 
-export function setStatusFromPanel(panelName: string) {
+export function setStatusFromPanel(panelName: string): void {
     const expStatus = statusPerExperiment[panelName] || {};
     Object.keys(statusBarItem).forEach(barKey => {
         const message = expStatus[barKey] || '';

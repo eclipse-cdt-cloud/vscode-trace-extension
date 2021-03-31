@@ -29,141 +29,141 @@ export class TraceViewerPanel {
 
 	public static createOrShow(extensionUri: vscode.Uri, name: string): TraceViewerPanel {
 
-		const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
+	    const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
 
-		// If we already have a panel, show it.
-		// Otherwise, create a new panel.
-		let openedPanel = TraceViewerPanel.activePanels[name];
-		if (openedPanel) {
-			openedPanel._panel.reveal(column);
-		} else {
-			openedPanel = new TraceViewerPanel(extensionUri, column || vscode.ViewColumn.One, name);
-			TraceViewerPanel.activePanels[name] = openedPanel;
-			setStatusFromPanel(name);
-		}
-		TraceViewerPanel.currentPanel = openedPanel;
-		return openedPanel;
+	    // If we already have a panel, show it.
+	    // Otherwise, create a new panel.
+	    let openedPanel = TraceViewerPanel.activePanels[name];
+	    if (openedPanel) {
+	        openedPanel._panel.reveal(column);
+	    } else {
+	        openedPanel = new TraceViewerPanel(extensionUri, column || vscode.ViewColumn.One, name);
+	        TraceViewerPanel.activePanels[name] = openedPanel;
+	        setStatusFromPanel(name);
+	    }
+	    TraceViewerPanel.currentPanel = openedPanel;
+	    return openedPanel;
 	}
 
 	public static disposePanel(extensionUri: vscode.Uri, name: string): void {
-		// If we already have a panel, show it.
-		// Otherwise, create a new panel.
-		let openedPanel = TraceViewerPanel.activePanels[name];
-		if (openedPanel) {
-			openedPanel._panel.dispose();
-			TraceViewerPanel.activePanels[name] = undefined;
-			TraceViewerPanel.currentPanel = undefined;
-		} 
+	    // If we already have a panel, show it.
+	    // Otherwise, create a new panel.
+	    const openedPanel = TraceViewerPanel.activePanels[name];
+	    if (openedPanel) {
+	        openedPanel._panel.dispose();
+	        TraceViewerPanel.activePanels[name] = undefined;
+	        TraceViewerPanel.currentPanel = undefined;
+	    }
 	}
 
-	public static addOutputToCurrent(descriptor: OutputDescriptor) {
-		TraceViewerPanel.currentPanel!.addOutput(descriptor);
+	public static addOutputToCurrent(descriptor: OutputDescriptor): void {
+		TraceViewerPanel.currentPanel?.addOutput(descriptor);
 	}
 
 	private constructor(extensionUri: vscode.Uri, column: vscode.ViewColumn, name: string) {
-		this._extensionUri = extensionUri;
-		// Create and show a new webview panel
-		this._panel = vscode.window.createWebviewPanel(TraceViewerPanel.viewType, name, column, {
-			// Enable javascript in the webview
-			enableScripts: true,
+	    this._extensionUri = extensionUri;
+	    // Create and show a new webview panel
+	    this._panel = vscode.window.createWebviewPanel(TraceViewerPanel.viewType, name, column, {
+	        // Enable javascript in the webview
+	        enableScripts: true,
 
-			// Do not destroy the content when hidden
+	        // Do not destroy the content when hidden
 		    retainContextWhenHidden: true,
-			enableCommandUris: true,
+	        enableCommandUris: true,
 
-			// And restric the webview to only loading content from our extension's `media` directory.
-			localResourceRoots: [
-				vscode.Uri.joinPath(this._extensionUri, 'pack')
-			]
-		});
+	        // And restric the webview to only loading content from our extension's `media` directory.
+	        localResourceRoots: [
+	            vscode.Uri.joinPath(this._extensionUri, 'pack')
+	        ]
+	    });
 
-		// Set the webview's initial html content
-		this._panel.webview.html = this._getHtmlForWebview();
+	    // Set the webview's initial html content
+	    this._panel.webview.html = this._getHtmlForWebview();
 
-		// Listen for when the panel is disposed
-		// This happens when the user closes the panel or when the panel is closed programatically
-		this._panel.onDidDispose(() => {
-			this.dispose();
-			TraceViewerPanel.activePanels[name] = undefined;
-			return this._disposables;
+	    // Listen for when the panel is disposed
+	    // This happens when the user closes the panel or when the panel is closed programatically
+	    this._panel.onDidDispose(() => {
+	        this.dispose();
+	        TraceViewerPanel.activePanels[name] = undefined;
+	        return this._disposables;
 
-		});
+	    });
 
-		this._panel.onDidChangeViewState(e => {
-			if (e.webviewPanel.active) {
-				TraceViewerPanel.currentPanel = this;
-				setStatusFromPanel(name);
-				if (this._experiment) {
-					signalManager().fireTraceViewerTabActivatedSignal(this._experiment);
-				}
-			}
-		});
+	    this._panel.onDidChangeViewState(e => {
+	        if (e.webviewPanel.active) {
+	            TraceViewerPanel.currentPanel = this;
+	            setStatusFromPanel(name);
+	            if (this._experiment) {
+	                signalManager().fireTraceViewerTabActivatedSignal(this._experiment);
+	            }
+	        }
+	    });
 
-		// Handle messages from the webview
-		this._panel.webview.onDidReceiveMessage(message => {
-			switch (message.command) {
-				case 'alert':
-					vscode.window.showErrorMessage(message.text);
-					return;
-				case 'newStatus':
-					handleStatusMessage(name, message.data);
-					return;
-				case 'rmStatus':
-					handleRemoveMessage(name, message.data);
-					return;
-				case 'webviewReady':
-					// Post the tspTypescriptClient
-					this._panel.webview.postMessage({command: 'set-tspClient', data: getTspClientUrl()});
-					if (this._experiment) {
-						this._panel.webview.postMessage({command: 'set-experiment', data: this._experiment});
-					}
-					return;
-			}
-		}, undefined, this._disposables);
-		signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
+	    // Handle messages from the webview
+	    this._panel.webview.onDidReceiveMessage(message => {
+	        switch (message.command) {
+	        case 'alert':
+	            vscode.window.showErrorMessage(message.text);
+	            return;
+	        case 'newStatus':
+	            handleStatusMessage(name, message.data);
+	            return;
+	        case 'rmStatus':
+	            handleRemoveMessage(name, message.data);
+	            return;
+	        case 'webviewReady':
+	            // Post the tspTypescriptClient
+	            this._panel.webview.postMessage({command: 'set-tspClient', data: getTspClientUrl()});
+	            if (this._experiment) {
+	                this._panel.webview.postMessage({command: 'set-experiment', data: this._experiment});
+	            }
+	            return;
+	        }
+	    }, undefined, this._disposables);
+	    signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
 	}
 
-	public doRefactor() {
-		// Send a message to the webview webview.
-		// You can send any JSON serializable data.
-		this._panel.webview.postMessage({ command: 'refactor' });
+	public doRefactor(): void {
+	    // Send a message to the webview webview.
+	    // You can send any JSON serializable data.
+	    this._panel.webview.postMessage({ command: 'refactor' });
 	}
 
-	public dispose() {
-		// ReactPanel.currentPanel = undefined;
+	public dispose(): void {
+	    // ReactPanel.currentPanel = undefined;
 
-		// Clean up our resources
-		this._panel.dispose();
+	    // Clean up our resources
+	    this._panel.dispose();
 
-		while (this._disposables.length) {
-			const x = this._disposables.pop();
-			if (x) {
-				x.dispose();
-			}
-		}
-		signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
+	    while (this._disposables.length) {
+	        const x = this._disposables.pop();
+	        if (x) {
+	            x.dispose();
+	        }
+	    }
+	    signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
 	}
 
 	protected doHandleExperimentSelectedSignal(experiment: Experiment | undefined): void {
-		if (this._experiment && experiment && this._experiment.UUID === experiment.UUID) {
-			this._panel.reveal();
-		}
-    }
-	
-	setExperiment(experiment: Experiment) {
-		this._experiment = experiment;
-		this._panel.webview.postMessage({command: 'set-experiment', data: experiment});
+	    if (this._experiment && experiment && this._experiment.UUID === experiment.UUID) {
+	        this._panel.reveal();
+	    }
 	}
 
-	addOutput(descriptor: OutputDescriptor) {
-		this._panel.webview.postMessage({command: 'add-output', data: descriptor});
+	setExperiment(experiment: Experiment): void {
+	    this._experiment = experiment;
+	    this._panel.webview.postMessage({command: 'set-experiment', data: experiment});
+	}
+
+	addOutput(descriptor: OutputDescriptor): void {
+	    this._panel.webview.postMessage({command: 'add-output', data: descriptor});
 	}
 
 	private _getHtmlForWebview() {
-		try {
-			return this._getReactHtmlForWebview();
-		} catch (e) {
-			return `<!DOCTYPE html>
+	    try {
+	        return this._getReactHtmlForWebview();
+	    } catch (e) {
+	        return `<!DOCTYPE html>
 			<html lang="en">
 			<head>
 				<meta charset="utf-8">
@@ -178,21 +178,21 @@ export class TraceViewerPanel {
 				<div>${'Error initializing trace viewer'}</div>
 			</body>
 			</html>`;
-		}
+	    }
 	}
 
 	/* eslint-disable max-len */
 	private _getReactHtmlForWebview(): string {
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
-		const scriptPathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'pack', 'trace_panel.js');
-		const scriptUri = scriptPathOnDisk.with({ scheme: 'vscode-resource' });
-		//const stylePathOnDisk = vscode.Uri.file(path.join(this._extensionPath, 'build', mainStyle));
-		//const styleUri = stylePathOnDisk.with({ scheme: 'vscode-resource' });
+	    // eslint-disable-next-line @typescript-eslint/no-var-requires
+	    const scriptPathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'pack', 'trace_panel.js');
+	    const scriptUri = scriptPathOnDisk.with({ scheme: 'vscode-resource' });
+	    // const stylePathOnDisk = vscode.Uri.file(path.join(this._extensionPath, 'build', mainStyle));
+	    // const styleUri = stylePathOnDisk.with({ scheme: 'vscode-resource' });
 
-		// Use a nonce to whitelist which scripts can be run
-		const nonce = getNonce();
+	    // Use a nonce to whitelist which scripts can be run
+	    const nonce = getNonce();
 
-		return `<!DOCTYPE html>
+	    return `<!DOCTYPE html>
 			<html lang="en">
 			<head>
 				<meta charset="utf-8">
@@ -217,10 +217,10 @@ export class TraceViewerPanel {
 }
 
 function getNonce() {
-	let text = '';
-	const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-	for (let i = 0; i < 32; i++) {
-		text += possible.charAt(Math.floor(Math.random() * possible.length));
-	}
-	return text;
+    let text = '';
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0; i < 32; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
 }
