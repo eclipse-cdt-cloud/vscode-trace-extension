@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/ban-types */
 import * as React from 'react';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
@@ -69,6 +70,7 @@ class App extends React.Component<{}, VscodeAppState>  {
                   onOutputRemove={this.onOutputRemoved}
                   // eslint-disable-next-line @typescript-eslint/no-empty-function
                   addResizeHandler={() => {}}
+                  removeResizeHandler={() => {}}
                   backgroundTheme={'dark'}></TraceContextComponent>
               }
           </div>

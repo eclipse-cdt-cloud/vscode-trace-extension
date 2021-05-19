@@ -86,7 +86,7 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
       });
   }
 
-  protected doHandleDoubleClickEvent(event: React.MouseEvent<HTMLDivElement>, experiment: Experiment): void {
+  protected doHandleClickEvent(event: React.MouseEvent<HTMLDivElement>, experiment: Experiment): void {
       this._signalHandler.reOpenTrace(experiment);
   }
 
@@ -100,8 +100,8 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
               id={TraceExplorerOpenedTraces.ID}
               title={TraceExplorerOpenedTraces.LABEL}
               tspClientProvider={this.state.tspClientProvider}
-              contextMenuRenderer={(event, experiment) => this.doHandleContextMenuEvent(event, experiment)}
-              onDoubleClick={(event, experiment) => this.doHandleDoubleClickEvent(event, experiment) }
+              contextMenuRenderer={(event: React.MouseEvent<HTMLDivElement, MouseEvent>, experiment: Experiment) => this.doHandleContextMenuEvent(event, experiment)}
+              onClick={(event: React.MouseEvent<HTMLDivElement, MouseEvent>, experiment: Experiment) => this.doHandleClickEvent(event, experiment) }
           ></ReactOpenTracesWidget>
           }
       </div>
