@@ -6,37 +6,13 @@ This project started from the [vscode webview react project](https://github.com/
 
 The code was migrated from the [PR in theia-trace-extension](https://github.com/theia-ide/theia-trace-extension/pull/124)
 
-It depends on the trace viewer plugins from the [theia trace extension package](https://github.com/theia-ide/theia-trace-extension/) and the [tsp typescript client](https://github.com/theia-ide/tsp-typescript-client/). So it needs to be cloned, built and linked to the `vscode-trace-extension` before building the vscode extension
+It depends on the trace viewer plugins from the [theia trace extension package](https://github.com/theia-ide/theia-trace-extension/) and the [tsp typescript client](https://github.com/theia-ide/tsp-typescript-client/). They are all available from the NPM package registry.  
 
-```
-git clone git@github.com:theia-ide/tsp-typescript-client.git
-cd tsp-typescript-client
-yarn
-yarn link
-```
+- traceviewer-base
+- traceviewer-react-components
+- tsp-typescript-client
 
-```
-git clone git@github.com:theia-ide/theia-trace-extension.git
-cd theia-trace-extension
-yarn link "tsp-typescript-client"
-yarn
-cd packages/base
-yarn link
-cd ../react-components
-yarn link
-```
-
-The `yarn link` commands above make sure that the dependencies are available locally and can be link in the `vscode-trace-extension`. This also avoids conflicts with the `tspClient`, the exact same files should be used in both repos, so `tsp-typescript-client` package is symlinked to the one used in `theia-trace-extension`, even if it is the exact same version.
-
-To link the local dependencies to this repository, run the following commands:
-
-```
-yarn link "tsp-typescript-client"
-yarn link "@trace-viewer/base"
-yarn link "@trace-viewer/react-components"
-```
-
-After linking the local dependencies on this repo and before running the vscode extension, run the `yarn` command:
+To build the vscode extension, run the `yarn` command:
 
 ```
 yarn

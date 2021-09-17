@@ -4,7 +4,7 @@ import * as React from 'react';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { TspClient } from 'tsp-typescript-client/lib/protocol/tsp-client';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
-import { TraceContextComponent } from '@trace-viewer/react-components/lib/components/trace-context-component';
+import { TraceContextComponent } from 'traceviewer-react-components/lib/components/trace-context-component';
 import { VsCodeMessageManager } from '../common/vscode-message-manager';
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-balham-dark.css';
@@ -12,7 +12,7 @@ import 'ag-grid-community/dist/styles/ag-theme-balham.css';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import '../style/trace-viewer.css';
-import '@trace-viewer/react-components/style/trace-context-style.css';
+import 'traceviewer-react-components/style/trace-context-style.css';
 
 interface VscodeAppState {
   experiment: Experiment | undefined;

@@ -1,7 +1,7 @@
 import { TspClient } from 'tsp-typescript-client/lib/protocol/tsp-client';
-import { ExperimentManager } from '@trace-viewer/base/lib/experiment-manager';
-import { TraceManager } from '@trace-viewer/base/lib/trace-manager';
-import { ITspClientProvider } from '@trace-viewer/base/lib/tsp-client-provider';
+import { ExperimentManager } from 'traceviewer-base/lib/experiment-manager';
+import { TraceManager } from 'traceviewer-base/lib/trace-manager';
+import { ITspClientProvider } from 'traceviewer-base/lib/tsp-client-provider';
 
 export class TspClientProvider implements ITspClientProvider {
 

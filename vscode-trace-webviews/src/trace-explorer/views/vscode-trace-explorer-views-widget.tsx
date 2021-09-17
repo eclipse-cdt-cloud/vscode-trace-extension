@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { OutputAddedSignalPayload } from '@trace-viewer/base/lib/signals/output-added-signal-payload';
-import { signalManager, Signals } from '@trace-viewer/base/lib/signals/signal-manager';
-import { ITspClientProvider } from '@trace-viewer/base/lib/tsp-client-provider';
-import { ReactAvailableViewsWidget } from '@trace-viewer/react-components/lib/trace-explorer/trace-explorer-views-widget';
+import { OutputAddedSignalPayload } from 'traceviewer-base/lib/signals/output-added-signal-payload';
+import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
+import { ITspClientProvider } from 'traceviewer-base/lib/tsp-client-provider';
+import { ReactAvailableViewsWidget } from 'traceviewer-react-components/lib/trace-explorer/trace-explorer-views-widget';
 import * as React from 'react';
 import { TspClientProvider } from '../../common/tsp-client-provider-impl';
 import { VsCodeMessageManager } from '../../common/vscode-message-manager';
 import '../../style/trace-viewer.css';
-import '@trace-viewer/react-components/style/trace-explorer.css';
+import 'traceviewer-react-components/style/trace-explorer.css';
 import '../../style/react-contextify.css';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 

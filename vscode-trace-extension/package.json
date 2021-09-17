@@ -99,7 +99,8 @@
     "chart.js": "^2.8.0",
     "lodash": "^4.17.15",
     "terser": "3.16.0",
-    "tsp-typescript-client": "next",
+    "traceviewer-base": "next",
+    "traceviewer-react-components": "next",
     "vsce": "^1.85.1",
     "vscode-trace-webviews": "0.0.0"
   },

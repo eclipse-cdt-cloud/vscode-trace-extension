@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import { TraceViewerPanel } from '../../trace-viewer-panel/trace-viewer-webview-panel';
 import { getTspClientUrl, getTraceServerUrl } from '../../utils/tspClient';
-import { signalManager, Signals } from '@trace-viewer/base/lib/signals/signal-manager';
+import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
-import { OpenedTracesUpdatedSignalPayload } from '@trace-viewer/base/lib/signals/opened-traces-updated-signal-payload';
+import { OpenedTracesUpdatedSignalPayload } from 'traceviewer-base/lib/signals/opened-traces-updated-signal-payload';
 
 export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewViewProvider {
 

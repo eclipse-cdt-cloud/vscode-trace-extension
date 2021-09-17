@@ -1,5 +1,5 @@
-import * as Messages from '@trace-viewer/base/lib/message-manager';
-import { OutputAddedSignalPayload } from '@trace-viewer/base/lib/signals/output-added-signal-payload';
+import * as Messages from 'traceviewer-base/lib/message-manager';
+import { OutputAddedSignalPayload } from 'traceviewer-base/lib/signals/output-added-signal-payload';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */

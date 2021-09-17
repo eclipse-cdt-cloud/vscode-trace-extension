@@ -3,7 +3,7 @@ import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { getTspClientUrl, getTraceServerUrl } from '../utils/tspClient';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
 import { handleStatusMessage, handleRemoveMessage, setStatusFromPanel } from '../common/trace-message';
-import { signalManager, Signals } from '@trace-viewer/base/lib/signals/signal-manager';
+import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
 
 // TODO: manage mutiple panels (currently just a hack around, need to be fixed)
 
