@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { getTspClientUrl, getTraceServerUrl } from '../../utils/tspClient';
-import { signalManager, Signals } from '@trace-viewer/base/lib/signals/signal-manager';
+import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { TraceViewerPanel } from '../../trace-viewer-panel/trace-viewer-webview-panel';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';

@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import * as React from 'react';
-import { ReactOpenTracesWidget } from '@trace-viewer/react-components/lib/trace-explorer/trace-explorer-opened-traces-widget';
+import { ReactOpenTracesWidget } from 'traceviewer-react-components/lib/trace-explorer/trace-explorer-opened-traces-widget';
 import { VsCodeMessageManager } from '../../common/vscode-message-manager';
 import { Menu, Item, useContextMenu, ItemParams } from 'react-contexify';
 import { TspClientProvider } from '../../common/tsp-client-provider-impl';
-import { ITspClientProvider } from '@trace-viewer/base/lib/tsp-client-provider';
+import { ITspClientProvider } from 'traceviewer-base/lib/tsp-client-provider';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
-import { signalManager, Signals } from '@trace-viewer/base/lib/signals/signal-manager';
+import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
 import '../../style/trace-viewer.css';
-import '@trace-viewer/react-components/style/trace-explorer.css';
+import 'traceviewer-react-components/style/trace-explorer.css';
 import '../../style/react-contextify.css';
-import { ExperimentManager } from '@trace-viewer/base/lib/experiment-manager';
+import { ExperimentManager } from 'traceviewer-base/lib/experiment-manager';
 
 interface OpenedTracesAppState {
   tspClientProvider: ITspClientProvider | undefined;
