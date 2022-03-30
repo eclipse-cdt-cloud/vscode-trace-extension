@@ -14,6 +14,7 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.17",
     "@fortawesome/free-solid-svg-icons": "^5.8.1",
     "@fortawesome/react-fontawesome": "^0.1.4",
+    "json-bigint": "sidorares/json-bigint#2c0a5f896d7888e68e5f4ae3c7ea5cd42fd54473",
     "lodash": "^4.17.15",
     "lodash.debounce": "^4.0.8",
     "react": "^16.3.2",
@@ -30,6 +31,7 @@
     },
   "devDependencies": {
     "@types/jest": "^23.3.13",
+    "@types/json-bigint": "^1.0.1",
     "@types/node": "^10.1.2",
     "@types/react": "^16.3.14",
     "@types/react-dom": "^16.0.5",

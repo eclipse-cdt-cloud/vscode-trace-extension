@@ -108,7 +108,7 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
       <Menu id={MENU_ID} theme={'dark'} animation={'fade'}>
           <Item id="open-id" onClick={this.handleItemClick}>Open Trace</Item>
           <Item id="close-id" onClick={this.handleItemClick}>Close Trace</Item>
-          <Item id="delete-id" onClick={this.handleItemClick}>Delete Trace</Item>
+          <Item id="remove-id" onClick={this.handleItemClick}>Remove Trace</Item>
       </Menu>
       </>
       );
@@ -122,10 +122,10 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
       case 'close-id':
           this._signalHandler.closeTrace(args.props.experiment as Experiment);
           return;
-      case 'delete-id':
+      case 'remove-id':
           this._signalHandler.deleteTrace(args.props.experiment as Experiment);
           if (this._experimentManager) {
-              this._experimentManager.closeExperiment((args.props.experiment as Experiment).UUID);
+              this._experimentManager.deleteExperiment((args.props.experiment as Experiment).UUID);
           }
 
           return;
