@@ -4,6 +4,11 @@ import { getTspClientUrl, getTraceServerUrl } from '../utils/tspClient';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
 import { handleStatusMessage, handleRemoveMessage, setStatusFromPanel } from '../common/trace-message';
 import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
+import JSONBigConfig from 'json-bigint';
+
+const JSONBig = JSONBigConfig({
+    useNativeBigInt: true,
+});
 
 // TODO: manage mutiple panels (currently just a hack around, need to be fixed)
 
@@ -115,7 +120,8 @@ export class TraceViewerPanel {
 	            // Post the tspTypescriptClient
 	            this._panel.webview.postMessage({command: 'set-tspClient', data: getTspClientUrl()});
 	            if (this._experiment) {
-	                this._panel.webview.postMessage({command: 'set-experiment', data: this._experiment});
+	                const wrapper: string = JSONBig.stringify(this._experiment);
+	                this._panel.webview.postMessage({command: 'set-experiment', data: wrapper});
 	            }
 	            return;
 	        }
@@ -152,11 +158,13 @@ export class TraceViewerPanel {
 
 	setExperiment(experiment: Experiment): void {
 	    this._experiment = experiment;
-	    this._panel.webview.postMessage({command: 'set-experiment', data: experiment});
+	    const wrapper: string = JSONBig.stringify(experiment);
+	    this._panel.webview.postMessage({command: 'set-experiment', data: wrapper});
 	}
 
 	addOutput(descriptor: OutputDescriptor): void {
-	    this._panel.webview.postMessage({command: 'add-output', data: descriptor});
+	    const wrapper: string = JSONBig.stringify(descriptor);
+	    this._panel.webview.postMessage({command: 'add-output', data: wrapper});
 	}
 
 	private _getHtmlForWebview() {

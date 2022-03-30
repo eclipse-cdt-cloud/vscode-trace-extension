@@ -1,15 +1,20 @@
 /* eslint-disable @typescript-eslint/ban-types */
+import * as React from 'react';
 import { OutputAddedSignalPayload } from 'traceviewer-base/lib/signals/output-added-signal-payload';
 import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
 import { ITspClientProvider } from 'traceviewer-base/lib/tsp-client-provider';
 import { ReactAvailableViewsWidget } from 'traceviewer-react-components/lib/trace-explorer/trace-explorer-views-widget';
-import * as React from 'react';
+import 'traceviewer-react-components/style/trace-explorer.css';
+import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { TspClientProvider } from '../../common/tsp-client-provider-impl';
 import { VsCodeMessageManager } from '../../common/vscode-message-manager';
-import '../../style/trace-viewer.css';
-import 'traceviewer-react-components/style/trace-explorer.css';
 import '../../style/react-contextify.css';
-import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
+import '../../style/trace-viewer.css';
+import JSONBigConfig from 'json-bigint';
+
+const JSONBig = JSONBigConfig({
+    useNativeBigInt: true,
+});
 
 interface AvailableViewsAppState {
   tspClientProvider: ITspClientProvider | undefined;
@@ -39,7 +44,7 @@ class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppStat
               break;
           case 'experimentSelected':
               if (message.data) {
-                  signalManager().fireExperimentSelectedSignal(message.data);
+                  signalManager().fireExperimentSelectedSignal(JSONBig.parse(message.data));
               }
               break;
           }

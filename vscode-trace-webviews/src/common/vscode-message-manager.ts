@@ -1,6 +1,11 @@
 import * as Messages from 'traceviewer-base/lib/message-manager';
 import { OutputAddedSignalPayload } from 'traceviewer-base/lib/signals/output-added-signal-payload';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
+import JSONBigConfig from 'json-bigint';
+
+const JSONBig = JSONBigConfig({
+    useNativeBigInt: true,
+});
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 interface vscode {
@@ -39,22 +44,31 @@ export class VsCodeMessageManager extends Messages.MessageManager {
      * Trace Explorer React APP
      *************************************************************************/
     reOpenTrace(experiment: Experiment): void {
-        vscode.postMessage({command: 'reopenTrace', data: {experiment}});
+        const wrapper: string = JSONBig.stringify(experiment);
+        vscode.postMessage({command: 'reopenTrace', data: {wrapper}});
     }
 
     closeTrace(experiment: Experiment): void {
-        vscode.postMessage({command: 'closeTrace', data: {experiment}});
+        const wrapper: string = JSONBig.stringify(experiment);
+        vscode.postMessage({command: 'closeTrace', data: {wrapper}});
     }
 
     deleteTrace(experiment: Experiment): void {
-        vscode.postMessage({command: 'deleteTrace', data: {experiment}});
+        const wrapper: string = JSONBig.stringify(experiment);
+        vscode.postMessage({command: 'deleteTrace', data: {wrapper}});
     }
 
     experimentSelected(experiment: Experiment | undefined): void {
-        vscode.postMessage({command: 'experimentSelected', data: {experiment}});
+        let wrapper = undefined;
+        if (experiment) {
+            wrapper = JSONBig.stringify(experiment);
+        }
+        vscode.postMessage({command: 'experimentSelected', data: {wrapper}});
     }
 
     outputAdded(payload: OutputAddedSignalPayload): void {
-        vscode.postMessage({command: 'outputAdded', data: {experiment: payload.getExperiment(), descriptor: payload.getOutputDescriptor() }});
+        const expWrapper = JSONBig.stringify(payload.getExperiment());
+        const descWrapper = JSONBig.stringify(payload.getOutputDescriptor());
+        vscode.postMessage({command: 'outputAdded', data: {data: expWrapper, descriptor: descWrapper }});
     }
 }

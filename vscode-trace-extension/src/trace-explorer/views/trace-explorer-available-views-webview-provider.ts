@@ -4,6 +4,11 @@ import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-mana
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { TraceViewerPanel } from '../../trace-viewer-panel/trace-viewer-webview-panel';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
+import JSONBigConfig from 'json-bigint';
+
+const JSONBig = JSONBigConfig({
+    useNativeBigInt: true,
+});
 
 export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewProvider {
 
@@ -46,19 +51,22 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
 	            return;
 	        case 'outputAdded':
 	            if (message.data && message.data.descriptor) {
-	                const descriptor: OutputDescriptor = message.data.descriptor as OutputDescriptor;
+	                 // FIXME: JSONBig.parse() create bigint if numbers are small
+	                const descriptor = JSONBig.parse(message.data.descriptor) as OutputDescriptor;
 	                // TODO: Don't use static current panel, i.e. find better design to add output...
+
 	                TraceViewerPanel.addOutputToCurrent(descriptor);
 	                // const panel = TraceViewerPanel.createOrShow(this._extensionUri, message.data.experiment.name);
 	                // panel.setExperiment(message.data.experiment);
 	            }
 	            return;
 	        case 'experimentSelected': {
-	            if (message.data && message.data.experiment) {
+	            if (message.data && message.data.wrapper) {
 	                try {
 	                    // Avoid endless forwarding of signal
 	                    this._selectionOngoing = true;
-	                    signalManager().fireExperimentSelectedSignal(message.data.experiment);
+	                    // FIXME: JSONBig.parse() create bigint if numbers are small
+	                    signalManager().fireExperimentSelectedSignal(JSONBig.parse(message.data.wrapper));
 	                } finally {
 	                    this._selectionOngoing = false;
 	                }
@@ -75,7 +83,8 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
 
 	protected doHandleExperimentSelectedSignal(experiment: Experiment | undefined): void {
 	    if (!this._selectionOngoing && this._view) {
-	        this._view.webview.postMessage({command: 'experimentSelected', data: experiment});
+	        const wrapper: string = JSONBig.stringify(experiment);
+	        this._view.webview.postMessage({command: 'experimentSelected', data: wrapper});
 	    }
 	}
 
