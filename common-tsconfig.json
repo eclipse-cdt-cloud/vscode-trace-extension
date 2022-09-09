@@ -17,6 +17,9 @@
         "strict": true,
         "sourceMap": true,
         "strictPropertyInitialization": false,
-        "target": "ES2017"
+        "target": "ES2017",
+        "esModuleInterop": true,
+        "baseUrl": ".",
+        "composite": true
     }
 }
