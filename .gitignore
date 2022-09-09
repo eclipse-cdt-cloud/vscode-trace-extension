@@ -25,3 +25,4 @@ lerna-debug.log*
 lerna-error.log*
 
 *.vsix
+*.tsbuildinfo

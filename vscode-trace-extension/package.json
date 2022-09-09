@@ -14,23 +14,27 @@
   "activationEvents": [
     "onStartupFinished"
   ],
-  "main": "./lib/extension.js",
+  "main": "lib/extension",
+  "files": [
+    "lib",
+    "pack"
+  ],
   "contributes": {
     "commands": [
       {
         "command": "traces.openTrace",
         "title": "Open Trace",
-        "icon": "src/assets/media/dep.svg"
+        "icon": "assets/media/dep.svg"
       },
       {
         "command": "outputs.openOutput",
         "title": "Open Output",
-        "icon": "src/assets/media/chart-line-solid.svg"
+        "icon": "assets/media/chart-line-solid.svg"
       },
       {
         "command": "traces.openTraceFile",
         "title": "Open with Trace Viewer",
-        "icon": "src/assets/media/dep.svg"
+        "icon": "assets/media/dep.svg"
       }
     ],
     "viewsContainers": {
@@ -38,7 +42,7 @@
         {
           "id": "trace-explorer",
           "title": "Trace Viewer",
-          "icon": "src/assets/media/chart-line-solid.svg"
+          "icon": "assets/media/chart-line-solid.svg"
         }
       ]
     },
@@ -128,11 +132,15 @@
   },
   "scripts": {
     "prepare": "yarn run clean && yarn run build",
-    "clean": "rimraf extension/lib extension/pack",
-    "vscode:prepublish": "yarn prepare",
+    "clean": "rimraf lib",
     "build": "tsc -p tsconfig.json",
+    "webpack": "webpack --mode development",
+		"webpack-dev": "webpack --mode development --watch",
+    "webpack:production": "webpack --mode production",
     "test": "react-scripts test --env=jsdom",
+    "vscode:prepublish": "yarn prepare && yarn run webpack:production",
     "vsce:package": "vsce package --yarn",
+    "vsce:ls": "vsce ls --yarn",
     "watch": "tsc -w -p tsconfig.json",
     "lint": "eslint ."
   },
