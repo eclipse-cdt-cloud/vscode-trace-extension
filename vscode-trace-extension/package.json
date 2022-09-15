@@ -131,7 +131,7 @@
     "terser": "3.14.1"
   },
   "scripts": {
-    "prepare": "yarn run clean && yarn run build",
+    "prepare": "yarn run clean && yarn run build && yarn run webpack",
     "clean": "rimraf lib",
     "build": "tsc -p tsconfig.json",
     "webpack": "webpack --mode development",
