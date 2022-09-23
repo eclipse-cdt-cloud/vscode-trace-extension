@@ -89,6 +89,10 @@ export const traceHandler = (analysisTree: AnalysisProvider) => (context: vscode
     })();
 };
 
+export const openOverviewHandler = () => (): void => {
+    TraceViewerPanel.showOverviewToCurrent();
+};
+
 export const fileHandler = (analysisTree: AnalysisProvider) => (context: vscode.ExtensionContext, file: vscode.Uri): void => {
     const uri: string = file.path;
     if (!uri) {

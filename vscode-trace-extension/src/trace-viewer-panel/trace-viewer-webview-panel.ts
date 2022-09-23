@@ -65,6 +65,10 @@ export class TraceViewerPanel {
 		TraceViewerPanel.currentPanel?.addOutput(descriptor);
 	}
 
+	public static showOverviewToCurrent(): void {
+		TraceViewerPanel.currentPanel?.showOverview();
+	}
+
 	private constructor(extensionUri: vscode.Uri, column: vscode.ViewColumn, name: string) {
 	    this._extensionUri = extensionUri;
 	    // Create and show a new webview panel
@@ -165,6 +169,10 @@ export class TraceViewerPanel {
 	addOutput(descriptor: OutputDescriptor): void {
 	    const wrapper: string = JSONBig.stringify(descriptor);
 	    this._panel.webview.postMessage({command: 'add-output', data: wrapper});
+	}
+
+	showOverview(): void {
+	    this._panel.webview.postMessage({command: 'open-overview'});
 	}
 
 	private _getHtmlForWebview() {
