@@ -15,6 +15,7 @@ import { VsCodeMessageManager } from '../common/vscode-message-manager';
 import '../style/trace-viewer.css';
 import JSONBigConfig from 'json-bigint';
 import { convertSignalExperiment } from '../common/vscode-signal-converter';
+import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
@@ -35,6 +36,8 @@ class App extends React.Component<{}, VscodeAppState>  {
   // TODO add support for marker sets
   private selectedMarkerCategoriesMap: Map<string, string[]> = new Map<string, string[]>();
   private selectedMarkerSetId = '';
+
+  private _onOverviewSelected = (payload: {traceId: string, outputDescriptor: OutputDescriptor}): void => this.doHandleOverviewSelectedSignal(payload);
 
   constructor(props: {}) {
       super(props);
@@ -66,10 +69,15 @@ class App extends React.Component<{}, VscodeAppState>  {
       });
       this.onOutputRemoved = this.onOutputRemoved.bind(this);
       this.onOverviewRemoved = this.onOverviewRemoved.bind(this);
+      signalManager().on(Signals.OVERVIEW_OUTPUT_SELECTED, this._onOverviewSelected);
   }
 
   componentDidMount(): void {
       this._signalHandler.notifyReady();
+  }
+
+  componentWillUnmount(): void {
+      signalManager().off(Signals.OVERVIEW_OUTPUT_SELECTED, this._onOverviewSelected);
   }
 
   private onOutputRemoved(outputId: string) {
@@ -87,6 +95,12 @@ class App extends React.Component<{}, VscodeAppState>  {
           this.setState({
               experiment: experiment,
               overviewOutputDescriptor: defaultOverviewDescriptor});
+      }
+  }
+
+  protected doHandleOverviewSelectedSignal(payload: {traceId: string, outputDescriptor: OutputDescriptor}): void {
+      if (this.state.experiment && payload && payload?.traceId === this.state.experiment.UUID && payload.outputDescriptor){
+          this.setState({overviewOutputDescriptor: payload.outputDescriptor});
       }
   }
 
