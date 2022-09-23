@@ -27,16 +27,6 @@
         "icon": "assets/media/chart-line-solid.svg"
       },
       {
-        "command": "traces.openTrace",
-        "title": "Open Trace",
-        "icon": "assets/media/dep.svg"
-      },
-      {
-        "command": "outputs.openOutput",
-        "title": "Open Output",
-        "icon": "assets/media/chart-line-solid.svg"
-      },
-      {
         "command": "traces.openTraceFile",
         "title": "Open with Trace Viewer",
         "icon": "assets/media/dep.svg"
