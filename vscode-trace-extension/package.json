@@ -22,6 +22,11 @@
   "contributes": {
     "commands": [
       {
+        "command": "outputs.openOverview",
+        "title": "Open Overview View",
+        "icon": "assets/media/chart-line-solid.svg"
+      },
+      {
         "command": "traces.openTrace",
         "title": "Open Trace",
         "icon": "assets/media/dep.svg"

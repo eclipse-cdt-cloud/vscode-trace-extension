@@ -65,6 +65,8 @@ class App extends React.Component<{}, VscodeAppState>  {
               const descriptor = JSONBig.parse(message.data);
               this.setState({outputs: [...this.state.outputs, descriptor] });
               break;
+          case 'open-overview':
+              this.doHandleExperimentSetSignal(this.state.experiment);
           }
       });
       this.onOutputRemoved = this.onOutputRemoved.bind(this);
