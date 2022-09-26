@@ -11,6 +11,11 @@ import '../../style/trace-viewer.css';
 import 'traceviewer-react-components/style/trace-explorer.css';
 import '../../style/react-contextify.css';
 import { ExperimentManager } from 'traceviewer-base/lib/experiment-manager';
+import { convertSignalExperiment } from 'vscode-trace-webviews/src/common/vscode-signal-converter';
+import JSONBigConfig from 'json-bigint';
+const JSONBig = JSONBigConfig({
+    useNativeBigInt: true,
+});
 
 interface OpenedTracesAppState {
   tspClientProvider: ITspClientProvider | undefined;
@@ -51,7 +56,7 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
               break;
           case 'traceViewerTabActivated':
               if (message.data) {
-                  const experiment = message.data as Experiment;
+                  const experiment = convertSignalExperiment(JSONBig.parse(message.data.wrapper));
                   signalManager().fireTraceViewerTabActivatedSignal(experiment);
               }
               break;

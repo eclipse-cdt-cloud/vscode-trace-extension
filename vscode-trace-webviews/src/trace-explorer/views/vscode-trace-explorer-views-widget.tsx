@@ -11,6 +11,7 @@ import { VsCodeMessageManager } from '../../common/vscode-message-manager';
 import '../../style/react-contextify.css';
 import '../../style/trace-viewer.css';
 import JSONBigConfig from 'json-bigint';
+import { convertSignalExperiment } from 'vscode-trace-webviews/src/common/vscode-signal-converter';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
@@ -44,7 +45,7 @@ class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppStat
               break;
           case 'experimentSelected':
               if (message.data) {
-                  signalManager().fireExperimentSelectedSignal(JSONBig.parse(message.data));
+                  signalManager().fireExperimentSelectedSignal(convertSignalExperiment(JSONBig.parse(message.data)));
               }
               break;
           }

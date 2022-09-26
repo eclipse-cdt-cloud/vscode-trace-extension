@@ -5,6 +5,7 @@ import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-mana
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { OpenedTracesUpdatedSignalPayload } from 'traceviewer-base/lib/signals/opened-traces-updated-signal-payload';
 import JSONBigConfig from 'json-bigint';
+import { convertSignalExperiment } from 'vscode-trace-extension/src/common/signal-converter';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
@@ -26,7 +27,8 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 
 	protected doHandleTracesWidgetActivatedSignal(experiment: Experiment): void {
 	    if (this._view && experiment) {
-	        this._view.webview.postMessage({command: 'traceViewerTabActivated', data: experiment});
+	        const wrapper: string = JSONBig.stringify(experiment);
+	        this._view.webview.postMessage({command: 'traceViewerTabActivated', data: wrapper});
 	    }
 	}
 	protected doHandleOpenedTracesChangedSignal(payload: OpenedTracesUpdatedSignalPayload): void {
@@ -62,29 +64,25 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 	            return;
 	        case 'reopenTrace':
 	            if (message.data && message.data.wrapper) {
-	                // FIXME: JSONBig.parse() create bigint if numbers are small
-	                const experiment = JSONBig.parse(message.data.wrapper);
+	                const experiment = convertSignalExperiment(JSONBig.parse(message.data.wrapper));
 	                const panel = TraceViewerPanel.createOrShow(this._extensionUri, experiment.name);
 	                panel.setExperiment(experiment);
 	            }
 	            return;
 	        case 'closeTrace':
 	            if (message.data && message.data.wrapper) {
-	                // FIXME: JSONBig.parse() create bigint if numbers are small
 	                TraceViewerPanel.disposePanel(this._extensionUri, JSONBig.parse(message.data.wrapper).name);
 	            }
 	            return;
 	        case 'deleteTrace':
 	            if (message.data && message.data.wrapper) {
-	                // FIXME: JSONBig.parse() create bigint if numbers are small
 	                // just remove the panel here
 	                TraceViewerPanel.disposePanel(this._extensionUri, JSONBig.parse(message.data.wrapper).name);
 	            }
 	            return;
 	        case 'experimentSelected': {
 	            if (message.data && message.data.wrapper) {
-	                // FIXME: JSONBig.parse() create bigint if numbers are small
-	                signalManager().fireExperimentSelectedSignal(JSONBig.parse(message.data.wrapper));
+	                signalManager().fireExperimentSelectedSignal(convertSignalExperiment(JSONBig.parse(message.data.wrapper)));
 	            }
 	        }
 	        }
