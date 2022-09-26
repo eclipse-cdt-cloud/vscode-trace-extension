@@ -14,6 +14,7 @@ import { TspClient } from 'tsp-typescript-client/lib/protocol/tsp-client';
 import { VsCodeMessageManager } from '../common/vscode-message-manager';
 import '../style/trace-viewer.css';
 import JSONBigConfig from 'json-bigint';
+import { convertSignalExperiment } from '../common/vscode-signal-converter';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
@@ -50,15 +51,14 @@ class App extends React.Component<{}, VscodeAppState>  {
           const message = event.data; // The JSON data our extension sent
           switch (message.command) {
           case 'set-experiment':
-              // FIXME: JSONBig.parse() create bigint if numbers are small
-              const experiment = JSONBig.parse(message.data);
-              this.doHandleExperimentSetSignal(experiment);
+              this.doHandleExperimentSetSignal(convertSignalExperiment(JSONBig.parse(message.data)));
               break;
           case 'set-tspClient':
               this.setState({tspClient: new TspClient(message.data)});
               break;
           case 'add-output':
               // FIXME: JSONBig.parse() create bigint if numbers are small
+              // Not an issue right now for output descriptors.
               const descriptor = JSONBig.parse(message.data);
               this.setState({outputs: [...this.state.outputs, descriptor] });
               break;

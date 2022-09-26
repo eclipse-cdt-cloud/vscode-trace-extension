@@ -1,10 +1,11 @@
-import * as vscode from 'vscode';
-import { getTspClientUrl, getTraceServerUrl } from '../../utils/tspClient';
+import JSONBigConfig from 'json-bigint';
 import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
-import { TraceViewerPanel } from '../../trace-viewer-panel/trace-viewer-webview-panel';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
-import JSONBigConfig from 'json-bigint';
+import * as vscode from 'vscode';
+import { TraceViewerPanel } from '../../trace-viewer-panel/trace-viewer-webview-panel';
+import { getTraceServerUrl, getTspClientUrl } from '../../utils/tspClient';
+import { convertSignalExperiment } from 'vscode-trace-extension/src/common/signal-converter';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
@@ -51,7 +52,8 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
 	            return;
 	        case 'outputAdded':
 	            if (message.data && message.data.descriptor) {
-	                 // FIXME: JSONBig.parse() create bigint if numbers are small
+	                 // FIXME: JSONBig.parse() created bigint if numbers are small.
+					 // Not an issue right now for output descriptors.
 	                const descriptor = JSONBig.parse(message.data.descriptor) as OutputDescriptor;
 	                // TODO: Don't use static current panel, i.e. find better design to add output...
 
@@ -65,8 +67,8 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
 	                try {
 	                    // Avoid endless forwarding of signal
 	                    this._selectionOngoing = true;
-	                    // FIXME: JSONBig.parse() create bigint if numbers are small
-	                    signalManager().fireExperimentSelectedSignal(JSONBig.parse(message.data.wrapper));
+	                    const experiment = convertSignalExperiment(JSONBig.parse(message.data.wrapper));
+	                    signalManager().fireExperimentSelectedSignal(experiment);
 	                } finally {
 	                    this._selectionOngoing = false;
 	                }
