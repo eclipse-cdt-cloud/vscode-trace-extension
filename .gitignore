@@ -11,6 +11,10 @@ coverage/
 lib/
 pack/
 
+# trace server
+trace-compass-server
+trace-compass-server.tar.gz
+
 # misc
 .DS_Store
 .env.local
