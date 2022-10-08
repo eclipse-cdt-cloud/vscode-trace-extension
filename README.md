@@ -14,15 +14,15 @@ It depends on the trace viewer plugins from the [theia trace extension package](
 
 To build the vscode extension, run the `yarn` command:
 
-```
+``` bash
 yarn
 ```
 
 ## Running the extension
 
-Then from vscode, press `f5` to run the extension.
+Then from vscode, press `f5` to run the extension. The trace server needs to be started separately as described [here](#run-the-trace-server).
 
-To open a trace use the VSCode file explorer to navigate to the trace directory. Then right mouse click on the trace and select menu option `Open with Trace Viewer`. 
+To open a trace use the VSCode file explorer to navigate to the trace directory. Then right mouse click on the trace and select menu option `Open with Trace Viewer`.
 
 Open the `Trace Viewer` view (`View` -> `Open view...`).
 
@@ -38,18 +38,18 @@ The `Views` tab shows all the available views for the selected trace. Click on a
 
 To get this extension running in a theia environment, it should first be packaged as an extension by running `yarn vsce:package`. If you get errors about case-sensitive files, just delete the node_modules folder and run `yarn` again, then make sure all the trace extension packages are symlinked.
 
-The packaging will produce a `vscode-trace-extension-x.x.x.vsix` file in the root of the repo.
+The packaging will produce a `vscode-trace-extension-x.x.x.vsix` file in the subdirectory `vscode-trace-extension` of the repo.
 
 This file can be symlinked in the theia-trace-extension example app's plugins folder
 
-```
+``` bash
 cd <theia-trace-extension root>/examples/plugins
 ln -s <vscode-trace-extension root>/vscode-trace-extension-x.x.x.vsix ./
 ```
 
 Then, again, in order to avoid problems with the Webview, cross domain and the trace server, the **theia server should be run with SSL**, so one can add a script like this in the `<theia-trace-extension>/examples/browser/package.json` file:
 
-```
+``` bash
 "start:ssl": "theia start --ssl --cert /path/to/cert.pem --certkey /path/to/privkey.pem --plugins=local-dir:../plugins",
 ```
 
@@ -69,17 +69,30 @@ For changes in the webview part (in the `vscode-trace-webviews` folder), you can
 
 It is straightforward to debug the code of the vscode extension itself (the code in `vscode-trace-extension`) by just putting breakpoints in vscode and running the extension with `f5`.
 
-The react-app is another matter. The panel is a webview that is running in its own context, so current vscode does not have access to it. _(Patches welcome!)_ 
+The react-app is another matter. The panel is a webview that is running in its own context, so current vscode does not have access to it. _(Patches welcome!)_
 
 Each panel is its own small web application, so to debug, while in the context of the webview, press `ctrl-shift-p` and entre the command `Developer: Open Webview Developer Tools`. This will open the developer tools. The code is in the `Sources` tab of the developer tools window that opens.
 
 ### Troubleshooting
 
- * The `Trace Viewer` panel is not there, or disappears when switching panel.
+*The `Trace Viewer` panel is not there, or disappears when switching panel.
 
 Right-click on the vscode activity bar and make sure `Trace Viewer` is checked.
 
 ![trace-explorer-activity-bar](https://raw.githubusercontent.com/theia-ide/vscode-trace-extension/master/doc/images/vscode-show-trace-viewer-001.png)
 
-_It is still a prototype, don't try anything fancy._
+*It is still a prototype, don't try anything fancy.*
 
+## Run the Trace Server
+
+In order to open traces, you need a trace server running on the same machine as the trace extension. You can download the [Eclipse Trace Compass server][tc-server] or let `yarn` download and run it:
+
+```bash
+yarn download:server
+yarn start:server
+```
+
+You can also build the trace-server yourself using Trace Compass and the Incubator. Take a look at the [instructions here][tc-server-build].
+
+[tc-server]: https://download.eclipse.org/tracecompass.incubator/trace-server/rcp/?d
+[tc-server-build]: https://www.eclipse.org/tracecompass/download.html#trace-server
