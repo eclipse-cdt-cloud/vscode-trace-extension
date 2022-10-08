@@ -22,7 +22,7 @@ yarn
 
 Then from vscode, press `f5` to run the extension. The trace server needs to be started separately as described [here](#run-the-trace-server).
 
-To open a trace use the VSCode file explorer to navigate to the trace directory. Then right mouse click on the trace and select menu option `Open with Trace Viewer`.
+To open a trace use the VSCode file explorer to navigate to the trace directory. Then right mouse click on the trace and select menu option `Open with Trace Viewer`. See [here](get-sample-traces) to get some sample traces.
 
 Open the `Trace Viewer` view (`View` -> `Open view...`).
 
@@ -93,6 +93,14 @@ yarn start:server
 ```
 
 You can also build the trace-server yourself using Trace Compass and the Incubator. Take a look at the [instructions here][tc-server-build].
+
+## Get sample traces
+
+To get sample traces to try run the following command. The traces will be stored under the subdirectory `TraceCompassTutorialTraces` of the repo.
+
+```bash
+yarn download:sample-traces
+```
 
 [tc-server]: https://download.eclipse.org/tracecompass.incubator/trace-server/rcp/?d
 [tc-server-build]: https://www.eclipse.org/tracecompass/download.html#trace-server
