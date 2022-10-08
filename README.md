@@ -61,6 +61,40 @@ When having to modify the code of the extension (in the `vscode-trace-extension`
 
 For changes in the webview part (in the `vscode-trace-webviews` folder), you can run the `yarn` command, simply re-opening a trace should show the changes. It is also possible to watch for changes with `yarn watch` or `ctrl-shift-b` and selecting the task `npm: watch - vscode-trace-webviews`.
 
+For more information about `VsCode WebView API` see [here][vscode-webview].
+
+### Communication between components
+
+To communicate between VsCode extension and webviews use the [VsCode message API][vscode-messages]. When using `vscode.postMessage(data)` data structure `data` will be serialized to JSON before being propagated. Be aware that it cannot include data structures like `BigInt`. Proper handling of such data structures need to be implemented when sending and receiving messages.
+
+Inside a webview or inside the extension signals can be used where data structures can be passed on.
+
+The following sequence diagram shows how the `experiment-selected` signal (with payload `Experiment`) is propagated inside the application. The webview `Opened Traces WebView App` is sending the signal to the`VsCode extension` which is forwarding the signal to the `Available Views WebView App`.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant reactOpenTraces as ReactOpenTracesWidget
+    participant explorerOpenTraces as TraceExplorerOpenedTraces
+    participant exOpenTraceProvider as TraceExplorerOpenedTracesViewProvider
+    participant exViewsAvailProvider as TraceExplorerAvailableViewsProvider
+    participant explorerAvailView as TraceExplorerViewsWidget
+    participant reactAvailViewsexplorerOpenTraces as ReactAvailableViewsWidget
+    participant server as Trace Server
+    User->>reactOpenTraces: click on trace
+    Note over reactOpenTraces,explorerOpenTraces: Opened Traces WebView App
+    Note over exOpenTraceProvider,exViewsAvailProvider: VsCode extension
+    Note over explorerAvailView,reactAvailViewsexplorerOpenTraces: Available Views WebView App
+    reactOpenTraces->>explorerOpenTraces: sendSignal(exp-sel)
+    explorerOpenTraces->>exOpenTraceProvider: vcode.postMessage(exp-sel)
+    exOpenTraceProvider->>exViewsAvailProvider: sendSignal(exp-sel)
+    exViewsAvailProvider->>explorerAvailView: vcode.postMessage(exp-sel)
+    explorerAvailView->>reactAvailViewsexplorerOpenTraces: sendSignal(exp-sel)
+    reactAvailViewsexplorerOpenTraces->>server: fetchOutputs(exp)
+    server->>reactAvailViewsexplorerOpenTraces: success(200)
+    reactAvailViewsexplorerOpenTraces->>reactAvailViewsexplorerOpenTraces: visualize availableViews
+```
+
 ### Debugging the extension
 
 It is straightforward to debug the code of the vscode extension itself (the code in `vscode-trace-extension`) by just putting breakpoints in vscode and running the extension with `f5`.
@@ -76,7 +110,6 @@ Each panel is its own small web application, so to debug, while in the context o
 Right-click on the vscode activity bar and make sure `Trace Viewer` is checked.
 
 ![trace-explorer-activity-bar](https://raw.githubusercontent.com/theia-ide/vscode-trace-extension/master/doc/images/vscode-show-trace-viewer-001.png)
-
 
 ## Run the Trace Server
 
@@ -103,4 +136,6 @@ yarn download:sample-traces
 [tc-server]: https://download.eclipse.org/tracecompass.incubator/trace-server/rcp/?d
 [tc-server-build]: https://www.eclipse.org/tracecompass/download.html#trace-server
 [tsp-client]: https://github.com/theia-ide/tsp-typescript-client/
+[vscode-messages]: https://code.visualstudio.com/api/extension-guides/webview#passing-messages-from-an-extension-to-a-webview
+[vscode-webview]: https://github.com/rebornix/vscode-webview-react
 [vscode-webview-react]: https://github.com/rebornix/vscode-webview-react
