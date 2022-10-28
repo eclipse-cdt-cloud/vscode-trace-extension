@@ -9,4 +9,17 @@
     --theia-ui-font-color2: #f0f8ff;
     --theia-ui-button-color: var(--vscode-button-background);
     --theia-accent-color3: var(--vscode-button-background);
+    --theia-menu-background: var(--vscode-menu-background);
+    --theia-menu-foreground: var(--vscode-menu-foreground);
+    --theia-menu-selectionBackground: var(--vscode-menubar-selectionBackground);
+    --theia-menu-selectionForeground: var(--vscode-menubar-selectionForeground);
+    --theia-menu-selectionBorder: var(--vscode-menubar-selectionBorder);
+    --theia-widget-shadow: var(--vscode-widget-shadow);
+    --theia-menu-border: var(--vscode-dropdown-border);
+    --theia-ui-font-color0: var(--vscode-editor-foreground);
+    --theia-editor-background: var(--vscode-editor-background);
+    --theia-tree-inactiveIndentGuidesStroke: var(--vscode-tree-indentGuidesStroke);
+    --theia-input-background: var(--vscode-input-background);
+    --theia-input-placeholder-foreground: var(--vscode-input-placeholderForeground);
+    --theia-ui-font-family: var(--vscode-editor-fontFamily);
 }
