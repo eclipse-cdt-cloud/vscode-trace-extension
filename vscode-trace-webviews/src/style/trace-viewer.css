@@ -9,4 +9,8 @@
     --theia-ui-font-color2: #f0f8ff;
     --theia-ui-button-color: var(--vscode-button-background);
     --theia-accent-color3: var(--vscode-button-background);
+    --theia-menu-background: var(--vscode-menu-background);
+    --theia-menu-foreground: var(--vscode-menu-foreground);
+    --theia-widget-shadow: var(--vscode-widget-shadow);
+    --theia-menu-border: var(--vscode-dropdown-border);
 }
