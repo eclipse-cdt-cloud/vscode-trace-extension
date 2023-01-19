@@ -23,7 +23,7 @@ yarn
 
 Then from vscode, press `f5` to run the extension. The trace server needs to be started separately as described [here](#run-the-trace-server).
 
-To open a trace use the VSCode file explorer to navigate to the trace directory. Then right mouse click on the trace and select menu option `Open with Trace Viewer`. See [here](get-sample-traces) to get some sample traces.
+To open a trace use the VSCode file explorer to navigate to the trace directory. Then right mouse click on the trace and select menu option `Open with Trace Viewer`. See [here](#get-sample-traces) to get some sample traces.
 
 Open the `Trace Viewer` view (`View` -> `Open view...`).
 
