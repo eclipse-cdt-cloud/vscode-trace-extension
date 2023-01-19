@@ -6,8 +6,9 @@ This project started from the [vscode webview react project][vscode-webview-reac
 
 The code was migrated from the [PR in theia-trace-extension][init-contrib].
 
-It depends on the trace viewer plugins from the [theia trace extension package][theia-trace] and the [tsp typescript client][tsp-client]. They are all available from the NPM package registry.  
+It depends on the trace viewer plugins from the [theia trace extension package][theia-trace] and the [tsp typescript client][tsp-client], as well as the [timeline chart][timeline-chart]. They are all available from the NPM package registry.
 
+- timeline-chart
 - traceviewer-base
 - traceviewer-react-components
 - tsp-typescript-client
@@ -135,6 +136,7 @@ yarn download:sample-traces
 [theia-trace]: https://github.com/eclipse-cdt-cloud/theia-trace-extension/
 [tc-server]: https://download.eclipse.org/tracecompass.incubator/trace-server/rcp/?d
 [tc-server-build]: https://www.eclipse.org/tracecompass/download.html#trace-server
+[timeline-chart]: https://github.com/eclipse-cdt-cloud/timeline-chart/
 [tsp-client]: https://github.com/eclipse-cdt-cloud/tsp-typescript-client/
 [vscode-messages]: https://code.visualstudio.com/api/extension-guides/webview#passing-messages-from-an-extension-to-a-webview
 [vscode-webview]: https://github.com/rebornix/vscode-webview-react
