@@ -27,13 +27,13 @@ To open a trace use the VSCode file explorer to navigate to the trace directory.
 
 Open the `Trace Viewer` view (`View` -> `Open view...`).
 
-![open-trace](https://raw.githubusercontent.com/theia-ide/vscode-trace-extension/master/doc/images/vscode-open-with-trace-viewer-001.png)
+![open-trace][open-trace]
 
 2 tabs will be visible: `Traces` and `Views`. The `Traces` tab will show all available traces on the trace server.
 
 The `Views` tab shows all the available views for the selected trace. Click on a view to open the view under the timeline.
 
-![open-output](https://raw.githubusercontent.com/theia-ide/vscode-trace-extension/master/doc/images/vscode-trace-extension-001.png)
+![open-output][open-output]
 
 ## Package as VsCode extension
 
@@ -110,7 +110,7 @@ Each panel is its own small web application, so to debug, while in the context o
 
 Right-click on the vscode activity bar and make sure `Trace Viewer` is checked.
 
-![trace-explorer-activity-bar](https://raw.githubusercontent.com/theia-ide/vscode-trace-extension/master/doc/images/vscode-show-trace-viewer-001.png)
+![trace-explorer-activity-bar][trace-explorer-activity-bar]
 
 ## Run the Trace Server
 
@@ -133,10 +133,13 @@ yarn download:sample-traces
 
 [init-contrib]: https://github.com/eclipse-cdt-cloud/theia-trace-extension/pull/124
 [install]: https://code.visualstudio.com/docs/editor/extension-marketplace#_install-from-a-vsix
+[open-output]: https://raw.githubusercontent.com/theia-ide/vscode-trace-extension/master/doc/images/vscode-trace-extension-001.png
+[open-trace]: https://raw.githubusercontent.com/theia-ide/vscode-trace-extension/master/doc/images/vscode-open-with-trace-viewer-001.png
 [theia-trace]: https://github.com/eclipse-cdt-cloud/theia-trace-extension/
 [tc-server]: https://download.eclipse.org/tracecompass.incubator/trace-server/rcp/?d
 [tc-server-build]: https://www.eclipse.org/tracecompass/download.html#trace-server
 [timeline-chart]: https://github.com/eclipse-cdt-cloud/timeline-chart/
+[trace-explorer-activity-bar]: https://raw.githubusercontent.com/theia-ide/vscode-trace-extension/master/doc/images/vscode-show-trace-viewer-001.png
 [tsp-client]: https://github.com/eclipse-cdt-cloud/tsp-typescript-client/
 [vscode-messages]: https://code.visualstudio.com/api/extension-guides/webview#passing-messages-from-an-extension-to-a-webview
 [vscode-webview]: https://github.com/rebornix/vscode-webview-react
