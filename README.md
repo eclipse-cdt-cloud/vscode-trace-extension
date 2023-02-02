@@ -2,6 +2,8 @@
 
 This project started from the [vscode webview react project][vscode-webview-react]. It works this way, with the extension itself being in the `vscode-trace-extension` directory and the react application being in the `vscode-trace-webapps` directory.
 
+**👋 Want to help?** Read our [contributor guide](CONTRIBUTING.md) and follow the instructions to contribute code.
+
 ## Installation instructions
 
 The code was migrated from the [PR in theia-trace-extension][init-contrib].
