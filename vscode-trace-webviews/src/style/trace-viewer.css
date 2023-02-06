@@ -6,7 +6,7 @@
     --theia-layout-color4: #383838;
     --theia-list-hoverBackground: var(--vscode-list-hoverBackground);
     --theia-selection-background: var(--vscode-list-activeSelectionBackground);
-    --theia-ui-font-color2: #f0f8ff;
+    --theia-ui-font-color2: var(--vscode-editor-foreground);
     --theia-ui-button-color: var(--vscode-button-background);
     --theia-accent-color3: var(--vscode-button-background);
     --theia-menu-background: var(--vscode-menu-background);
