@@ -108,6 +108,11 @@ export class TraceViewerPanel {
 	        }
 	    });
 
+	    vscode.window.onDidChangeActiveColorTheme(e => {
+	    	const wrapper = e.kind === 1 ? 'light' : 'dark';
+	    	this._panel.webview.postMessage({ command: 'set-theme', data: wrapper });
+	    });
+
 	    // Handle messages from the webview
 	    this._panel.webview.onDidReceiveMessage(message => {
 	        switch (message.command) {
@@ -126,6 +131,7 @@ export class TraceViewerPanel {
 	            if (this._experiment) {
 	                const wrapper: string = JSONBig.stringify(this._experiment);
 	                this._panel.webview.postMessage({command: 'set-experiment', data: wrapper});
+	                this.loadTheme();
 	            }
 	            return;
 	        }
@@ -173,6 +179,11 @@ export class TraceViewerPanel {
 
 	showOverview(): void {
 	    this._panel.webview.postMessage({command: 'open-overview'});
+	}
+
+	loadTheme(): void {
+		const wrapper = vscode.window.activeColorTheme.kind == 1 ? 'light' : 'dark';
+		this._panel.webview.postMessage({ command: 'set-theme', data: wrapper });
 	}
 
 	private _getHtmlForWebview() {

@@ -26,6 +26,7 @@ interface VscodeAppState {
   tspClient: TspClient | undefined;
   outputs: OutputDescriptor[];
   overviewOutputDescriptor: OutputDescriptor| undefined;
+  theme: string;
 }
 
 class App extends React.Component<{}, VscodeAppState>  {
@@ -45,7 +46,8 @@ class App extends React.Component<{}, VscodeAppState>  {
           experiment: undefined,
           tspClient: undefined,
           outputs: [],
-          overviewOutputDescriptor: undefined
+          overviewOutputDescriptor: undefined,
+          theme: 'light'
       };
       this._signalHandler = new VsCodeMessageManager();
 
@@ -67,6 +69,9 @@ class App extends React.Component<{}, VscodeAppState>  {
               break;
           case 'open-overview':
               this.doHandleExperimentSetSignal(this.state.experiment);
+              break;
+          case 'set-theme':
+              this.doHandleThemeChanged(message.data);
           }
       });
       this.onOutputRemoved = this.onOutputRemoved.bind(this);
@@ -106,6 +111,12 @@ class App extends React.Component<{}, VscodeAppState>  {
       }
   }
 
+  protected doHandleThemeChanged(theme: string): void {
+      this.setState({ theme }, () => {
+          signalManager().fireThemeChangedSignal(theme);
+      });
+  }
+
   protected async getDefaultTraceOverviewOutputDescriptor(experiment: Experiment| undefined): Promise<OutputDescriptor | undefined> {
       const availableDescriptors = await this.getAvailableTraceOverviewOutputDescriptor(experiment);
       return availableDescriptors?.find(output => output.id === this.DEFAULT_OVERVIEW_DATA_PROVIDER_ID);
@@ -139,7 +150,7 @@ class App extends React.Component<{}, VscodeAppState>  {
                   // eslint-disable-next-line @typescript-eslint/no-empty-function
                   addResizeHandler={() => {}}
                   removeResizeHandler={() => {}}
-                  backgroundTheme={'dark'}></TraceContextComponent>
+                  backgroundTheme={this.state.theme}></TraceContextComponent>
               }
           </div>
       );
