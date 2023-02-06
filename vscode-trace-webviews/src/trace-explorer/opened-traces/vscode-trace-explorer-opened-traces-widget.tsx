@@ -56,7 +56,7 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
               break;
           case 'traceViewerTabActivated':
               if (message.data) {
-                  const experiment = convertSignalExperiment(JSONBig.parse(message.data.wrapper));
+                  const experiment = convertSignalExperiment(JSONBig.parse(message.data));
                   signalManager().fireTraceViewerTabActivatedSignal(experiment);
               }
               break;
