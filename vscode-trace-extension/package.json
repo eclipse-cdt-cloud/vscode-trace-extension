@@ -52,6 +52,11 @@
           "type": "webview",
           "id": "traceExplorer.availableViews",
           "name": "Views"
+        },
+        {
+          "type": "webview",
+          "id": "traceExplorer.itemPropertiesView",
+          "name": "Item Properties"
         }
       ]
     },
@@ -63,6 +68,10 @@
       {
         "view": "views",
         "contents": "No trace selected [learn more](https://www.eclipse.org/tracecompass/)"
+      },
+      {
+        "view": "item properties",
+        "contents": "No properties to show"
       }
     ],
     "menus": {
