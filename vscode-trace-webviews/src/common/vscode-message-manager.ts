@@ -71,4 +71,8 @@ export class VsCodeMessageManager extends Messages.MessageManager {
         const descWrapper = JSONBig.stringify(payload.getOutputDescriptor());
         vscode.postMessage({command: 'outputAdded', data: {data: expWrapper, descriptor: descWrapper }});
     }
+
+    propertiesUpdated(properties: { [key: string]: string }): void {
+        vscode.postMessage({command: 'updateProperties', data: {properties}});
+    }
 }

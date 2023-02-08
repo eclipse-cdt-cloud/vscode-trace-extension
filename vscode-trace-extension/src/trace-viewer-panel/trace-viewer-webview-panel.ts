@@ -134,6 +134,8 @@ export class TraceViewerPanel {
 	                this.loadTheme();
 	            }
 	            return;
+	        case 'updateProperties':
+	            vscode.commands.executeCommand('messages.post.propertiespanel', 'receivedProperties', message.data);
 	        }
 	    }, undefined, this._disposables);
 	    signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
@@ -182,8 +184,8 @@ export class TraceViewerPanel {
 	}
 
 	loadTheme(): void {
-		const wrapper = vscode.window.activeColorTheme.kind == 1 ? 'light' : 'dark';
-		this._panel.webview.postMessage({ command: 'set-theme', data: wrapper });
+	    const wrapper = vscode.window.activeColorTheme.kind === 1 ? 'light' : 'dark';
+	    this._panel.webview.postMessage({ command: 'set-theme', data: wrapper });
 	}
 
 	private _getHtmlForWebview() {

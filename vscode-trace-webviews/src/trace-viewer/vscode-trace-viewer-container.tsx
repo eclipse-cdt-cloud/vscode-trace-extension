@@ -34,6 +34,12 @@ class App extends React.Component<{}, VscodeAppState>  {
 
   private _signalHandler: VsCodeMessageManager;
 
+  private _onProperties = (properties: { [key: string]: string }): void => this.doHandlePropertiesSignal(properties);
+  /** Signal Handlers */
+  private doHandlePropertiesSignal(properties: { [key: string]: string }) {
+      this._signalHandler.propertiesUpdated(properties);
+  }
+
   // TODO add support for marker sets
   private selectedMarkerCategoriesMap: Map<string, string[]> = new Map<string, string[]>();
   private selectedMarkerSetId = '';
@@ -93,16 +99,18 @@ class App extends React.Component<{}, VscodeAppState>  {
 
   componentDidMount(): void {
       this._signalHandler.notifyReady();
+      signalManager().on(Signals.ITEM_PROPERTIES_UPDATED, this._onProperties);
   }
 
   componentWillUnmount(): void {
+      signalManager().off(Signals.ITEM_PROPERTIES_UPDATED, this._onProperties);
       signalManager().off(Signals.OVERVIEW_OUTPUT_SELECTED, this._onOverviewSelected);
       window.removeEventListener('resize', this.onResize);
   }
 
   private onResize = (): void => {
-    this.resizeHandlers.forEach(h => h());
-  }
+      this.resizeHandlers.forEach(h => h());
+  };
 
   private onOutputRemoved(outputId: string) {
       const outputToKeep = this.state.outputs.filter(output => output.id !== outputId);

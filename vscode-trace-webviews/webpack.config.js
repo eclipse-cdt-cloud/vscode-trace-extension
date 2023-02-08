@@ -5,7 +5,8 @@ module.exports = {
   entry: {
     trace_panel: "./src/trace-viewer/index.tsx",
     openedTracesPanel: "./src/trace-explorer/opened-traces/index.tsx",
-    analysisPanel: "./src/trace-explorer/views/index.tsx"
+    analysisPanel: "./src/trace-explorer/available-views/index.tsx",
+    propertiesPanel: "./src/trace-explorer/properties/index.tsx"
   },
   output: {
     path: path.resolve(__dirname, "../vscode-trace-extension/pack"),
@@ -21,19 +22,21 @@ module.exports = {
       {
         test: /\.(ts|tsx)$/,
         exclude: /node_modules/,
-        use: [{
-            loader: 'ts-loader',
+        use: [
+          {
+            loader: "ts-loader",
             options: {
-                compilerOptions: {
-                    "module": "es6" // override `tsconfig.json` so that TypeScript emits native JavaScript modules.
-                }
+              compilerOptions: {
+                module: "es6" // override `tsconfig.json` so that TypeScript emits native JavaScript modules.
+              }
             }
-        }]
+          }
+        ]
       },
       {
         test: /\.js$/,
-        enforce: 'pre',
-        use: ['source-map-loader'],
+        enforce: "pre",
+        use: ["source-map-loader"]
       },
       {
         test: /\.css$/,
@@ -50,22 +53,22 @@ module.exports = {
         test: /\.svg$/,
         use: [
           {
-            loader: 'svg-url-loader',
+            loader: "svg-url-loader",
             options: {
-              limit: 10000,
-            },
-          },
-        ],
+              limit: 10000
+            }
+          }
+        ]
       }
     ]
   },
   performance: {
     hints: false
   },
-  plugins: [ 
+  plugins: [
     new webpack.DefinePlugin({
-      'process.env': {
-        NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'development')
+      "process.env": {
+        NODE_ENV: JSON.stringify(process.env.NODE_ENV || "development")
       }
     }),
     new webpack.HotModuleReplacementPlugin()
