@@ -22,9 +22,20 @@
   "contributes": {
     "commands": [
       {
+        "command": "outputs.reset",
+        "title": "Reset",
+        "icon": {
+          "light": "assets/media/house-chimney-light.svg",
+          "dark": "assets/media/house-chimney.svg"
+        }
+      },
+      {
         "command": "outputs.openOverview",
         "title": "Open Overview View",
-        "icon": "assets/media/chart-line-solid.svg"
+        "icon": {
+          "light": "assets/media/graph-line.svg",
+          "dark": "assets/media/graph-line.svg"
+        }
       },
       {
         "command": "traces.openTraceFile",
@@ -79,6 +90,18 @@
         {
           "command": "traces.openTraceFile",
           "group": "navigation"
+        }
+      ],
+      "editor/title": [
+        {
+          "when": "activeWebviewPanelId == 'react'",
+          "command": "outputs.reset",
+          "group": "navigation@1"
+        },
+        {
+          "when": "activeWebviewPanelId == 'react'",
+          "command": "outputs.openOverview",
+          "group": "navigation@2"
         }
       ]
     },

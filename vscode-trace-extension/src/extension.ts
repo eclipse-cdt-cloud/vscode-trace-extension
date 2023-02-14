@@ -4,7 +4,7 @@ import { AnalysisProvider } from './trace-explorer/analysis-tree';
 import { TraceExplorerItemPropertiesProvider } from './trace-explorer/properties/trace-explorer-properties-view-webview-provider';
 import { TraceExplorerAvailableViewsProvider } from './trace-explorer/available-views/trace-explorer-available-views-webview-provider';
 import { TraceExplorerOpenedTracesViewProvider } from './trace-explorer/opened-traces/trace-explorer-opened-traces-webview-provider';
-import { fileHandler, openOverviewHandler } from './trace-explorer/trace-tree';
+import { fileHandler, openOverviewHandler, resetZoomHandler } from './trace-explorer/trace-tree';
 import { updateTspClient } from './utils/tspClient';
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -41,8 +41,15 @@ export function activate(context: vscode.ExtensionContext): void {
         }
     }));
 
-    const overViewOpenHanlder = openOverviewHandler();
-    context.subscriptions.push(vscode.commands.registerCommand('outputs.openOverview', () => {
-        overViewOpenHanlder();
+    const overViewOpenHandler = openOverviewHandler();
+
+    const zoomResetHandler = resetZoomHandler();
+    context.subscriptions.push(vscode.commands.registerCommand('outputs.reset', () => {
+        zoomResetHandler();
     }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('outputs.openOverview', () => {
+        overViewOpenHandler();
+    }));
+
 }

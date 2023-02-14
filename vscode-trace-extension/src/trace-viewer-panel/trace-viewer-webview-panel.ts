@@ -69,6 +69,10 @@ export class TraceViewerPanel {
 		TraceViewerPanel.currentPanel?.showOverview();
 	}
 
+	public static resetZoomOnCurrent(): void {
+		TraceViewerPanel.currentPanel?.resetZoom();
+	}
+
 	private constructor(extensionUri: vscode.Uri, column: vscode.ViewColumn, name: string) {
 	    this._extensionUri = extensionUri;
 	    // Create and show a new webview panel
@@ -182,6 +186,10 @@ export class TraceViewerPanel {
 
 	showOverview(): void {
 	    this._panel.webview.postMessage({command: 'open-overview'});
+	}
+
+	resetZoom(): void {
+	    this._panel.webview.postMessage({ command: 'reset-zoom' });
 	}
 
 	loadTheme(): void {

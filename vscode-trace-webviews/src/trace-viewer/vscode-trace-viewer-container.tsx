@@ -89,6 +89,10 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState>  {
               break;
           case 'set-theme':
               this.doHandleThemeChanged(message.data);
+              break;
+          case 'reset-zoom':
+              this.resetZoom();
+              break;
           }
       });
       window.addEventListener('resize', this.onResize);
@@ -119,6 +123,10 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState>  {
 
   protected onOverviewRemoved(): void {
       this.setState({overviewOutputDescriptor: undefined});
+  }
+
+  protected resetZoom(): void {
+      signalManager().fireResetZoomSignal();
   }
 
   protected async doHandleExperimentSetSignal(experiment: Experiment| undefined): Promise<void> {
