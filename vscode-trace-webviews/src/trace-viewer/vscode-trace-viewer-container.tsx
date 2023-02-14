@@ -83,6 +83,10 @@ class App extends React.Component<{}, VscodeAppState>  {
               break;
           case 'set-theme':
               this.doHandleThemeChanged(message.data);
+              break;
+          case 'reset-zoom':
+              this.resetZoom();
+              break;
           }
       });
       window.addEventListener('resize', this.onResize);
@@ -101,8 +105,8 @@ class App extends React.Component<{}, VscodeAppState>  {
   }
 
   private onResize = (): void => {
-    this.resizeHandlers.forEach(h => h());
-  }
+      this.resizeHandlers.forEach(h => h());
+  };
 
   private onOutputRemoved(outputId: string) {
       const outputToKeep = this.state.outputs.filter(output => output.id !== outputId);
@@ -111,6 +115,10 @@ class App extends React.Component<{}, VscodeAppState>  {
 
   protected onOverviewRemoved(): void {
       this.setState({overviewOutputDescriptor: undefined});
+  }
+
+  protected resetZoom(): void {
+      signalManager().fireResetZoomSignal();
   }
 
   protected async doHandleExperimentSetSignal(experiment: Experiment| undefined): Promise<void> {

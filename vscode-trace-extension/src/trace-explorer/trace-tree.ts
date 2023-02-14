@@ -93,6 +93,10 @@ export const openOverviewHandler = () => (): void => {
     TraceViewerPanel.showOverviewToCurrent();
 };
 
+export const resetZoomHandler = () => (): void => {
+    TraceViewerPanel.resetZoomOnCurrent();
+};
+
 export const fileHandler = (analysisTree: AnalysisProvider) => (context: vscode.ExtensionContext, file: vscode.Uri): void => {
     const uri: string = file.path;
     if (!uri) {
