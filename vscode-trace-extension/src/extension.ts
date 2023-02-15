@@ -52,4 +52,7 @@ export function activate(context: vscode.ExtensionContext): void {
         overViewOpenHandler();
     }));
 
+    context.subscriptions.push(vscode.commands.registerCommand('openedTraces.openTraceFolder', () => {
+        fileOpenHandler(context, undefined);
+    }));
 }

@@ -26,6 +26,14 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 	private _onOpenedTracesWidgetActivated = (experiment: Experiment): void => this.doHandleTracesWidgetActivatedSignal(experiment);
 	private _onOpenedTracesChanged = (payload: OpenedTracesUpdatedSignalPayload): void => this.doHandleOpenedTracesChangedSignal(payload);
 	private _onExperimentSelected = (experiment: Experiment | undefined): void => this.doHandleExperimentSelectedSignal(experiment);
+	private _onExperimentOpened = (experiment: Experiment): void => this.doHandleExperimentOpenedSignal(experiment);
+
+	protected doHandleExperimentOpenedSignal(experiment: Experiment): void {
+	    if (this._view && experiment) {
+	        const wrapper: string = JSONBig.stringify(experiment);
+	        this._view.webview.postMessage({command: 'experimentOpened', data: wrapper});
+	    }
+	}
 
 	protected doHandleTracesWidgetActivatedSignal(experiment: Experiment): void {
 	    if (this._view && experiment) {
@@ -113,6 +121,7 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 	    signalManager().on(Signals.TRACEVIEWERTAB_ACTIVATED, this._onOpenedTracesWidgetActivated);
 	    signalManager().on(Signals.OPENED_TRACES_UPDATED, this._onOpenedTracesChanged);
 	    signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
+	    signalManager().on(Signals.EXPERIMENT_OPENED, this._onExperimentOpened);
 	    webviewView.onDidDispose(_event => {
 	        signalManager().off(Signals.TRACEVIEWERTAB_ACTIVATED, this._onOpenedTracesWidgetActivated);
 	        signalManager().off(Signals.OPENED_TRACES_UPDATED, this._onOpenedTracesChanged);
