@@ -65,6 +65,11 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
               // TODO: Render a "Open Trace" button if numberOfOpenedTraces is 0
               }
               break;
+          case 'experimentOpened':
+              if (message.data) {
+                  const experiment = convertSignalExperiment(JSONBig.parse(message.data));
+                  signalManager().fireExperimentOpenedSignal(experiment);
+              }
           }
       });
       // this.onOutputRemoved = this.onOutputRemoved.bind(this);

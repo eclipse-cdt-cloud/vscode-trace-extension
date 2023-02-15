@@ -178,6 +178,8 @@ export class TraceViewerPanel {
 	    this._experiment = experiment;
 	    const wrapper: string = JSONBig.stringify(experiment);
 	    this._panel.webview.postMessage({command: 'set-experiment', data: wrapper});
+	    signalManager().fireExperimentOpenedSignal(experiment);
+	    signalManager().fireTraceViewerTabActivatedSignal(experiment);
 	}
 
 	addOutput(descriptor: OutputDescriptor): void {

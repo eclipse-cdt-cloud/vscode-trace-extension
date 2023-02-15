@@ -41,6 +41,11 @@
         "command": "traces.openTraceFile",
         "title": "Open with Trace Viewer",
         "icon": "assets/media/dep.svg"
+      },
+      {
+        "command": "openedTraces.openTraceFolder",
+        "title": "Open Trace",
+        "icon": "$(new-folder)"
       }
     ],
     "viewsContainers": {
@@ -57,7 +62,7 @@
         {
           "type": "webview",
           "id": "traceExplorer.openedTracesView",
-          "name": "Traces"
+          "name": "Opened Traces"
         },
         {
           "type": "webview",
@@ -86,6 +91,13 @@
       }
     ],
     "menus": {
+      "view/title": [
+        {
+          "command": "openedTraces.openTraceFolder",
+          "when": "view == traceExplorer.openedTracesView",
+          "group": "navigation"
+        }
+      ],
       "explorer/context": [
         {
           "command": "traces.openTraceFile",
@@ -168,7 +180,7 @@
     "clean": "rimraf lib",
     "build": "tsc -p tsconfig.json",
     "webpack": "webpack --mode development",
-		"webpack-dev": "webpack --mode development --watch",
+    "webpack-dev": "webpack --mode development --watch",
     "webpack:production": "webpack --mode production",
     "test": "react-scripts test --env=jsdom",
     "vscode:prepublish": "yarn prepare && yarn run webpack:production",

@@ -97,10 +97,33 @@ export const resetZoomHandler = () => (): void => {
     TraceViewerPanel.resetZoomOnCurrent();
 };
 
-export const fileHandler = (analysisTree: AnalysisProvider) => (context: vscode.ExtensionContext, file: vscode.Uri): void => {
-    const uri: string = file.path;
+const openDialog = async (): Promise<vscode.Uri | undefined> => {
+    const props: vscode.OpenDialogOptions = {
+        title: 'Open Trace',
+        canSelectFolders: true,
+        canSelectFiles: false,
+        canSelectMany: false
+    };
+    let traceURI = undefined;
+    traceURI = await vscode.window.showOpenDialog(props);
+    if (traceURI && traceURI[0]) {
+        return traceURI[0];
+    }
+    return undefined;
+};
+
+export const fileHandler = (analysisTree: AnalysisProvider) => async (context: vscode.ExtensionContext, traceUri: vscode.Uri | undefined): Promise<void> => {
+    if (!traceUri) {
+        traceUri = await openDialog();
+        if (!traceUri) {
+            console.log('Cannot open trace: invalid uri for trace', traceUri);
+            return;
+        }
+    }
+
+    const uri: string = traceUri.path;
     if (!uri) {
-        console.log('Cannot open trace: invalid uri for file', file);
+        console.log('Cannot open trace: invalid uri for trace', traceUri);
         return;
     }
     const name = uri.substring(uri.lastIndexOf('/') + 1);
@@ -111,7 +134,7 @@ export const fileHandler = (analysisTree: AnalysisProvider) => (context: vscode.
      * TODO: use backend service to find traces
      */
         const tracesArray: string[] = [];
-        const fileStat = await vscode.workspace.fs.stat(file);
+        const fileStat = await vscode.workspace.fs.stat(traceUri);
         if (fileStat) {
             if (fileStat.type === vscode.FileType.Directory) {
                 // Find recursivly CTF traces
