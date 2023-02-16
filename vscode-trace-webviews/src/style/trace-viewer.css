@@ -22,4 +22,17 @@
     --theia-input-background: var(--vscode-input-background);
     --theia-input-placeholder-foreground: var(--vscode-input-placeholderForeground);
     --theia-ui-font-family: var(--vscode-editor-fontFamily);
+    --theia-statusBar-background: var(--vscode-statusBar-background);
+    --theia-statusBar-foreground: var(--vscode-statusBar-foreground);
+    --theia-ui-font-size1: var(--vscode-font-size);
+    --theia-editorWidget-background: var(--vscode-editorWidget-background);
+    --theia-ui-padding: 6px;
+    --trace-extension-list-line-height: 16px;
+    --theia-secondaryButton-foreground: var(--vscode-input-background);
+    --theia-layout-color4: var(--vscode-editorWidget-background);
+    --theia-foreground: var(--vscode-editorWidget-foreground);
+    --vscode-editor-foreground: var(--vscode-foreground);
+    --theia-secondaryButton-foreground: var(--vscode-button-secondaryForeground);
+    --theia-secondaryButton-background: var(--vscode-button-secondaryBackground);
+    --theia-sideBar-foreground: var(--vscode-sideBarTitle-foreground);
 }
