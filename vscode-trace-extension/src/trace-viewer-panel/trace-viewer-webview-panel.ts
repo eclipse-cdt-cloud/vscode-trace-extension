@@ -131,8 +131,8 @@ export class TraceViewerPanel {
 	            if (this._experiment) {
 	                const wrapper: string = JSONBig.stringify(this._experiment);
 	                this._panel.webview.postMessage({command: 'set-experiment', data: wrapper});
-	                this.loadTheme();
 	            }
+	            this.loadTheme();
 	            return;
 	        case 'updateProperties':
 	            vscode.commands.executeCommand('messages.post.propertiespanel', 'receivedProperties', message.data);
