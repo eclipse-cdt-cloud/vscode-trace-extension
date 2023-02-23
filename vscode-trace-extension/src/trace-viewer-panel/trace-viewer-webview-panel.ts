@@ -94,8 +94,8 @@ export class TraceViewerPanel {
 	    this._panel.onDidDispose(() => {
 	        this.dispose();
 	        TraceViewerPanel.activePanels[name] = undefined;
+	        signalManager().fireExperimentSelectedSignal(undefined);
 	        return this._disposables;
-
 	    });
 
 	    this._panel.onDidChangeViewState(e => {
@@ -104,6 +104,7 @@ export class TraceViewerPanel {
 	            setStatusFromPanel(name);
 	            if (this._experiment) {
 	                signalManager().fireTraceViewerTabActivatedSignal(this._experiment);
+	                signalManager().fireExperimentSelectedSignal(this._experiment);
 	            }
 	        }
 	    });

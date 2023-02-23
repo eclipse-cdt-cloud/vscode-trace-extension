@@ -18,6 +18,7 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
 	private _view?: vscode.WebviewView;
 	private _disposables: vscode.Disposable[] = [];
 	private _selectionOngoing = false;
+	private _selectedExperiment: Experiment | undefined;
 
 	private _onExperimentSelected = (experiment: Experiment | undefined): void => this.doHandleExperimentSelectedSignal(experiment);
 
@@ -49,6 +50,9 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
 	        case 'webviewReady':
 	            // Post the tspTypescriptClient
 	            webviewView.webview.postMessage({command: 'set-tspClient', data: getTspClientUrl()});
+	            if (this._selectedExperiment !== undefined) {
+	                signalManager().fireExperimentSelectedSignal(this._selectedExperiment);
+	            }
 	            return;
 	        case 'outputAdded':
 	            if (message.data && message.data.descriptor) {
@@ -63,15 +67,17 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
 	            }
 	            return;
 	        case 'experimentSelected': {
-	            if (message.data && message.data.wrapper) {
-	                try {
+	            try {
+	                this._selectionOngoing = true;
+	            	if (message.data && message.data.wrapper) {
 	                    // Avoid endless forwarding of signal
-	                    this._selectionOngoing = true;
-	                    const experiment = convertSignalExperiment(JSONBig.parse(message.data.wrapper));
-	                    signalManager().fireExperimentSelectedSignal(experiment);
-	                } finally {
-	                    this._selectionOngoing = false;
+	                    this._selectedExperiment = convertSignalExperiment(JSONBig.parse(message.data.wrapper));
+	                } else {
+	                    this._selectedExperiment = undefined;
 	                }
+	                signalManager().fireExperimentSelectedSignal(this._selectedExperiment);
+	            } finally {
+	                this._selectionOngoing = false;
 	            }
 	        }
 	        }
@@ -80,11 +86,12 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
 	    signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
 	    webviewView.onDidDispose(_event => {
 	        signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
-	    }, undefined, this._disposables);signalManager().off(Signals.EXPERIMENT_SELECTED, (experiment: Experiment | undefined) => this._onExperimentSelected(experiment));
+	    }, undefined, this._disposables);
 	}
 
 	protected doHandleExperimentSelectedSignal(experiment: Experiment | undefined): void {
 	    if (!this._selectionOngoing && this._view) {
+	        this._selectedExperiment = experiment;
 	        const wrapper: string = JSONBig.stringify(experiment);
 	        this._view.webview.postMessage({command: 'experimentSelected', data: wrapper});
 	    }
