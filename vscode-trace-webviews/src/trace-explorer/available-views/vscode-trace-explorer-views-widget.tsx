@@ -44,9 +44,11 @@ class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppStat
               this.setState({ tspClientProvider: new TspClientProvider(message.data) });
               break;
           case 'experimentSelected':
+              let experiment: Experiment | undefined = undefined;
               if (message.data) {
-                  signalManager().fireExperimentSelectedSignal(convertSignalExperiment(JSONBig.parse(message.data)));
+                  experiment = convertSignalExperiment(JSONBig.parse(message.data));
               }
+              signalManager().fireExperimentSelectedSignal(experiment);
               break;
           }
       });

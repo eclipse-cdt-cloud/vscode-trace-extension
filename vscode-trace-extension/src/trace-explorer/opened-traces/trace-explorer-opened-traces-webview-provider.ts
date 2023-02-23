@@ -1,11 +1,11 @@
-import * as vscode from 'vscode';
-import { TraceViewerPanel } from '../../trace-viewer-panel/trace-viewer-webview-panel';
-import { getTspClientUrl, getTraceServerUrl } from '../../utils/tspClient';
+import JSONBigConfig from 'json-bigint';
+import { OpenedTracesUpdatedSignalPayload } from 'traceviewer-base/lib/signals/opened-traces-updated-signal-payload';
 import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
-import { OpenedTracesUpdatedSignalPayload } from 'traceviewer-base/lib/signals/opened-traces-updated-signal-payload';
-import JSONBigConfig from 'json-bigint';
+import * as vscode from 'vscode';
 import { convertSignalExperiment } from 'vscode-trace-extension/src/common/signal-converter';
+import { TraceViewerPanel } from '../../trace-viewer-panel/trace-viewer-webview-panel';
+import { getTraceServerUrl, getTspClientUrl } from '../../utils/tspClient';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
@@ -17,6 +17,7 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 
 	private _view?: vscode.WebviewView;
 	private _disposables: vscode.Disposable[] = [];
+	private _selectedExperiment: Experiment | undefined;
 
    	constructor(
 		private readonly _extensionUri: vscode.Uri,
@@ -24,16 +25,25 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 
 	private _onOpenedTracesWidgetActivated = (experiment: Experiment): void => this.doHandleTracesWidgetActivatedSignal(experiment);
 	private _onOpenedTracesChanged = (payload: OpenedTracesUpdatedSignalPayload): void => this.doHandleOpenedTracesChangedSignal(payload);
+	private _onExperimentSelected = (experiment: Experiment | undefined): void => this.doHandleExperimentSelectedSignal(experiment);
 
 	protected doHandleTracesWidgetActivatedSignal(experiment: Experiment): void {
 	    if (this._view && experiment) {
+	        this._selectedExperiment = experiment;
 	        const wrapper: string = JSONBig.stringify(experiment);
 	        this._view.webview.postMessage({command: 'traceViewerTabActivated', data: wrapper});
+	        signalManager().fireExperimentSelectedSignal(this._selectedExperiment);
 	    }
 	}
 	protected doHandleOpenedTracesChangedSignal(payload: OpenedTracesUpdatedSignalPayload): void {
 	    if (this._view && payload) {
 	        this._view.webview.postMessage({command: 'openedTracesUpdated', numberOfOpenedTraces: payload.getNumberOfOpenedTraces()});
+	    }
+	}
+
+	protected doHandleExperimentSelectedSignal(experiment: Experiment | undefined): void {
+	    if (this._view) {
+	        this._selectedExperiment = experiment;
 	    }
 	}
 
@@ -61,37 +71,52 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 	        case 'webviewReady':
 	            // Post the tspTypescriptClient
 	            webviewView.webview.postMessage({command: 'set-tspClient', data: getTspClientUrl()});
+	            if (this._selectedExperiment !== undefined) {
+	                // tabActivatedSignal will select the experiment in the open traces widget
+	                signalManager().fireTraceViewerTabActivatedSignal(this._selectedExperiment);
+	                // experimentSelectedSignal will update available views widget
+	                signalManager().fireExperimentSelectedSignal(this._selectedExperiment);
+	            }
 	            return;
 	        case 'reopenTrace':
 	            if (message.data && message.data.wrapper) {
 	                const experiment = convertSignalExperiment(JSONBig.parse(message.data.wrapper));
 	                const panel = TraceViewerPanel.createOrShow(this._extensionUri, experiment.name);
 	                panel.setExperiment(experiment);
+	                signalManager().fireExperimentSelectedSignal(experiment);
 	            }
 	            return;
 	        case 'closeTrace':
 	            if (message.data && message.data.wrapper) {
 	                TraceViewerPanel.disposePanel(this._extensionUri, JSONBig.parse(message.data.wrapper).name);
+	                signalManager().fireExperimentSelectedSignal(undefined);
 	            }
 	            return;
 	        case 'deleteTrace':
 	            if (message.data && message.data.wrapper) {
 	                // just remove the panel here
 	                TraceViewerPanel.disposePanel(this._extensionUri, JSONBig.parse(message.data.wrapper).name);
+	                signalManager().fireExperimentSelectedSignal(undefined);
 	            }
 	            return;
 	        case 'experimentSelected': {
+	            let experiment: Experiment | undefined;
 	            if (message.data && message.data.wrapper) {
-	                signalManager().fireExperimentSelectedSignal(convertSignalExperiment(JSONBig.parse(message.data.wrapper)));
+	                experiment = convertSignalExperiment(JSONBig.parse(message.data.wrapper));
+	            } else {
+	                experiment = undefined;
 	            }
+	            signalManager().fireExperimentSelectedSignal(experiment);
 	        }
 	        }
 	    }, undefined, this._disposables);
 	    signalManager().on(Signals.TRACEVIEWERTAB_ACTIVATED, this._onOpenedTracesWidgetActivated);
 	    signalManager().on(Signals.OPENED_TRACES_UPDATED, this._onOpenedTracesChanged);
+	    signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
 	    webviewView.onDidDispose(_event => {
 	        signalManager().off(Signals.TRACEVIEWERTAB_ACTIVATED, this._onOpenedTracesWidgetActivated);
 	        signalManager().off(Signals.OPENED_TRACES_UPDATED, this._onOpenedTracesChanged);
+	        signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
 	    }, undefined, this._disposables);
 	}
 
