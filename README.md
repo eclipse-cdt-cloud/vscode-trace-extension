@@ -41,7 +41,7 @@ The `Views` tab shows all the available views for the selected trace. Click on a
 
 To package it as VsCode extension, run the command `yarn vsce:package`. If you get errors about case-sensitive files, just delete the node_modules folder and run `yarn` again.
 
-The packaging will produce a `vscode-trace-extension-x.x.x.vsix` file in the subdirectory `vscode-trace-extension` of the repo.
+The packaging will produce a `vscode-trace-extension-x.x.x.vsix` file in the subdirectory `vscode-trace-extension` of the repository.
 
 ## Running the extension in VsCode, VsCodium or Theia application
 
@@ -51,7 +51,7 @@ The trace server needs to be started separately as described [here](#run-the-tra
 
 ## Running the extension in the Theia Trace Viewer example app
 
-The packaged VSIX file can be run in the example app of the [theia-trace-extension][theia-trace]. For this the file can be can be symlinked in the `plugins` of the example app of `theia-trace-extension` repo.
+The packaged VSIX file can be run in the example app of the [theia-trace-extension][theia-trace]. For this the file can be can be symlinked in the `plugins` of the example app of `theia-trace-extension` repository.
 
 ``` bash
 cd <theia-trace-extension root>/examples/plugins
@@ -127,7 +127,7 @@ You can also build the trace-server yourself using Trace Compass and the Incubat
 
 ## Get sample traces
 
-To get sample traces to try run the following command. The traces will be stored under the subdirectory `TraceCompassTutorialTraces` of the repo.
+To get sample traces to try run the following command. The traces will be stored under the subdirectory `TraceCompassTutorialTraces` of the repository.
 
 ```bash
 yarn download:sample-traces
