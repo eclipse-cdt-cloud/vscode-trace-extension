@@ -27,6 +27,7 @@ module.exports = {
         'node_modules',
         'lib',
         '.eslintrc.js',
+        'webpack.config.js',
         'plugins',
         'pack'
     ]
