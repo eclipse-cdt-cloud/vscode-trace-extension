@@ -3,19 +3,19 @@
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-balham-dark.css';
 import 'ag-grid-community/dist/styles/ag-theme-balham.css';
+import JSONBigConfig from 'json-bigint';
 import * as React from 'react';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
+import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
 import { TraceContextComponent } from 'traceviewer-react-components/lib/components/trace-context-component';
 import 'traceviewer-react-components/style/trace-context-style.css';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
 import { TspClient } from 'tsp-typescript-client/lib/protocol/tsp-client';
 import { VsCodeMessageManager } from '../common/vscode-message-manager';
-import '../style/trace-viewer.css';
-import JSONBigConfig from 'json-bigint';
 import { convertSignalExperiment } from '../common/vscode-signal-converter';
-import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
+import '../style/trace-viewer.css';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
@@ -29,7 +29,7 @@ interface VscodeAppState {
   theme: string;
 }
 
-class App extends React.Component<{}, VscodeAppState>  {
+class TraceViewerContainer extends React.Component<{}, VscodeAppState>  {
   private DEFAULT_OVERVIEW_DATA_PROVIDER_ID = 'org.eclipse.tracecompass.internal.tmf.core.histogram.HistogramDataProvider';
 
   private _signalHandler: VsCodeMessageManager;
@@ -182,4 +182,4 @@ class App extends React.Component<{}, VscodeAppState>  {
   }
 }
 
-export default App;
+export default TraceViewerContainer;

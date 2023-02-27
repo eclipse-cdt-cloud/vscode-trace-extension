@@ -102,8 +102,8 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.17",
     "@fortawesome/free-solid-svg-icons": "^5.8.1",
     "@fortawesome/react-fontawesome": "^0.1.4",
-    "ag-grid-community": "^20.2.0",
-    "ag-grid-react": "^20.2.0",
+    "ag-grid-community": "^28.2.0",
+    "ag-grid-react": "^28.2.0",
     "chart.js": "^2.8.0",
     "json-bigint": "sidorares/json-bigint#2c0a5f896d7888e68e5f4ae3c7ea5cd42fd54473",
     "lodash": "^4.17.15",
@@ -134,7 +134,11 @@
     "eslint-plugin-react": "^7.20.0"
   },
   "resolutions": {
-    "terser": "3.14.1"
+    "terser": "3.14.1",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0"
   },
   "scripts": {
     "prepare": "yarn run clean && yarn run build && yarn run webpack",

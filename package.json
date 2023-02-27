@@ -1,14 +1,14 @@
 {
   "private": true,
   "scripts": {
-  "prepare": "lerna run prepare",
-  "watch": "lerna run watch",
-  "clean": "lerna run clean",
-  "vsce:package": "lerna run vsce:package",
-  "lint": "lerna run lint",
-  "download:server": "curl -o trace-compass-server.tar.gz https://download.eclipse.org/tracecompass.incubator/trace-server/rcp/trace-compass-server-latest-linux.gtk.x86_64.tar.gz; tar -xf trace-compass-server.tar.gz",
-  "start:server": "./trace-compass-server/tracecompass-server",
-  "download:sample-traces": "curl -o TraceCompassTutorialTraces.tgz https://raw.githubusercontent.com/dorsal-lab/tracevizlab/master/labs/TraceCompassTutorialTraces.tgz; tar -xf TraceCompassTutorialTraces.tgz"
+    "prepare": "lerna run prepare",
+    "watch": "lerna run watch",
+    "clean": "lerna run clean",
+    "vsce:package": "lerna run vsce:package",
+    "lint": "lerna run lint",
+    "download:server": "curl -o trace-compass-server.tar.gz https://download.eclipse.org/tracecompass.incubator/trace-server/rcp/trace-compass-server-latest-linux.gtk.x86_64.tar.gz; tar -xf trace-compass-server.tar.gz",
+    "start:server": "./trace-compass-server/tracecompass-server",
+    "download:sample-traces": "curl -o TraceCompassTutorialTraces.tgz https://raw.githubusercontent.com/dorsal-lab/tracevizlab/master/labs/TraceCompassTutorialTraces.tgz; tar -xf TraceCompassTutorialTraces.tgz"
   },
   "devDependencies": {
     "lerna": "^3.20.2"
