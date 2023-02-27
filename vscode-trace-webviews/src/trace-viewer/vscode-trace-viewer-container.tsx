@@ -35,9 +35,14 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState>  {
   private _signalHandler: VsCodeMessageManager;
 
   private _onProperties = (properties: { [key: string]: string }): void => this.doHandlePropertiesSignal(properties);
+  private _onSaveAsCSV = (payload: {traceId: string, data: string}): void => this.doHandleSaveAsCSVSignal(payload);
   /** Signal Handlers */
   private doHandlePropertiesSignal(properties: { [key: string]: string }) {
       this._signalHandler.propertiesUpdated(properties);
+  }
+
+  private doHandleSaveAsCSVSignal(payload: {traceId: string, data: string}) {
+      this._signalHandler.saveAsCSV(payload);
   }
 
   // TODO add support for marker sets
@@ -108,11 +113,13 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState>  {
   componentDidMount(): void {
       this._signalHandler.notifyReady();
       signalManager().on(Signals.ITEM_PROPERTIES_UPDATED, this._onProperties);
+      signalManager().on(Signals.SAVE_AS_CSV, this._onSaveAsCSV);
   }
 
   componentWillUnmount(): void {
       signalManager().off(Signals.ITEM_PROPERTIES_UPDATED, this._onProperties);
       signalManager().off(Signals.OVERVIEW_OUTPUT_SELECTED, this._onOverviewSelected);
+      signalManager().off(Signals.SAVE_AS_CSV, this._onSaveAsCSV);
       window.removeEventListener('resize', this.onResize);
   }
 

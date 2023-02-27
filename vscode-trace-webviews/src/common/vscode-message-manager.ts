@@ -75,4 +75,8 @@ export class VsCodeMessageManager extends Messages.MessageManager {
     propertiesUpdated(properties: { [key: string]: string }): void {
         vscode.postMessage({command: 'updateProperties', data: {properties}});
     }
+
+    saveAsCSV(payload: {traceId: string, data: string}): void {
+        vscode.postMessage({command: 'saveAsCsv', payload});
+    }
 }
