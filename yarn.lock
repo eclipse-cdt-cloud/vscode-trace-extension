@@ -8298,9 +8298,9 @@ through@2, "through@>=2.2.7 <3", through@^2.3.4, through@^2.3.6:
   integrity sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==
 
 timeline-chart@next:
-  version "0.3.0-next.82a0ac9.0"
-  resolved "https://registry.yarnpkg.com/timeline-chart/-/timeline-chart-0.3.0-next.82a0ac9.0.tgz#4fd27cd71d0ee2aebced20ea3bc5b3e95247fbcb"
-  integrity sha512-YGHlz7wT904qqhGSYO+iX37YYVXZmHh931loKHBYEYEzkCAhZ2rkcR34ELj5y6U8Pxb1M7GDQZdWicKOxTSbGA==
+  version "0.3.0-next.4694a71.0"
+  resolved "https://registry.yarnpkg.com/timeline-chart/-/timeline-chart-0.3.0-next.4694a71.0.tgz#b706404c610aef1145da696ad7a8d600c9e01daa"
+  integrity sha512-LwZqKlK9iJAJGQK90MNqBDJsM8hnamXYJsbLZ0KR/ThHBWR7sA76kpIM7fyuMtO7lMDPASA+WJZuTY31SAaz+A==
   dependencies:
     "@types/lodash.throttle" "^4.1.4"
     glob "^7.1.6"
@@ -8375,17 +8375,17 @@ tr46@~0.0.3:
   resolved "https://registry.yarnpkg.com/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
   integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
 
-traceviewer-base@0.2.0-next.8e31c7e.0+8e31c7e, traceviewer-base@next:
-  version "0.2.0-next.8e31c7e.0"
-  resolved "https://registry.yarnpkg.com/traceviewer-base/-/traceviewer-base-0.2.0-next.8e31c7e.0.tgz#f5acf7a6e49c3671d95ff98b18bbb6e5e217e847"
-  integrity sha512-zLbgUrgAGINNWY0bZfFhN492Zd1ngOliqcTDsnX/j+8o2WK+r2cRqND+sXUQQViUJ0nw1jmMr1GaEcoHA9Yj/w==
+traceviewer-base@0.2.0-next.3ebd9d7.0+3ebd9d7, traceviewer-base@next:
+  version "0.2.0-next.3ebd9d7.0"
+  resolved "https://registry.yarnpkg.com/traceviewer-base/-/traceviewer-base-0.2.0-next.3ebd9d7.0.tgz#9333ba4b1da434f98168e2c7047ae77091b0d0d7"
+  integrity sha512-wWGcrtta5290ZYywUR+FI9qv7qBFgaLXUkCblxeAPS13aqFMzN9jpUaiRgpPohRYXeqgdVWGFLaYUIOHNvyvYg==
   dependencies:
     tsp-typescript-client next
 
 traceviewer-react-components@next:
-  version "0.2.0-next.8e31c7e.0"
-  resolved "https://registry.yarnpkg.com/traceviewer-react-components/-/traceviewer-react-components-0.2.0-next.8e31c7e.0.tgz#dc2de3ed17c1bfaf22264eb79c5c669ff79414c8"
-  integrity sha512-ZGVz5qIz1VR5dz3ehcwKCpoj2Uk82cY7lNUwtbeL8mh5CVEhfWbndunuJmXMVbnwP1+6LEwClCl+XvEV2SxVpg==
+  version "0.2.0-next.3ebd9d7.0"
+  resolved "https://registry.yarnpkg.com/traceviewer-react-components/-/traceviewer-react-components-0.2.0-next.3ebd9d7.0.tgz#44ea85ff312294beb019d998ce391dfe21e2ee64"
+  integrity sha512-GYbeXDnc1uTyBk/Xm1wrx6X8W5j6GxKBIj33ZJbc47IrsnPCQRNX2mgLSRiFwOOy2fB3QCp8MDFS8m6oTvkpfg==
   dependencies:
     "@fortawesome/fontawesome-svg-core" "^1.2.17"
     "@fortawesome/free-solid-svg-icons" "^5.8.1"
@@ -8397,6 +8397,7 @@ traceviewer-react-components@next:
     d3 "^7.1.1"
     lodash "^4.17.15"
     react-chartjs-2 "^2.7.6"
+    react-contexify "^5.0.0"
     react-grid-layout "1.2.0"
     react-modal "^3.8.1"
     react-tooltip "4.2.14"
@@ -8404,7 +8405,7 @@ traceviewer-react-components@next:
     semantic-ui-css "^2.4.1"
     semantic-ui-react "^0.86.0"
     timeline-chart next
-    traceviewer-base "0.2.0-next.8e31c7e.0+8e31c7e"
+    traceviewer-base "0.2.0-next.3ebd9d7.0+3ebd9d7"
     tsp-typescript-client next
 
 trim-newlines@^1.0.0:
@@ -8449,9 +8450,9 @@ tslib@^1.8.1, tslib@^1.9.0:
   integrity sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==
 
 tsp-typescript-client@next:
-  version "0.4.0-next.43f2a05.0"
-  resolved "https://registry.yarnpkg.com/tsp-typescript-client/-/tsp-typescript-client-0.4.0-next.43f2a05.0.tgz#32d39f9f6e5b89f407f1b5b2aef404d8bb1a36b6"
-  integrity sha512-xL0mtB+mOLOenEvdWzjmg9oAcbziQ8OQPLdiq3AvIDiYegVfWsBwHvrgE1fd6Tag/MQEx5CmCtVN+HACMdWoXg==
+  version "0.4.0-next.143a5ab.0"
+  resolved "https://registry.yarnpkg.com/tsp-typescript-client/-/tsp-typescript-client-0.4.0-next.143a5ab.0.tgz#b7258f168cab720b3892dedc54a8794de3d6867f"
+  integrity sha512-vyJATe8mvY3mbBSCr9THPEh2+wTqbwb1MdAxJO6tanZagOt+zqMuNh+k9ZOKCyaWBqndkUOLX6W6hF8cbH5NaQ==
   dependencies:
     json-bigint sidorares/json-bigint#2c0a5f896d7888e68e5f4ae3c7ea5cd42fd54473
     node-fetch "^2.5.0"

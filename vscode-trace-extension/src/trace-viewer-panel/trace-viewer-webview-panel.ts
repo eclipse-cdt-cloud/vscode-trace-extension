@@ -5,6 +5,7 @@ import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descri
 import { handleStatusMessage, handleRemoveMessage, setStatusFromPanel } from '../common/trace-message';
 import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
 import JSONBigConfig from 'json-bigint';
+import * as fs from 'fs';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
@@ -71,6 +72,28 @@ export class TraceViewerPanel {
 
 	public static resetZoomOnCurrent(): void {
 		TraceViewerPanel.currentPanel?.resetZoom();
+	}
+
+	private static async saveTraceCsv(csvData: string, defaultFileName: string) {
+	    const saveDialogOptions = {
+	        defaultUri: vscode.workspace.workspaceFolders
+	            ? vscode.Uri.file(vscode.workspace.workspaceFolders[0].uri.path + '/' + defaultFileName)
+	            : undefined,
+	        saveLabel: 'Save as CSV',
+	        filters: {
+	        'CSV Files': ['csv']
+	        }
+	    };
+	    const uri = await vscode.window.showSaveDialog(saveDialogOptions);
+	    if (uri) {
+	        fs.writeFile(uri.fsPath, csvData, err => {
+	            if (err) {
+	            	vscode.window.showErrorMessage(`Failed to save CSV: ${err.message}`);
+	            } else {
+	            	vscode.window.showInformationMessage('CSV saved successfully');
+	            }
+	        });
+	    }
 	}
 
 	private constructor(extensionUri: vscode.Uri, column: vscode.ViewColumn, name: string) {
@@ -142,6 +165,12 @@ export class TraceViewerPanel {
 	            return;
 	        case 'updateProperties':
 	            vscode.commands.executeCommand('messages.post.propertiespanel', 'receivedProperties', message.data);
+	            return;
+	        case 'saveAsCsv':
+	            if (message.payload.data && typeof message.payload.data === 'string') {
+	            	TraceViewerPanel.saveTraceCsv(message.payload.data, ((this._experiment !== undefined) ? this._experiment.name : 'trace')+'.csv');
+	            }
+	            return;
 	        }
 	    }, undefined, this._disposables);
 	    signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
