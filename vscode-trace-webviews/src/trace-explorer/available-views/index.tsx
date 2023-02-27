@@ -1,9 +1,9 @@
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 import './index.css';
 import TraceExplorerViewsWidget from './vscode-trace-explorer-views-widget';
 
-ReactDOM.render(
-    <TraceExplorerViewsWidget />,
-    (document.getElementById('root') as HTMLElement)
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+root.render(
+    <TraceExplorerViewsWidget />
 );

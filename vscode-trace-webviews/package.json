@@ -17,9 +17,9 @@
     "json-bigint": "sidorares/json-bigint#2c0a5f896d7888e68e5f4ae3c7ea5cd42fd54473",
     "lodash": "^4.17.15",
     "lodash.debounce": "^4.0.8",
-    "react": "^16.3.2",
+    "react": "^18.0.0",
     "react-chartjs-2": "^2.7.6",
-    "react-dom": "^16.3.2",
+    "react-dom": "^18.0.0",
     "react-grid-layout": "^1.1.0",
     "react-modal": "^3.8.1",
     "react-virtualized": "^9.21.0",
@@ -33,8 +33,8 @@
     "@types/jest": "^23.3.13",
     "@types/json-bigint": "^1.0.1",
     "@types/node": "^10.1.2",
-    "@types/react": "^16.3.14",
-    "@types/react-dom": "^16.0.5",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^3.4.0",
     "@typescript-eslint/parser": "^3.4.0",
     "css-loader": "^5.0.1",
@@ -51,7 +51,11 @@
     "eslint-plugin-react": "^7.20.0"
   },
   "resolutions": {
-    "terser": "3.14.1"
+    "terser": "3.14.1",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0"
   },
   "scripts": {
     "prepare": "yarn run clean && yarn run build",
