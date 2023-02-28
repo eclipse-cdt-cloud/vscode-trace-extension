@@ -132,10 +132,11 @@ export class TraceViewerPanel {
 	            return;
 	        case 'webviewReady':
 	            // Post the tspTypescriptClient
-	            this._panel.webview.postMessage({command: 'set-tspClient', data: getTspClientUrl()});
 	            if (this._experiment) {
 	                const wrapper: string = JSONBig.stringify(this._experiment);
-	                this._panel.webview.postMessage({command: 'set-experiment', data: wrapper});
+	                this._panel.webview.postMessage({command: 'set-tspClient', data: getTspClientUrl(), experiment: wrapper});
+	            } else {
+	                this._panel.webview.postMessage({command: 'set-tspClient', data: getTspClientUrl()});
 	            }
 	            this.loadTheme();
 	            return;

@@ -76,7 +76,11 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState>  {
               this.doHandleExperimentSetSignal(convertSignalExperiment(JSONBig.parse(message.data)));
               break;
           case 'set-tspClient':
-              this.setState({tspClient: new TspClient(message.data)});
+              this.setState({tspClient: new TspClient(message.data)}, () => {
+                  if (message.experiment) {
+                      this.doHandleExperimentSetSignal(convertSignalExperiment(JSONBig.parse(message.experiment)));
+                  }
+              });
               break;
           case 'add-output':
               // FIXME: JSONBig.parse() create bigint if numbers are small
