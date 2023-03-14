@@ -72,7 +72,7 @@ For issues concerning `eclipse-cdt-cloud`, please refer to the contact options l
 
 [cdt-cloud-website]: https://cdt-cloud.io/contact/
 [code-of-conduct]: https://github.com/eclipse/.github/blob/master/CODE_OF_CONDUCT.md
-[commit-message-example]: https://github.com/theia-ide/theia-trace-extension/commit/bc18fcd110d7b8433293692421f2e4fb49f89bd6
+[commit-message-example]: https://github.com/eclipse-cdt-cloud/theia-trace-extension/commit/bc18fcd110d7b8433293692421f2e4fb49f89bd6
 [commit-message-message]: https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 [commiter-handbook]: https://www.eclipse.org/projects/handbook/#resources-commit
 [contact-us]: #contact

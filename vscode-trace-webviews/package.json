@@ -9,7 +9,7 @@
   "categories": [
     "Other"
   ],
-  "repository": "https://github.com/theia-ide/vscode-trace-extension/",
+  "repository": "https://github.com/eclipse-cdt-cloud/vscode-trace-extension/",
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.17",
     "@fortawesome/free-solid-svg-icons": "^5.8.1",

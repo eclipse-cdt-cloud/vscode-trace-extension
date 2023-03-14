@@ -135,13 +135,13 @@ yarn download:sample-traces
 
 [init-contrib]: https://github.com/eclipse-cdt-cloud/theia-trace-extension/pull/124
 [install]: https://code.visualstudio.com/docs/editor/extension-marketplace#_install-from-a-vsix
-[open-output]: https://raw.githubusercontent.com/theia-ide/vscode-trace-extension/master/doc/images/vscode-trace-extension-001.png
-[open-trace]: https://raw.githubusercontent.com/theia-ide/vscode-trace-extension/master/doc/images/vscode-open-with-trace-viewer-001.png
+[open-output]: https://raw.githubusercontent.com/eclipse-cdt-cloud/vscode-trace-extension/master/doc/images/vscode-trace-extension-001.png
+[open-trace]: https://raw.githubusercontent.com/eclipse-cdt-cloud/vscode-trace-extension/master/doc/images/vscode-open-with-trace-viewer-001.png
 [theia-trace]: https://github.com/eclipse-cdt-cloud/theia-trace-extension/
 [tc-server]: https://download.eclipse.org/tracecompass.incubator/trace-server/rcp/?d
 [tc-server-build]: https://www.eclipse.org/tracecompass/download.html#trace-server
 [timeline-chart]: https://github.com/eclipse-cdt-cloud/timeline-chart/
-[trace-explorer-activity-bar]: https://raw.githubusercontent.com/theia-ide/vscode-trace-extension/master/doc/images/vscode-show-trace-viewer-001.png
+[trace-explorer-activity-bar]: https://raw.githubusercontent.com/eclipse-cdt-cloud/vscode-trace-extension/master/doc/images/vscode-show-trace-viewer-001.png
 [tsp-client]: https://github.com/eclipse-cdt-cloud/tsp-typescript-client/
 [vscode-messages]: https://code.visualstudio.com/api/extension-guides/webview#passing-messages-from-an-extension-to-a-webview
 [vscode-webview]: https://github.com/rebornix/vscode-webview-react
