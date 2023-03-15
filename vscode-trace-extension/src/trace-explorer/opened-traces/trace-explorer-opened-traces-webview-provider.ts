@@ -95,11 +95,6 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 	            }
 	            return;
 	        case 'closeTrace':
-	            if (message.data && message.data.wrapper) {
-	                TraceViewerPanel.disposePanel(this._extensionUri, JSONBig.parse(message.data.wrapper).name);
-	                signalManager().fireExperimentSelectedSignal(undefined);
-	            }
-	            return;
 	        case 'deleteTrace':
 	            if (message.data && message.data.wrapper) {
 	                // just remove the panel here
