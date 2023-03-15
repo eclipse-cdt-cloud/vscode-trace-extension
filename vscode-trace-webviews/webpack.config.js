@@ -12,7 +12,6 @@ module.exports = {
     path: path.resolve(__dirname, "../vscode-trace-extension/pack"),
     filename: "[name].js"
   },
-  devtool: "eval-source-map",
   devtool: "inline-source-map",
   resolve: {
     extensions: [".js", ".ts", ".tsx", ".json"]
