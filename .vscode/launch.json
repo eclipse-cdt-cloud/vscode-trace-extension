@@ -13,8 +13,7 @@
             "outFiles": [
                 "${workspaceFolder}/vscode-trace-extension/pack/*.js",
                 "${workspaceFolder}/vscode-trace-extension/lib/**/*.js"
-            ],            
-            "stopOnEntry": false,
+            ],
             "sourceMaps": true
         }
     ]
