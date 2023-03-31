@@ -17,6 +17,7 @@
     "lerna": "^3.20.2"
   },
   "workspaces": [
+    "vscode-trace-common",
     "vscode-trace-webviews",
     "vscode-trace-extension"
   ]

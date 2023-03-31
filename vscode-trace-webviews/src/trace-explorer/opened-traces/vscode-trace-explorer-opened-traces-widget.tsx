@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import * as React from 'react';
 import { ReactOpenTracesWidget } from 'traceviewer-react-components/lib/trace-explorer/trace-explorer-opened-traces-widget';
-import { VsCodeMessageManager } from '../../common/vscode-message-manager';
+import { VsCodeMessageManager, VSCODE_MESSAGES } from 'vscode-trace-common/lib/vscode-message-manager';
 import { Menu, Item, useContextMenu, ItemParams } from 'react-contexify';
 import { TspClientProvider } from '../../common/tsp-client-provider-impl';
 import { ITspClientProvider } from 'traceviewer-base/lib/tsp-client-provider';
@@ -53,7 +53,7 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
 
           const message = event.data; // The JSON data our extension sent
           switch (message.command) {
-          case 'set-tspClient':
+          case VSCODE_MESSAGES.SET_TSP_CLIENT:
               const tspClientProvider: ITspClientProvider = new TspClientProvider(message.data, this._signalHandler);
               this._experimentManager = tspClientProvider.getExperimentManager();
               this.setState({ tspClientProvider: tspClientProvider });
@@ -65,18 +65,18 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
                   });
               }
               break;
-          case 'traceViewerTabActivated':
+          case VSCODE_MESSAGES.TRACE_VIEWER_TAB_ACTIVATED:
               if (message.data) {
                   const experiment = convertSignalExperiment(JSONBig.parse(message.data));
                   signalManager().fireTraceViewerTabActivatedSignal(experiment);
               }
               break;
-          case 'openedTracesUpdated':
+          case VSCODE_MESSAGES.OPENED_TRACES_UPDATED:
               if (message.numberOfOpenedTraces) {
               // TODO: Render a "Open Trace" button if numberOfOpenedTraces is 0
               }
               break;
-          case 'experimentOpened':
+          case VSCODE_MESSAGES.EXPERIMENT_OPENED:
               if (message.data) {
                   const experiment = convertSignalExperiment(JSONBig.parse(message.data));
                   signalManager().fireExperimentOpenedSignal(experiment);

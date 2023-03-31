@@ -10,10 +10,5 @@
     "exclude": [
         "node_modules",
         "lib"
-    ],
-    "references": [
-        {
-            "path": "../vscode-trace-webviews"
-        }
     ]
 }
