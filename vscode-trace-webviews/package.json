@@ -27,7 +27,8 @@
     "semantic-ui-css": "^2.4.1",
     "semantic-ui-react": "^0.86.0",
     "traceviewer-base": "next",
-    "traceviewer-react-components": "next"
+    "traceviewer-react-components": "next",
+    "vscode-trace-common": "0.0.0"
     },
   "devDependencies": {
     "@types/jest": "^23.3.13",
@@ -58,9 +59,10 @@
     "@types/react-dom": "^18.0.0"
   },
   "scripts": {
-    "prepare": "yarn run clean && yarn run build",
+    "prepare": "yarn run clean && yarn run build && yarn run webpack",
     "clean": "rimraf lib pack",
-    "build": "tsc && webpack --mode development",
+    "build": "tsc -b",
+    "webpack": "webpack --mode development",
     "vsce:package": "yarn run prepare",
     "test": "react-scripts test --env=jsdom",
     "watch": "webpack --watch --mode development",

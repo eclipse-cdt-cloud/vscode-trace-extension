@@ -13,7 +13,7 @@ import 'traceviewer-react-components/style/trace-context-style.css';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
 import { TspClientProvider } from '../common/tsp-client-provider-impl';
-import { VsCodeMessageManager } from '../common/vscode-message-manager';
+import { VsCodeMessageManager, VSCODE_MESSAGES } from 'vscode-trace-common/lib/vscode-message-manager';
 import { convertSignalExperiment } from '../common/vscode-signal-converter';
 import '../style/trace-viewer.css';
 
@@ -77,29 +77,29 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState>  {
 
           const message = event.data; // The JSON data our extension sent
           switch (message.command) {
-          case 'set-experiment':
+          case VSCODE_MESSAGES.SET_EXPERIMENT:
               this.doHandleExperimentSetSignal(convertSignalExperiment(JSONBig.parse(message.data)));
               break;
-          case 'set-tspClient':
+          case VSCODE_MESSAGES.SET_TSP_CLIENT:
               this.setState({tspClientProvider: new TspClientProvider(message.data, this._signalHandler)}, () => {
                   if (message.experiment) {
                       this.doHandleExperimentSetSignal(convertSignalExperiment(JSONBig.parse(message.experiment)));
                   }
               });
               break;
-          case 'add-output':
+          case VSCODE_MESSAGES.ADD_OUTPUT:
               // FIXME: JSONBig.parse() create bigint if numbers are small
               // Not an issue right now for output descriptors.
               const descriptor = JSONBig.parse(message.data);
               this.setState({outputs: [...this.state.outputs, descriptor] });
               break;
-          case 'open-overview':
+          case VSCODE_MESSAGES.OPEN_OVERVIEW:
               this.doHandleExperimentSetSignal(this.state.experiment);
               break;
-          case 'set-theme':
+          case VSCODE_MESSAGES.SET_THEME:
               this.doHandleThemeChanged(message.data);
               break;
-          case 'reset-zoom':
+          case VSCODE_MESSAGES.RESET_ZOOM:
               this.resetZoom();
               break;
           }

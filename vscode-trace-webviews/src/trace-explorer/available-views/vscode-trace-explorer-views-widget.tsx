@@ -7,7 +7,7 @@ import { ReactAvailableViewsWidget } from 'traceviewer-react-components/lib/trac
 import 'traceviewer-react-components/style/trace-explorer.css';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { TspClientProvider } from '../../common/tsp-client-provider-impl';
-import { VsCodeMessageManager } from '../../common/vscode-message-manager';
+import { VsCodeMessageManager, VSCODE_MESSAGES } from 'vscode-trace-common/lib/vscode-message-manager';
 import '../../style/react-contextify.css';
 import '../../style/trace-viewer.css';
 import JSONBigConfig from 'json-bigint';
@@ -40,10 +40,10 @@ class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppStat
 
           const message = event.data; // The JSON data our extension sent
           switch (message.command) {
-          case 'set-tspClient':
+          case VSCODE_MESSAGES.SET_TSP_CLIENT:
               this.setState({ tspClientProvider: new TspClientProvider(message.data, this._signalHandler) });
               break;
-          case 'experimentSelected':
+          case VSCODE_MESSAGES.EXPERIMENT_SELECTED:
               let experiment: Experiment | undefined = undefined;
               if (message.data) {
                   experiment = convertSignalExperiment(JSONBig.parse(message.data));

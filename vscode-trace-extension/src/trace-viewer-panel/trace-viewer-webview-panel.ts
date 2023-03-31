@@ -5,6 +5,7 @@ import { TraceServerConnectionStatusService } from '../utils/trace-server-status
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
 import { handleStatusMessage, handleRemoveMessage, setStatusFromPanel } from '../common/trace-message';
 import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
+import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/vscode-message-manager';
 import JSONBigConfig from 'json-bigint';
 import * as fs from 'fs';
 
@@ -143,40 +144,40 @@ export class TraceViewerPanel {
 
 	    vscode.window.onDidChangeActiveColorTheme(e => {
 	    	const wrapper = e.kind === 1 ? 'light' : 'dark';
-	    	this._panel.webview.postMessage({ command: 'set-theme', data: wrapper });
+	    	this._panel.webview.postMessage({ command: VSCODE_MESSAGES.SET_THEME, data: wrapper });
 	    });
 
 	    // Handle messages from the webview
 	    this._panel.webview.onDidReceiveMessage(message => {
 	        switch (message.command) {
-	        case 'alert':
+	        case VSCODE_MESSAGES.ALERT:
 	            vscode.window.showErrorMessage(message.text);
 	            return;
-	        case 'newStatus':
+	        case VSCODE_MESSAGES.NEW_STATUS:
 	            handleStatusMessage(name, message.data);
 	            return;
-	        case 'rmStatus':
+	        case VSCODE_MESSAGES.REMOVE_STATUS:
 	            handleRemoveMessage(name, message.data);
 	            return;
-	        case 'webviewReady':
+	        case VSCODE_MESSAGES.WEBVIEW_READY:
 	            // Post the tspTypescriptClient
 	            if (this._experiment) {
 	                const wrapper: string = JSONBig.stringify(this._experiment);
-	                this._panel.webview.postMessage({command: 'set-tspClient', data: getTspClientUrl(), experiment: wrapper});
+	                this._panel.webview.postMessage({command: VSCODE_MESSAGES.SET_TSP_CLIENT, data: getTspClientUrl(), experiment: wrapper});
 	            } else {
-	                this._panel.webview.postMessage({command: 'set-tspClient', data: getTspClientUrl()});
+	                this._panel.webview.postMessage({command: VSCODE_MESSAGES.SET_TSP_CLIENT, data: getTspClientUrl()});
 	            }
 	            this.loadTheme();
 	            return;
-	        case 'updateProperties':
+	        case VSCODE_MESSAGES.UPDATE_PROPERTIES:
 	            vscode.commands.executeCommand('messages.post.propertiespanel', 'receivedProperties', message.data);
 	            return;
-	        case 'saveAsCsv':
+	        case VSCODE_MESSAGES.SAVE_AS_CSV:
 	            if (message.payload.data && typeof message.payload.data === 'string') {
 	            	TraceViewerPanel.saveTraceCsv(message.payload.data, ((this._experiment !== undefined) ? this._experiment.name : 'trace')+'.csv');
 	            }
 	            return;
-	        case 'connectionStatus':
+	        case VSCODE_MESSAGES.CONNECTION_STATUS:
 	            if (message.data && message.data.status && this._statusService) {
 	                const status: boolean = JSON.parse(message.data.status);
 	                this._statusService.render(status);
@@ -190,7 +191,7 @@ export class TraceViewerPanel {
 	public doRefactor(): void {
 	    // Send a message to the webview webview.
 	    // You can send any JSON serializable data.
-	    this._panel.webview.postMessage({ command: 'refactor' });
+	    this._panel.webview.postMessage({ command: VSCODE_MESSAGES.REFACTOR });
 	}
 
 	public dispose(): void {
@@ -217,27 +218,27 @@ export class TraceViewerPanel {
 	setExperiment(experiment: Experiment): void {
 	    this._experiment = experiment;
 	    const wrapper: string = JSONBig.stringify(experiment);
-	    this._panel.webview.postMessage({command: 'set-experiment', data: wrapper});
+	    this._panel.webview.postMessage({command: VSCODE_MESSAGES.SET_EXPERIMENT, data: wrapper});
 	    signalManager().fireExperimentOpenedSignal(experiment);
 	    signalManager().fireTraceViewerTabActivatedSignal(experiment);
 	}
 
 	addOutput(descriptor: OutputDescriptor): void {
 	    const wrapper: string = JSONBig.stringify(descriptor);
-	    this._panel.webview.postMessage({command: 'add-output', data: wrapper});
+	    this._panel.webview.postMessage({command: VSCODE_MESSAGES.ADD_OUTPUT, data: wrapper});
 	}
 
 	showOverview(): void {
-	    this._panel.webview.postMessage({command: 'open-overview'});
+	    this._panel.webview.postMessage({command: VSCODE_MESSAGES.OPEN_OVERVIEW});
 	}
 
 	resetZoom(): void {
-	    this._panel.webview.postMessage({ command: 'reset-zoom' });
+	    this._panel.webview.postMessage({ command: VSCODE_MESSAGES.RESET_ZOOM });
 	}
 
 	loadTheme(): void {
 	    const wrapper = vscode.window.activeColorTheme.kind === 1 ? 'light' : 'dark';
-	    this._panel.webview.postMessage({ command: 'set-theme', data: wrapper });
+	    this._panel.webview.postMessage({ command: VSCODE_MESSAGES.SET_THEME, data: wrapper });
 	}
 
 	private _getHtmlForWebview() {

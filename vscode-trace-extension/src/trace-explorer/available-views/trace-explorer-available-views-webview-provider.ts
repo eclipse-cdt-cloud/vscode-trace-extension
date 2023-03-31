@@ -7,6 +7,7 @@ import { TraceViewerPanel } from '../../trace-viewer-panel/trace-viewer-webview-
 import { TraceServerConnectionStatusService } from '../../utils/trace-server-status';
 import { getTraceServerUrl, getTspClientUrl } from '../../utils/tspClient';
 import { convertSignalExperiment } from 'vscode-trace-extension/src/common/signal-converter';
+import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/vscode-message-manager';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
@@ -49,20 +50,20 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
 	    // Handle messages from the webview
 	    webviewView.webview.onDidReceiveMessage(message => {
 	        switch (message.command) {
-	        case 'connectionStatus':
+	        case VSCODE_MESSAGES.CONNECTION_STATUS:
 	            if (message.data && message.data.status) {
 	                const status: boolean = JSON.parse(message.data.status);
 	                this._statusService.render(status);
 	            }
 	            return;
-	        case 'webviewReady':
+	        case VSCODE_MESSAGES.WEBVIEW_READY:
 	            // Post the tspTypescriptClient
-	            webviewView.webview.postMessage({command: 'set-tspClient', data: getTspClientUrl()});
+	            webviewView.webview.postMessage({command: VSCODE_MESSAGES.SET_TSP_CLIENT, data: getTspClientUrl()});
 	            if (this._selectedExperiment !== undefined) {
 	                signalManager().fireExperimentSelectedSignal(this._selectedExperiment);
 	            }
 	            return;
-	        case 'outputAdded':
+	        case VSCODE_MESSAGES.OUTPUT_ADDED:
 	            if (message.data && message.data.descriptor) {
 	                 // FIXME: JSONBig.parse() created bigint if numbers are small.
 					 // Not an issue right now for output descriptors.
@@ -74,7 +75,7 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
 	                // panel.setExperiment(message.data.experiment);
 	            }
 	            return;
-	        case 'experimentSelected': {
+	        case VSCODE_MESSAGES.EXPERIMENT_SELECTED: {
 	            try {
 	                this._selectionOngoing = true;
 	            	if (message.data && message.data.wrapper) {
@@ -101,7 +102,7 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
 	    if (!this._selectionOngoing && this._view) {
 	        this._selectedExperiment = experiment;
 	        const wrapper: string = JSONBig.stringify(experiment);
-	        this._view.webview.postMessage({command: 'experimentSelected', data: wrapper});
+	        this._view.webview.postMessage({command: VSCODE_MESSAGES.EXPERIMENT_SELECTED, data: wrapper});
 	    }
 	}
 
