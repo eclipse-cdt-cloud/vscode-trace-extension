@@ -21,7 +21,6 @@ export interface VsCodeTraceAction {
 }
 
 export class VsCodeMessageManager extends Messages.MessageManager {
-
     constructor() {
         super();
     }
@@ -40,9 +39,15 @@ export class VsCodeMessageManager extends Messages.MessageManager {
         vscode.postMessage({command: 'webviewReady'});
     }
 
+    notifyConnection(serverStatus: boolean): void {
+        const status: string = JSON.stringify(serverStatus);
+        vscode.postMessage({command: 'connectionStatus', data: { status }});
+    }
+
     /**************************************************************************
      * Trace Explorer React APP
      *************************************************************************/
+
     reOpenTrace(experiment: Experiment): void {
         const wrapper: string = JSONBig.stringify(experiment);
         vscode.postMessage({command: 'reopenTrace', data: {wrapper}});

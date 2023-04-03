@@ -4,6 +4,7 @@ import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
 import * as vscode from 'vscode';
 import { TraceViewerPanel } from '../../trace-viewer-panel/trace-viewer-webview-panel';
+import { TraceServerConnectionStatusService } from '../../utils/trace-server-status';
 import { getTraceServerUrl, getTspClientUrl } from '../../utils/tspClient';
 import { convertSignalExperiment } from 'vscode-trace-extension/src/common/signal-converter';
 
@@ -24,6 +25,7 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
 
 	constructor(
 		private readonly _extensionUri: vscode.Uri,
+		private readonly _statusService: TraceServerConnectionStatusService,
 	) { }
 
 	public resolveWebviewView(
@@ -47,6 +49,12 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
 	    // Handle messages from the webview
 	    webviewView.webview.onDidReceiveMessage(message => {
 	        switch (message.command) {
+	        case 'connectionStatus':
+	            if (message.data && message.data.status) {
+	                const status: boolean = JSON.parse(message.data.status);
+	                this._statusService.render(status);
+	            }
+	            return;
 	        case 'webviewReady':
 	            // Post the tspTypescriptClient
 	            webviewView.webview.postMessage({command: 'set-tspClient', data: getTspClientUrl()});

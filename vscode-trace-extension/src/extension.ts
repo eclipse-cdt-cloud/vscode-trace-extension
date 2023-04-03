@@ -5,15 +5,21 @@ import { TraceExplorerItemPropertiesProvider } from './trace-explorer/properties
 import { TraceExplorerAvailableViewsProvider } from './trace-explorer/available-views/trace-explorer-available-views-webview-provider';
 import { TraceExplorerOpenedTracesViewProvider } from './trace-explorer/opened-traces/trace-explorer-opened-traces-webview-provider';
 import { fileHandler, openOverviewHandler, resetZoomHandler } from './trace-explorer/trace-tree';
+import { TraceServerConnectionStatusService } from './utils/trace-server-status';
 import { updateTspClient } from './utils/tspClient';
 
 export function activate(context: vscode.ExtensionContext): void {
 
-    const tracesProvider = new TraceExplorerOpenedTracesViewProvider(context.extensionUri);
+    const serverStatusBarItemPriority = 1;
+    const serverStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, serverStatusBarItemPriority);
+    context.subscriptions.push(serverStatusBarItem);
+    const serverStatusService = new TraceServerConnectionStatusService(serverStatusBarItem);
+
+    const tracesProvider = new TraceExplorerOpenedTracesViewProvider(context.extensionUri, serverStatusService);
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(TraceExplorerOpenedTracesViewProvider.viewType, tracesProvider));
 
-    const myAnalysisProvider = new TraceExplorerAvailableViewsProvider(context.extensionUri);
+    const myAnalysisProvider = new TraceExplorerAvailableViewsProvider(context.extensionUri, serverStatusService);
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(TraceExplorerAvailableViewsProvider.viewType, myAnalysisProvider));
 
