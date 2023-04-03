@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { getTspClientUrl, getTraceServerUrl } from '../utils/tspClient';
+import { TraceServerConnectionStatusService } from '../utils/trace-server-status';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
 import { handleStatusMessage, handleRemoveMessage, setStatusFromPanel } from '../common/trace-message';
 import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
@@ -29,11 +30,13 @@ export class TraceViewerPanel {
 
 	private readonly _panel: vscode.WebviewPanel;
 	private readonly _extensionUri: vscode.Uri;
+	private readonly _statusService: TraceServerConnectionStatusService | undefined;
+
 	private _disposables: vscode.Disposable[] = [];
 	private _experiment: Experiment | undefined = undefined;
 	private _onExperimentSelected = (openedExperiment: Experiment | undefined): void => this.doHandleExperimentSelectedSignal(openedExperiment);
 
-	public static createOrShow(extensionUri: vscode.Uri, name: string): TraceViewerPanel {
+	public static createOrShow(extensionUri: vscode.Uri, name: string, statusService: TraceServerConnectionStatusService | undefined): TraceViewerPanel {
 
 	    const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
 
@@ -43,7 +46,7 @@ export class TraceViewerPanel {
 	    if (openedPanel) {
 	        openedPanel._panel.reveal(column);
 	    } else {
-	        openedPanel = new TraceViewerPanel(extensionUri, column || vscode.ViewColumn.One, name);
+	        openedPanel = new TraceViewerPanel(extensionUri, column || vscode.ViewColumn.One, name, statusService);
 	        TraceViewerPanel.activePanels[name] = openedPanel;
 	        setStatusFromPanel(name);
 	    }
@@ -96,8 +99,10 @@ export class TraceViewerPanel {
 	    }
 	}
 
-	private constructor(extensionUri: vscode.Uri, column: vscode.ViewColumn, name: string) {
+	private constructor(extensionUri: vscode.Uri, column: vscode.ViewColumn, name: string, statusService: TraceServerConnectionStatusService | undefined) {
 	    this._extensionUri = extensionUri;
+	    this._statusService = statusService;
+
 	    // Create and show a new webview panel
 	    this._panel = vscode.window.createWebviewPanel(TraceViewerPanel.viewType, name, column, {
 	        // Enable javascript in the webview
@@ -169,6 +174,12 @@ export class TraceViewerPanel {
 	        case 'saveAsCsv':
 	            if (message.payload.data && typeof message.payload.data === 'string') {
 	            	TraceViewerPanel.saveTraceCsv(message.payload.data, ((this._experiment !== undefined) ? this._experiment.name : 'trace')+'.csv');
+	            }
+	            return;
+	        case 'connectionStatus':
+	            if (message.data && message.data.status && this._statusService) {
+	                const status: boolean = JSON.parse(message.data.status);
+	                this._statusService.render(status);
 	            }
 	            return;
 	        }

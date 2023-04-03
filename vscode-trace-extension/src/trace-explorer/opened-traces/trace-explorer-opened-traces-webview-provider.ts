@@ -5,6 +5,7 @@ import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import * as vscode from 'vscode';
 import { convertSignalExperiment } from 'vscode-trace-extension/src/common/signal-converter';
 import { TraceViewerPanel } from '../../trace-viewer-panel/trace-viewer-webview-panel';
+import { TraceServerConnectionStatusService } from '../../utils/trace-server-status';
 import { getTraceServerUrl, getTspClientUrl } from '../../utils/tspClient';
 
 const JSONBig = JSONBigConfig({
@@ -21,6 +22,7 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 
    	constructor(
 		private readonly _extensionUri: vscode.Uri,
+		private readonly _statusService: TraceServerConnectionStatusService,
 	) {}
 
 	private _onOpenedTracesWidgetActivated = (experiment: Experiment): void => this.doHandleTracesWidgetActivatedSignal(experiment);
@@ -76,6 +78,12 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 	    // Handle messages from the webview
 	    webviewView.webview.onDidReceiveMessage(message => {
 	        switch (message.command) {
+	        case 'connectionStatus':
+	            if (message.data && message.data.status) {
+	                const status: boolean = JSON.parse(message.data.status);
+	                this._statusService.render(status);
+	            }
+	            return;
 	        case 'webviewReady':
 	            // Post the tspTypescriptClient
 	            webviewView.webview.postMessage({command: 'set-tspClient', data: getTspClientUrl()});
@@ -89,7 +97,7 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 	        case 'reopenTrace':
 	            if (message.data && message.data.wrapper) {
 	                const experiment = convertSignalExperiment(JSONBig.parse(message.data.wrapper));
-	                const panel = TraceViewerPanel.createOrShow(this._extensionUri, experiment.name);
+	                const panel = TraceViewerPanel.createOrShow(this._extensionUri, experiment.name, this._statusService);
 	                panel.setExperiment(experiment);
 	                signalManager().fireExperimentSelectedSignal(experiment);
 	            }
@@ -113,6 +121,7 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 	        }
 	        }
 	    }, undefined, this._disposables);
+
 	    signalManager().on(Signals.TRACEVIEWERTAB_ACTIVATED, this._onOpenedTracesWidgetActivated);
 	    signalManager().on(Signals.OPENED_TRACES_UPDATED, this._onOpenedTracesChanged);
 	    signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);

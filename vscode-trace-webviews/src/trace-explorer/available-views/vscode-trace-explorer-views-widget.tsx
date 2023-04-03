@@ -41,7 +41,7 @@ class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppStat
           const message = event.data; // The JSON data our extension sent
           switch (message.command) {
           case 'set-tspClient':
-              this.setState({ tspClientProvider: new TspClientProvider(message.data) });
+              this.setState({ tspClientProvider: new TspClientProvider(message.data, this._signalHandler) });
               break;
           case 'experimentSelected':
               let experiment: Experiment | undefined = undefined;

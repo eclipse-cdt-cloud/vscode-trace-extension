@@ -43,7 +43,7 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
           const message = event.data; // The JSON data our extension sent
           switch (message.command) {
           case 'set-tspClient':
-              const tspClientProvider: ITspClientProvider = new TspClientProvider(message.data);
+              const tspClientProvider: ITspClientProvider = new TspClientProvider(message.data, this._signalHandler);
               this._experimentManager = tspClientProvider.getExperimentManager();
               this.setState({ tspClientProvider: tspClientProvider });
               if (this.state.tspClientProvider) {

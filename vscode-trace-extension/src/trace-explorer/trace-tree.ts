@@ -73,7 +73,7 @@ export class Trace extends vscode.TreeItem {
 }
 
 export const traceHandler = (analysisTree: AnalysisProvider) => (context: vscode.ExtensionContext, trace: Trace): void => {
-    const panel = TraceViewerPanel.createOrShow(context.extensionUri, trace.name);
+    const panel = TraceViewerPanel.createOrShow(context.extensionUri, trace.name, undefined);
     (async () => {
         const traces = new Array<TspTrace>();
         const t = await traceManager.openTrace(trace.uri, trace.name);
@@ -127,7 +127,7 @@ export const fileHandler = (analysisTree: AnalysisProvider) => async (context: v
         return;
     }
     const name = uri.substring(uri.lastIndexOf('/') + 1);
-    const panel = TraceViewerPanel.createOrShow(context.extensionUri, name);
+    const panel = TraceViewerPanel.createOrShow(context.extensionUri, name, undefined);
     (async () => {
 
         /*

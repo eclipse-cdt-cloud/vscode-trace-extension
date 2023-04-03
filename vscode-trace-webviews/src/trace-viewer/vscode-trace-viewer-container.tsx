@@ -12,7 +12,7 @@ import { TraceContextComponent } from 'traceviewer-react-components/lib/componen
 import 'traceviewer-react-components/style/trace-context-style.css';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
-import { TspClient } from 'tsp-typescript-client/lib/protocol/tsp-client';
+import { TspClientProvider } from '../common/tsp-client-provider-impl';
 import { VsCodeMessageManager } from '../common/vscode-message-manager';
 import { convertSignalExperiment } from '../common/vscode-signal-converter';
 import '../style/trace-viewer.css';
@@ -23,7 +23,7 @@ const JSONBig = JSONBigConfig({
 
 interface VscodeAppState {
   experiment: Experiment | undefined;
-  tspClient: TspClient | undefined;
+  tspClientProvider: TspClientProvider | undefined;
   outputs: OutputDescriptor[];
   overviewOutputDescriptor: OutputDescriptor| undefined;
   theme: string;
@@ -66,7 +66,7 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState>  {
       super(props);
       this.state = {
           experiment: undefined,
-          tspClient: undefined,
+          tspClientProvider: undefined,
           outputs: [],
           overviewOutputDescriptor: undefined,
           theme: 'light'
@@ -81,7 +81,7 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState>  {
               this.doHandleExperimentSetSignal(convertSignalExperiment(JSONBig.parse(message.data)));
               break;
           case 'set-tspClient':
-              this.setState({tspClient: new TspClient(message.data)}, () => {
+              this.setState({tspClientProvider: new TspClientProvider(message.data, this._signalHandler)}, () => {
                   if (message.experiment) {
                       this.doHandleExperimentSetSignal(convertSignalExperiment(JSONBig.parse(message.experiment)));
                   }
@@ -168,8 +168,8 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState>  {
 
   protected async getAvailableTraceOverviewOutputDescriptor(experiment: Experiment| undefined): Promise<OutputDescriptor[] | undefined> {
       let descriptors: OutputDescriptor[] | undefined;
-      if (experiment && this.state.tspClient) {
-          const outputsResponse = await this.state.tspClient.experimentOutputs(experiment.UUID);
+      if (experiment && this.state.tspClientProvider) {
+          const outputsResponse = await this.state.tspClientProvider.getTspClient().experimentOutputs(experiment.UUID);
           if (outputsResponse && outputsResponse.isOk()) {
               descriptors = outputsResponse.getModel();
           }
@@ -181,9 +181,9 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState>  {
   public render(): React.ReactNode {
       return (
           <div className="trace-viewer-container">
-              { this.state.experiment && this.state.tspClient && <TraceContextComponent
+              { this.state.experiment && this.state.tspClientProvider && <TraceContextComponent
                   experiment={this.state.experiment}
-                  tspClient={this.state.tspClient}
+                  tspClient={this.state.tspClientProvider.getTspClient()}
                   outputs={this.state.outputs}
                   overviewDescriptor={this.state.overviewOutputDescriptor}
                   markerCategoriesMap={this.selectedMarkerCategoriesMap}
