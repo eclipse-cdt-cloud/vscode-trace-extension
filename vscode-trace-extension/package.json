@@ -1,7 +1,7 @@
 {
   "name": "vscode-trace-extension",
   "displayName": "VsCode Trace Extension",
-  "description": "VsCode trace extension for visualizing traces analysed by a trace server and data provide over the Trace Server Protocol (TSP)",
+  "description": "VsCode trace extension for visualizing traces analyzed by a trace server and data provide over the Trace Server Protocol (TSP)",
   "version": "0.1.0",
   "engines": {
     "vscode": "^1.52.0"
