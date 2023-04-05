@@ -46,6 +46,14 @@
         "command": "openedTraces.openTraceFolder",
         "title": "Open Trace",
         "icon": "$(new-folder)"
+      },
+      {
+        "command": "traceServer.start",
+        "title": "Start Trace Server"
+      },
+      {
+        "command": "traceServer.stop",
+        "title": "Stop Trace Server"
       }
     ],
     "viewsContainers": {
@@ -145,6 +153,7 @@
     "terser": "4.8.1",
     "traceviewer-base": "next",
     "traceviewer-react-components": "next",
+    "tree-kill": "latest",
     "vsce": "^1.85.1",
     "vscode-trace-webviews": "0.0.0"
   },

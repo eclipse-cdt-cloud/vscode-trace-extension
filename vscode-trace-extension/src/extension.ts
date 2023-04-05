@@ -6,6 +6,7 @@ import { TraceExplorerAvailableViewsProvider } from './trace-explorer/available-
 import { TraceExplorerOpenedTracesViewProvider } from './trace-explorer/opened-traces/trace-explorer-opened-traces-webview-provider';
 import { fileHandler, openOverviewHandler, resetZoomHandler } from './trace-explorer/trace-tree';
 import { TraceServerConnectionStatusService } from './utils/trace-server-status';
+import { TraceServerService } from './utils/trace-server-service';
 import { updateTspClient } from './utils/tspClient';
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -60,5 +61,27 @@ export function activate(context: vscode.ExtensionContext): void {
 
     context.subscriptions.push(vscode.commands.registerCommand('openedTraces.openTraceFolder', () => {
         fileOpenHandler(context, undefined);
+    }));
+
+    const traceServerService = new TraceServerService();
+
+    context.subscriptions.push(vscode.commands.registerCommand('traceServer.start', () => {
+        traceServerService.startTraceServer();
+        // TODO: Revisit this list of events; event loop empties on Exit => cancels such handling:
+        process.on('beforeExit', () => {
+            process.stdin.resume();
+            traceServerService.stopTraceServerNow();});
+        process.on('disconnect', () => {
+            process.stdin.resume();
+            traceServerService.stopTraceServerNow();});
+        process.on('exit', () => {
+            process.stdin.resume();
+            traceServerService.stopTraceServerNow();});
+        // TODO: Thus, consider introducing a backend that holds/stops this trace-server, if quit.
+        // TODO: Also, automatically start the (configured) server if stopped while opening trace.
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('traceServer.stop', () => {
+        traceServerService.stopTraceServer();
     }));
 }
