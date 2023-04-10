@@ -151,22 +151,25 @@
   "devDependencies": {
     "@types/jest": "^23.3.13",
     "@types/json-bigint": "^1.0.1",
+    "@types/mocha": "^10.0.1",
     "@types/node": "^10.1.2",
     "@types/vscode": "^1.52.0",
     "@typescript-eslint/eslint-plugin": "^3.4.0",
     "@typescript-eslint/parser": "^3.4.0",
+    "css-loader": "^5.0.1",
+    "eslint": "^7.3.0",
+    "eslint-plugin-import": "^2.21.2",
+    "eslint-plugin-no-null": "^1.0.2",
+    "eslint-plugin-react": "^7.20.0",
+    "mocha": "^10.2.0",
+    "rewire": "^4.0.1",
     "rimraf": "^2.6.3",
     "source-map-loader": "^1.0.2",
-    "css-loader": "^5.0.1",
-    "rewire": "^4.0.1",
     "style-loader": "^2.0.0",
     "svg-url-loader": "^7.1.1",
     "ts-loader": "^8.0.14",
     "typescript": "^4.1.3",
-    "eslint": "^7.3.0",
-    "eslint-plugin-import": "^2.21.2",
-    "eslint-plugin-no-null": "^1.0.2",
-    "eslint-plugin-react": "^7.20.0"
+    "vscode-extension-tester": "^5.5.2"
   },
   "resolutions": {
     "terser": "3.14.1",
@@ -176,8 +179,8 @@
     "@types/react-dom": "^18.0.0"
   },
   "scripts": {
-    "prepare": "yarn run clean && yarn run build && yarn run webpack",
-    "clean": "rimraf lib",
+    "prepare": "yarn run build && yarn run webpack",
+    "clean": "rimraf **/*.tsbuildinfo lib",
     "build": "tsc -p tsconfig.json",
     "webpack": "webpack --mode development",
     "webpack-dev": "webpack --mode development --watch",

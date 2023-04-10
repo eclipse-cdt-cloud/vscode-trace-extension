@@ -8,7 +8,8 @@
     "lint": "lerna run lint",
     "download:server": "curl -o trace-compass-server.tar.gz https://download.eclipse.org/tracecompass.incubator/trace-server/rcp/trace-compass-server-latest-linux.gtk.x86_64.tar.gz; tar -xf trace-compass-server.tar.gz",
     "start:server": "./trace-compass-server/tracecompass-server",
-    "download:sample-traces": "curl -o TraceCompassTutorialTraces.tgz https://raw.githubusercontent.com/dorsal-lab/tracevizlab/master/labs/TraceCompassTutorialTraces.tgz; tar -xf TraceCompassTutorialTraces.tgz"
+    "download:sample-traces": "curl -o TraceCompassTutorialTraces.tgz https://raw.githubusercontent.com/dorsal-lab/tracevizlab/master/labs/TraceCompassTutorialTraces.tgz; tar -xf TraceCompassTutorialTraces.tgz",
+    "ui-test": "yarn -s --cwd vscode-trace-extension extest setup-and-run -y ./lib/ui-test/*.js"
   },
   "devDependencies": {
     "lerna": "^3.20.2"

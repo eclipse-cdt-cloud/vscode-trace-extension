@@ -44,6 +44,13 @@ jobs:
 
     - run: yarn --frozen-lockfile
 
+    - name: Integration UI Test
+      shell: bash
+      env:
+        DISPLAY: :0
+      run: |
+         yarn ui-test
+
   code-lint:
     runs-on: ubuntu-latest
 

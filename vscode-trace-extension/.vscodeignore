@@ -5,3 +5,4 @@ webpack.config.js
 *.tsbuildinfo
 .eslintrc.js
 src
+test-resources/**
