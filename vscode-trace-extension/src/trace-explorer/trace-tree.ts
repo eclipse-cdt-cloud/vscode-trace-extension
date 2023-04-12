@@ -7,14 +7,23 @@ import { ExperimentManager } from 'traceviewer-base/lib/experiment-manager';
 import { AnalysisProvider } from './analysis-tree';
 import { TraceViewerPanel } from '../trace-viewer-panel/trace-viewer-webview-panel';
 import { getTspClient } from '../utils/tspClient';
+import { traceLogger } from '../extension';
 
 const rootPath = path.resolve(__dirname, '../../..');
 
 const traceManager = new TraceManager(getTspClient());
 const experimentManager = new ExperimentManager(getTspClient(), traceManager);
 
+export enum ProgressMessages {
+    COMPLETE = 'Complete',
+    MERGING_TRACES = 'Merging trace(s)',
+    FINDING_TRACES = 'Finding trace(s)',
+    OPENING_TRACES = 'Opening trace(s)',
+    ROLLING_BACK_TRACES = 'Rolling back trace(s)'
+}
+
 export class TracesProvider implements vscode.TreeDataProvider<Trace> {
-    constructor(private workspaceRoot: string) { }
+    constructor(private workspaceRoot: string) {}
 
     getTreeItem(element: Trace): vscode.TreeItem {
         return element;
@@ -113,28 +122,40 @@ const openDialog = async (): Promise<vscode.Uri | undefined> => {
 };
 
 export const fileHandler = (analysisTree: AnalysisProvider) => async (context: vscode.ExtensionContext, traceUri: vscode.Uri | undefined): Promise<void> => {
+    // We need to resolve trace URI before starting the progress dialog because we rely on trace URI for dialog title
     if (!traceUri) {
         traceUri = await openDialog();
         if (!traceUri) {
-            console.log('Cannot open trace: invalid uri for trace', traceUri);
             return;
         }
     }
 
-    const uri: string = traceUri.path;
-    if (!uri) {
-        console.log('Cannot open trace: invalid uri for trace', traceUri);
-        return;
-    }
-    const name = uri.substring(uri.lastIndexOf('/') + 1);
-    const panel = TraceViewerPanel.createOrShow(context.extensionUri, name, undefined);
-    (async () => {
+    const resolvedTraceURI: vscode.Uri = traceUri;
+    vscode.window.withProgress({
+        location: vscode.ProgressLocation.Notification,
+        title: getProgressBarTitle(resolvedTraceURI),
+        cancellable: true
+    }, async (progress, token) => {
+        if (token.isCancellationRequested) {
+            progress.report({ message: ProgressMessages.COMPLETE, increment: 100 });
+            return;
+        }
 
+        const uri: string = resolvedTraceURI.path;
+        if (!uri) {
+            traceLogger.addLogMessage('Cannot open trace: could not retrieve path from URI for trace ' + resolvedTraceURI, fileHandler.name);
+            return;
+        }
+
+        const name = uri.substring(uri.lastIndexOf('/') + 1);
+        const panel = TraceViewerPanel.createOrShow(context.extensionUri, name, undefined);
+
+        progress.report({ message: ProgressMessages.FINDING_TRACES, increment: 10});
         /*
-     * TODO: use backend service to find traces
-     */
+        * TODO: use backend service to find traces
+        */
         const tracesArray: string[] = [];
-        const fileStat = await vscode.workspace.fs.stat(traceUri);
+        const fileStat = await vscode.workspace.fs.stat(resolvedTraceURI);
         if (fileStat) {
             if (fileStat.type === vscode.FileType.Directory) {
                 // Find recursively CTF traces
@@ -146,13 +167,38 @@ export const fileHandler = (analysisTree: AnalysisProvider) => async (context: v
             }
         }
 
+        if (tracesArray.length === 0) {
+            progress.report({ message: ProgressMessages.COMPLETE, increment: 100 });
+            traceLogger.addLogMessage('No valid traces found in the selected directory: ' + resolvedTraceURI, fileHandler.name);
+            panel.dispose();
+            return;
+        }
+
+        progress.report({ message: ProgressMessages.OPENING_TRACES, increment: 20 });
         const traces = new Array<TspTrace>();
         for (let i = 0; i < tracesArray.length; i++) {
             const traceName = tracesArray[i].substring(tracesArray[i].lastIndexOf('/') + 1);
             const trace = await traceManager.openTrace(tracesArray[i], traceName);
             if (trace) {
                 traces.push(trace);
+            } else {
+                traceLogger.addLogMessage('Failed to open trace: ' + traceName, fileHandler.name);
+                traceLogger.addLogMessage('There may be an issue with the server or the trace is invalid.', fileHandler.name);
             }
+        }
+
+        if (token.isCancellationRequested) {
+            rollbackTraces(traces, 20, progress);
+            progress.report({ message: ProgressMessages.COMPLETE, increment: 50 });
+            panel.dispose();
+            return;
+        }
+
+        progress.report({ message: ProgressMessages.MERGING_TRACES, increment: 40 });
+        if (traces === undefined || traces.length === 0) {
+            progress.report({ message: ProgressMessages.COMPLETE, increment: 30 });
+            panel.dispose();
+            return;
         }
 
         const experiment = await experimentManager.openExperiment(name, traces);
@@ -164,7 +210,27 @@ export const fileHandler = (analysisTree: AnalysisProvider) => async (context: v
             }
         }
 
-    })();
+        if (token.isCancellationRequested) {
+            if (experiment) {
+                experimentManager.deleteExperiment(experiment.UUID);
+            }
+            rollbackTraces(traces, 20, progress);
+            progress.report({ message: ProgressMessages.COMPLETE, increment: 10 });
+            panel.dispose();
+            return;
+        }
+        progress.report({ message: ProgressMessages.COMPLETE, increment: 30 });
+    });
+};
+
+const rollbackTraces = async (traces: Array<TspTrace>, progressIncrement: number, progress: vscode.Progress<{
+    message: string | undefined;
+    increment: number | undefined;
+}>) => {
+    progress.report({ message: ProgressMessages.ROLLING_BACK_TRACES, increment: progressIncrement});
+    for (let i = 0; i < traces.length; i++) {
+        await traceManager.deleteTrace(traces[i].UUID);
+    }
 };
 
 /*
@@ -204,3 +270,10 @@ const isCtf = async (directory: string): Promise<boolean> => {
     }
     return false;
 };
+
+function getProgressBarTitle(traceUri: vscode.Uri | undefined): string {
+    if (!traceUri || !traceUri.path) {
+        return 'undefined';
+    }
+    return traceUri.path.substring(traceUri.path.lastIndexOf('/') + 1);
+}
