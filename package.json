@@ -8,7 +8,10 @@
     "lint": "lerna run lint",
     "download:server": "curl -o trace-compass-server.tar.gz https://download.eclipse.org/tracecompass.incubator/trace-server/rcp/trace-compass-server-latest-linux.gtk.x86_64.tar.gz; tar -xf trace-compass-server.tar.gz",
     "start:server": "./trace-compass-server/tracecompass-server",
-    "download:sample-traces": "curl -o TraceCompassTutorialTraces.tgz https://raw.githubusercontent.com/dorsal-lab/tracevizlab/master/labs/TraceCompassTutorialTraces.tgz; tar -xf TraceCompassTutorialTraces.tgz"
+    "download:sample-traces": "curl -o TraceCompassTutorialTraces.tgz https://raw.githubusercontent.com/dorsal-lab/tracevizlab/master/labs/TraceCompassTutorialTraces.tgz; tar -xf TraceCompassTutorialTraces.tgz",
+    "download:openvscode-server": "mkdir -p test-resources; cd test-resources; curl -L -o openvscode-server-v1.77.3-linux-x64.tar.gz https://github.com/gitpod-io/openvscode-server/releases/download/openvscode-server-v1.77.3/openvscode-server-v1.77.3-linux-x64.tar.gz; tar -xf openvscode-server-v1.77.3-linux-x64.tar.gz",
+    "configure:openvscode-server": "cd test-resources/openvscode-server-v1.77.3-linux-x64/bin/; sed -i 's;\"$@\".*$;\"$@\" --without-connection-token --install-extension $ROOT/../../vscode-trace-extension/vscode-trace-extension-0.1.0.vsix --default-folder=$ROOT/../../TraceCompassTutorialTraces --start-server;g' openvscode-server",
+    "start:openvscode-server": "cd test-resources/openvscode-server-v1.77.3-linux-x64/bin/; ./openvscode-server ${0}"
   },
   "devDependencies": {
     "lerna": "^3.20.2"

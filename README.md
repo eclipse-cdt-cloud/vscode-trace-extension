@@ -159,6 +159,49 @@ To get sample traces to try run the following command. The traces will be stored
 yarn download:sample-traces
 ```
 
+## Running UI tests
+
+To run the UI tests locally, use the following commands.
+
+Steps for setup that only need to be run once:
+
+```bash
+yarn download:sample-traces
+yarn download:server
+yarn download:openvscode-server
+yarn configure:openvscode-server
+yarn playwright install --with-deps
+```
+
+Steps to run once and again every time the application code is modified:
+
+```bash
+yarn
+yarn vsce:package
+# kill openvscode-server if running and restart it below
+```
+
+Steps to run once if the corresponding server is not already running:
+
+```bash
+yarn start:server & # or run in a separate shell
+yarn start:openvscode-server & # or run in a separate shell
+```
+
+To run or re-run the tests after test code is modified:
+
+```bash
+yarn playwright test
+```
+
+To test in debug mode, test with tracing on, or test with retries on failure, use the following options:
+
+```bash
+yarn playwright test --debug
+yarn playwright test --trace on
+yarn playwright test --retries <retries>
+```
+
 [init-contrib]: https://github.com/eclipse-cdt-cloud/theia-trace-extension/pull/124
 [install]: https://code.visualstudio.com/docs/editor/extension-marketplace#_install-from-a-vsix
 [open-output]: https://raw.githubusercontent.com/eclipse-cdt-cloud/vscode-trace-extension/master/doc/images/vscode-trace-extension-001.png
