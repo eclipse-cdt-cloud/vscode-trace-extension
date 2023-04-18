@@ -31,6 +31,17 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
   static LABEL = 'Opened Traces';
 
   private _onExperimentSelected = (openedExperiment: Experiment | undefined): void => this.doHandleExperimentSelectedSignal(openedExperiment);
+  private _onRemoveTraceButton = (traceUUID: string): void => this.doHandleRemoveTraceSignal(traceUUID);
+
+  private doHandleRemoveTraceSignal(traceUUID: string) {
+      this._experimentManager.getExperiment(traceUUID).then( experimentOpen => {
+          if (experimentOpen) {
+              this._signalHandler.deleteTrace(experimentOpen);
+          }
+      }).catch( error => {
+          console.error('Error: Unable to find experiment for the trace UUID, ', error);
+      });
+  }
 
   constructor(props: {}) {
       super(props);
@@ -78,10 +89,14 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
 
   componentDidMount(): void {
       this._signalHandler.notifyReady();
+      // ExperimentSelected handler is registered in the constructor (upstream code), but it's
+      // better to register it here when the react component gets mounted.
+      signalManager().on(Signals.CLOSE_TRACEVIEWERTAB, this._onRemoveTraceButton);
   }
 
   componentWillUnmount(): void {
       signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
+      signalManager().off(Signals.CLOSE_TRACEVIEWERTAB, this._onRemoveTraceButton);
   }
 
   protected doHandleContextMenuEvent(event: React.MouseEvent<HTMLDivElement>, experiment: Experiment): void {
