@@ -6,6 +6,11 @@ node_modules/
 # testing
 coverage/
 .vscode-test/
+test-resources/
+test-results/
+playwright-report/
+playwright/.cache/
+salt
 
 # production
 lib/
