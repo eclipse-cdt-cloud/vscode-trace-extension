@@ -15,7 +15,7 @@ interface vscode {
 // declare function acquireVsCodeApi(): vscode;
 declare const vscode: vscode;
 
-export interface VsCodeTraceAtion {
+export interface VsCodeTraceAction {
     actionId: string;
     args: any[];
 }
