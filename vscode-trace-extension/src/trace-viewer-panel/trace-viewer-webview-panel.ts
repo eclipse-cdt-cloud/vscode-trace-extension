@@ -11,7 +11,7 @@ const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
 });
 
-// TODO: manage mutiple panels (currently just a hack around, need to be fixed)
+// TODO: manage multiple panels (currently just a hack around, need to be fixed)
 
 /**
  * Manages react webview panels
@@ -107,7 +107,7 @@ export class TraceViewerPanel {
 		    retainContextWhenHidden: true,
 	        enableCommandUris: true,
 
-	        // And restric the webview to only loading content from our extension's `media` directory.
+	        // And restrict the webview to only loading content from our extension's `media` directory.
 	        localResourceRoots: [
 	            vscode.Uri.joinPath(this._extensionUri, 'pack')
 	        ]
@@ -117,7 +117,7 @@ export class TraceViewerPanel {
 	    this._panel.webview.html = this._getHtmlForWebview();
 
 	    // Listen for when the panel is disposed
-	    // This happens when the user closes the panel or when the panel is closed programatically
+	    // This happens when the user closes the panel or when the panel is closed programmatically
 	    this._panel.onDidDispose(() => {
 	        this.dispose();
 	        TraceViewerPanel.activePanels[name] = undefined;
