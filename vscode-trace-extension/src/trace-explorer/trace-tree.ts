@@ -137,7 +137,7 @@ export const fileHandler = (analysisTree: AnalysisProvider) => async (context: v
         const fileStat = await vscode.workspace.fs.stat(traceUri);
         if (fileStat) {
             if (fileStat.type === vscode.FileType.Directory) {
-                // Find recursivly CTF traces
+                // Find recursively CTF traces
                 const foundTraces = await findTraces(uri);
                 foundTraces.forEach(trace => tracesArray.push(trace));
             } else {
@@ -175,7 +175,7 @@ const findTraces = async (directory: string): Promise<string[]> => {
     const uri = vscode.Uri.file(directory);
     /**
     * If single file selection then return single trace in traces, if directory then find
-    * recoursivly CTF traces in starting from root directory.
+    * recursively CTF traces in starting from root directory.
     */
     const ctf = await isCtf(directory);
     if (ctf) {
