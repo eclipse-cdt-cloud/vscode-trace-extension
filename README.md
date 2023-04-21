@@ -106,6 +106,30 @@ The react-app is another matter. The panel is a webview that is running in its o
 
 Each panel is its own small web application, so to debug, while in the context of the webview, press `ctrl-shift-p` and enter the command `Developer: Open Webview Developer Tools`. This will open the developer tools. The code is in the `Sources` tab of the developer tools window that opens.
 
+### Logging in the extension
+
+The extension uses an output channel for logging. To view the logs, navigate to the output panel. The output panel can be accessed by navigating to view -> open view -> type 'output'. To open the extension output channel, navigate the drop down option and look for `Trace Extension`. An alternate way of opening the trace extension output channel is through command palette. Open command palette by pressing `ctrl-shift-p`, and then run `Output: Show Output Channels...\`. This will prompt a list of available outputs. Select `Trace Extension` from the list of available outputs.
+
+For logging to the `Trace Extension` output channel, use the `traceLogger` object instantiated in `extension.ts`. The following are examples of using the log channel:
+
+```javascript
+traceLogger.addLogMessage('Hello from trace extension without tag');
+```
+
+This will add the following log entry in the output channel:
+```text
+[2023-04-25 11:07:22.500] Hello from trace extension without tag
+```
+
+```javascript
+traceLogger.addLogMessage('Hello from trace extension with tag', 'tag');
+```
+
+This will add the following log entry in the output channel:
+```text
+[2023-04-25 11:08:40.500] [tag] Hello from trace extension with tag
+```
+
 ### Troubleshooting
 
 *The `Trace Viewer` panel is not there, or disappears when switching panel.

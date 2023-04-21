@@ -7,8 +7,12 @@ import { TraceExplorerOpenedTracesViewProvider } from './trace-explorer/opened-t
 import { fileHandler, openOverviewHandler, resetZoomHandler } from './trace-explorer/trace-tree';
 import { TraceServerConnectionStatusService } from './utils/trace-server-status';
 import { updateTspClient } from './utils/tspClient';
+import { TraceExtensionLogger } from './utils/trace-extension-logger';
+
+export let traceLogger: TraceExtensionLogger;
 
 export function activate(context: vscode.ExtensionContext): void {
+    traceLogger = new TraceExtensionLogger('Trace Extension');
 
     const serverStatusBarItemPriority = 1;
     const serverStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, serverStatusBarItemPriority);
@@ -61,4 +65,8 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(vscode.commands.registerCommand('openedTraces.openTraceFolder', () => {
         fileOpenHandler(context, undefined);
     }));
+}
+
+export function deactivate(): void {
+    traceLogger.disposeChannel();
 }
