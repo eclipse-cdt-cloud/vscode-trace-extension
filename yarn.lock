@@ -8331,9 +8331,9 @@ through@2, "through@>=2.2.7 <3", through@^2.3.4, through@^2.3.6:
   integrity sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==
 
 timeline-chart@next:
-  version "0.3.0-next.4694a71.0"
-  resolved "https://registry.yarnpkg.com/timeline-chart/-/timeline-chart-0.3.0-next.4694a71.0.tgz#b706404c610aef1145da696ad7a8d600c9e01daa"
-  integrity sha512-LwZqKlK9iJAJGQK90MNqBDJsM8hnamXYJsbLZ0KR/ThHBWR7sA76kpIM7fyuMtO7lMDPASA+WJZuTY31SAaz+A==
+  version "0.3.0-next.20230419183309.9e0527f.0"
+  resolved "https://registry.yarnpkg.com/timeline-chart/-/timeline-chart-0.3.0-next.20230419183309.9e0527f.0.tgz#fcd6fe2b75d62c13a6f3d90c16ce250659e05383"
+  integrity sha512-vAjzxcubaLYeN3TXl9MQH3SYdFj2qedVPcOK/nnUE5iqE7oe8T9fcu3fSbV0E3g9hTh/VNo1gGk0KmKbMVMPFQ==
   dependencies:
     "@types/lodash.throttle" "^4.1.4"
     glob "^7.1.6"
@@ -8408,17 +8408,17 @@ tr46@~0.0.3:
   resolved "https://registry.yarnpkg.com/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
   integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
 
-traceviewer-base@0.2.0-next.3ebd9d7.0+3ebd9d7, traceviewer-base@next:
-  version "0.2.0-next.3ebd9d7.0"
-  resolved "https://registry.yarnpkg.com/traceviewer-base/-/traceviewer-base-0.2.0-next.3ebd9d7.0.tgz#9333ba4b1da434f98168e2c7047ae77091b0d0d7"
-  integrity sha512-wWGcrtta5290ZYywUR+FI9qv7qBFgaLXUkCblxeAPS13aqFMzN9jpUaiRgpPohRYXeqgdVWGFLaYUIOHNvyvYg==
+traceviewer-base@0.2.0-next.20230424153016.14a2611.0+14a2611, traceviewer-base@next:
+  version "0.2.0-next.20230424153016.14a2611.0"
+  resolved "https://registry.yarnpkg.com/traceviewer-base/-/traceviewer-base-0.2.0-next.20230424153016.14a2611.0.tgz#d1ffec51133fa89fa6fc54d44559f936a72389df"
+  integrity sha512-SEq50fX6OkDT2egfJ+zUmZQ9VPsWq9oUrmAigIoybww5V1tmN75MfhUNcRwvSGEyHJt+6gz0k8WUlI2v/B6PFQ==
   dependencies:
     tsp-typescript-client next
 
 traceviewer-react-components@next:
-  version "0.2.0-next.3ebd9d7.0"
-  resolved "https://registry.yarnpkg.com/traceviewer-react-components/-/traceviewer-react-components-0.2.0-next.3ebd9d7.0.tgz#44ea85ff312294beb019d998ce391dfe21e2ee64"
-  integrity sha512-GYbeXDnc1uTyBk/Xm1wrx6X8W5j6GxKBIj33ZJbc47IrsnPCQRNX2mgLSRiFwOOy2fB3QCp8MDFS8m6oTvkpfg==
+  version "0.2.0-next.20230424153016.14a2611.0"
+  resolved "https://registry.yarnpkg.com/traceviewer-react-components/-/traceviewer-react-components-0.2.0-next.20230424153016.14a2611.0.tgz#b383770a6f3624f9baaebfd337187d2fdb95c6dd"
+  integrity sha512-0fqYILr7TbPbhoWHe6R6ULzPX9TEcNYCW3FajHYUZ38Z7KywqgQizd2JPEaVpKDxWlmHpZntNBfxxTOspCvhJA==
   dependencies:
     "@fortawesome/fontawesome-svg-core" "^1.2.17"
     "@fortawesome/free-solid-svg-icons" "^5.8.1"
@@ -8438,7 +8438,7 @@ traceviewer-react-components@next:
     semantic-ui-css "^2.4.1"
     semantic-ui-react "^0.86.0"
     timeline-chart next
-    traceviewer-base "0.2.0-next.3ebd9d7.0+3ebd9d7"
+    traceviewer-base "0.2.0-next.20230424153016.14a2611.0+14a2611"
     tsp-typescript-client next
 
 trim-newlines@^1.0.0:
