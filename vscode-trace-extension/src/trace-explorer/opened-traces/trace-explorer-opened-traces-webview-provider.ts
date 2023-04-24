@@ -1,5 +1,4 @@
 import JSONBigConfig from 'json-bigint';
-import { OpenedTracesUpdatedSignalPayload } from 'traceviewer-base/lib/signals/opened-traces-updated-signal-payload';
 import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import * as vscode from 'vscode';
@@ -27,7 +26,6 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 	) {}
 
 	private _onOpenedTracesWidgetActivated = (experiment: Experiment): void => this.doHandleTracesWidgetActivatedSignal(experiment);
-	private _onOpenedTracesChanged = (payload: OpenedTracesUpdatedSignalPayload): void => this.doHandleOpenedTracesChangedSignal(payload);
 	private _onExperimentSelected = (experiment: Experiment | undefined): void => this.doHandleExperimentSelectedSignal(experiment);
 	private _onExperimentOpened = (experiment: Experiment): void => this.doHandleExperimentOpenedSignal(experiment);
 
@@ -44,11 +42,6 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 	        const wrapper: string = JSONBig.stringify(experiment);
 	        this._view.webview.postMessage({command: VSCODE_MESSAGES.TRACE_VIEWER_TAB_ACTIVATED, data: wrapper});
 	        signalManager().fireExperimentSelectedSignal(this._selectedExperiment);
-	    }
-	}
-	protected doHandleOpenedTracesChangedSignal(payload: OpenedTracesUpdatedSignalPayload): void {
-	    if (this._view && payload) {
-	        this._view.webview.postMessage({command: VSCODE_MESSAGES.OPENED_TRACES_UPDATED, numberOfOpenedTraces: payload.getNumberOfOpenedTraces()});
 	    }
 	}
 
@@ -112,6 +105,16 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 	                signalManager().fireExperimentSelectedSignal(undefined);
 	            }
 	            return;
+	        case VSCODE_MESSAGES.OPENED_TRACES_UPDATED:
+	            if (message.numberOfOpenedTraces > 0) {
+	                vscode.commands.executeCommand('setContext', 'trace-explorer.noExperiments', false);
+	            } else if (message.numberOfOpenedTraces === 0){
+	                vscode.commands.executeCommand('setContext', 'trace-explorer.noExperiments', true);
+	            }
+	            return;
+	        case VSCODE_MESSAGES.OPEN_TRACE:
+	            vscode.commands.executeCommand('openedTraces.openTraceFolder');
+	            return;
 	        case VSCODE_MESSAGES.EXPERIMENT_SELECTED: {
 	            let experiment: Experiment | undefined;
 	            if (message.data && message.data.wrapper) {
@@ -125,12 +128,10 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 	    }, undefined, this._disposables);
 
 	    signalManager().on(Signals.TRACEVIEWERTAB_ACTIVATED, this._onOpenedTracesWidgetActivated);
-	    signalManager().on(Signals.OPENED_TRACES_UPDATED, this._onOpenedTracesChanged);
 	    signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
 	    signalManager().on(Signals.EXPERIMENT_OPENED, this._onExperimentOpened);
 	    webviewView.onDidDispose(_event => {
 	        signalManager().off(Signals.TRACEVIEWERTAB_ACTIVATED, this._onOpenedTracesWidgetActivated);
-	        signalManager().off(Signals.OPENED_TRACES_UPDATED, this._onOpenedTracesChanged);
 	        signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
 	    }, undefined, this._disposables);
 	}

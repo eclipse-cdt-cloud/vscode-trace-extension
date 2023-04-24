@@ -45,7 +45,8 @@ export const VSCODE_MESSAGES = {
     WEBVIEW_READY: 'webviewReady',
     UNDO: 'undo',
     REDO: 'redo',
-    UPDATE_ZOOM: 'updateZoom'
+    UPDATE_ZOOM: 'updateZoom',
+    OPEN_TRACE: 'openTrace'
 };
 
 export class VsCodeMessageManager extends Messages.MessageManager {
@@ -75,6 +76,14 @@ export class VsCodeMessageManager extends Messages.MessageManager {
     /**************************************************************************
      * Trace Explorer React APP
      *************************************************************************/
+
+    openTrace(): void {
+        vscode.postMessage({command: VSCODE_MESSAGES.OPEN_TRACE});
+    }
+
+    updateOpenedTraces(numberOfOpenedTraces: number): void {
+        vscode.postMessage({command: VSCODE_MESSAGES.OPENED_TRACES_UPDATED, numberOfOpenedTraces});
+    }
 
     reOpenTrace(experiment: Experiment): void {
         const wrapper: string = JSONBig.stringify(experiment);
