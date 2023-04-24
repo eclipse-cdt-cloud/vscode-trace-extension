@@ -13,12 +13,16 @@ import '../../style/react-contextify.css';
 import { ExperimentManager } from 'traceviewer-base/lib/experiment-manager';
 import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import JSONBigConfig from 'json-bigint';
+import { OpenedTracesUpdatedSignalPayload } from 'traceviewer-base/lib/signals/opened-traces-updated-signal-payload';
+import { ReactExplorerPlaceholderWidget } from 'traceviewer-react-components/lib/trace-explorer/trace-explorer-placeholder-widget';
+
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
 });
 
 interface OpenedTracesAppState {
   tspClientProvider: ITspClientProvider | undefined;
+  experimentsOpened: boolean;
 }
 
 const MENU_ID = 'traceExplorer.openedTraces.menuId';
@@ -32,6 +36,8 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
 
   private _onExperimentSelected = (openedExperiment: Experiment | undefined): void => this.doHandleExperimentSelectedSignal(openedExperiment);
   private _onRemoveTraceButton = (traceUUID: string): void => this.doHandleRemoveTraceSignal(traceUUID);
+  protected onUpdateSignal = (payload: OpenedTracesUpdatedSignalPayload): void => this.doHandleOpenedTracesChanged(payload);
+  private loading = false;
 
   private doHandleRemoveTraceSignal(traceUUID: string) {
       this._experimentManager.getExperiment(traceUUID).then( experimentOpen => {
@@ -47,6 +53,7 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
       super(props);
       this.state = {
           tspClientProvider: undefined,
+          experimentsOpened: true,
       };
       this._signalHandler = new VsCodeMessageManager();
       window.addEventListener('message', event => {
@@ -71,15 +78,13 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
                   signalManager().fireTraceViewerTabActivatedSignal(experiment);
               }
               break;
-          case VSCODE_MESSAGES.OPENED_TRACES_UPDATED:
-              if (message.numberOfOpenedTraces) {
-              // TODO: Render a "Open Trace" button if numberOfOpenedTraces is 0
-              }
-              break;
           case VSCODE_MESSAGES.EXPERIMENT_OPENED:
               if (message.data) {
                   const experiment = convertSignalExperiment(JSONBig.parse(message.data));
                   signalManager().fireExperimentOpenedSignal(experiment);
+                  if (!this.state.experimentsOpened) {
+                      this.setState({experimentsOpened: true});
+                  }
               }
           }
       });
@@ -92,11 +97,22 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
       // ExperimentSelected handler is registered in the constructor (upstream code), but it's
       // better to register it here when the react component gets mounted.
       signalManager().on(Signals.CLOSE_TRACEVIEWERTAB, this._onRemoveTraceButton);
+      signalManager().on(Signals.OPENED_TRACES_UPDATED, this.onUpdateSignal);
   }
 
   componentWillUnmount(): void {
       signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
       signalManager().off(Signals.CLOSE_TRACEVIEWERTAB, this._onRemoveTraceButton);
+      signalManager().off(Signals.OPENED_TRACES_UPDATED, this.onUpdateSignal);
+  }
+
+  protected doHandleOpenedTracesChanged(payload: OpenedTracesUpdatedSignalPayload): void {
+      this._signalHandler.updateOpenedTraces(payload.getNumberOfOpenedTraces());
+      if (payload.getNumberOfOpenedTraces()>0) {
+          this.setState({experimentsOpened: true});
+      } else if (payload.getNumberOfOpenedTraces()===0){
+          this.setState({experimentsOpened: false});
+      }
   }
 
   protected doHandleContextMenuEvent(event: React.MouseEvent<HTMLDivElement>, experiment: Experiment): void {
@@ -120,7 +136,7 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
   }
 
   public render(): React.ReactNode {
-      return (<><div>
+      return ( this.state.experimentsOpened ? <><div>
           {this.state.tspClientProvider && <ReactOpenTracesWidget
               id={TraceExplorerOpenedTraces.ID}
               title={TraceExplorerOpenedTraces.LABEL}
@@ -135,8 +151,20 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
           <Item id="close-id" onClick={this.handleItemClick}>Close Trace</Item>
           <Item id="remove-id" onClick={this.handleItemClick}>Remove Trace</Item>
       </Menu>
-      </>
+      </> :
+          <ReactExplorerPlaceholderWidget
+              loading={this.loading}
+              handleOpenTrace={this.handleOpenTrace}
+          ></ReactExplorerPlaceholderWidget>
       );
+  }
+
+  protected handleOpenTrace = async (): Promise<void> => this.doHandleOpenTrace();
+
+  private async doHandleOpenTrace() {
+      this.loading = true;
+      this._signalHandler.openTrace();
+      this.loading = false;
   }
 
   protected handleItemClick = (args: ItemParams): void => {

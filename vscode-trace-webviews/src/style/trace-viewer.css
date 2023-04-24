@@ -33,4 +33,8 @@
     --trace-viewer-button-background: var(--vscode-button-background);
     --trace-viewer-ui-padding: 6px;
     --trace-viewer-list-line-height: 16px;
+    --trace-viewer-secondaryButton-foreground: var(--vscode-button-secondaryForeground);
+    --trace-viewer-secondaryButton-background: var(--vscode-button-secondaryBackground);
+    --trace-viewer-sideBar-foreground: var(--vscode-sideBarTitle-foreground);
+    --trace-viewer-button-foreground: var(--vscode-button-foreground);
 }

@@ -109,12 +109,14 @@
         {
           "type": "webview",
           "id": "traceExplorer.availableViews",
-          "name": "Views"
+          "name": "Views",
+          "when": "!trace-explorer.noExperiments"
         },
         {
           "type": "webview",
           "id": "traceExplorer.itemPropertiesView",
-          "name": "Item Properties"
+          "name": "Item Properties",
+          "when": "!trace-explorer.noExperiments"
         }
       ]
     },
@@ -136,7 +138,7 @@
       "view/title": [
         {
           "command": "openedTraces.openTraceFolder",
-          "when": "view == traceExplorer.openedTracesView",
+          "when": "view == traceExplorer.openedTracesView && !trace-explorer.noExperiments",
           "group": "navigation"
         }
       ],
