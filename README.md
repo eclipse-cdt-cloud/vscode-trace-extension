@@ -89,9 +89,9 @@ sequenceDiagram
     Note over exOpenTraceProvider,exViewsAvailProvider: VsCode extension
     Note over explorerAvailView,reactAvailViewsexplorerOpenTraces: Available Views WebView App
     reactOpenTraces->>explorerOpenTraces: sendSignal(exp-sel)
-    explorerOpenTraces->>exOpenTraceProvider: vcode.postMessage(exp-sel)
+    explorerOpenTraces->>exOpenTraceProvider: vscode.postMessage(exp-sel)
     exOpenTraceProvider->>exViewsAvailProvider: sendSignal(exp-sel)
-    exViewsAvailProvider->>explorerAvailView: vcode.postMessage(exp-sel)
+    exViewsAvailProvider->>explorerAvailView: vscode.postMessage(exp-sel)
     explorerAvailView->>reactAvailViewsexplorerOpenTraces: sendSignal(exp-sel)
     reactAvailViewsexplorerOpenTraces->>server: fetchOutputs(exp)
     server->>reactAvailViewsexplorerOpenTraces: success(200)
