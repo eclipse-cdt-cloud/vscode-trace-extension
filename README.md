@@ -117,6 +117,7 @@ traceLogger.addLogMessage('Hello from trace extension without tag');
 ```
 
 This will add the following log entry in the output channel:
+
 ```text
 [2023-04-25 11:07:22.500] Hello from trace extension without tag
 ```
@@ -126,6 +127,7 @@ traceLogger.addLogMessage('Hello from trace extension with tag', 'tag');
 ```
 
 This will add the following log entry in the output channel:
+
 ```text
 [2023-04-25 11:08:40.500] [tag] Hello from trace extension with tag
 ```
