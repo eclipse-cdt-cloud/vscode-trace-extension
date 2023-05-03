@@ -33,7 +33,7 @@
         "command": "outputs.openOverview",
         "title": "Open Overview View",
         "icon": {
-          "light": "assets/media/graph-line.svg",
+          "light": "assets/media/graph-line-light.svg",
           "dark": "assets/media/graph-line.svg"
         }
       },
