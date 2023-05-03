@@ -69,7 +69,8 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 	        enableScripts: true,
 
 	        localResourceRoots: [
-	            vscode.Uri.joinPath(this._extensionUri, 'pack')
+	            vscode.Uri.joinPath(this._extensionUri, 'pack'),
+	            vscode.Uri.joinPath(this._extensionUri, 'lib', 'codicons')
 	        ]
 	    };
 
@@ -137,6 +138,7 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 	private _getHtmlForWebview(webview: vscode.Webview) {
 	    // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
 	    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'pack', 'openedTracesPanel.js'));
+	    const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'lib', 'codicons', 'codicon.css'));
 
 	    // Use a nonce to only allow a specific script to be run.
 	    const nonce = getNonce();
@@ -148,7 +150,14 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 				<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
 				<meta name="theme-color" content="#000000">
 				<title>React App</title>
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src vscode-resource: https:; script-src 'nonce-${nonce}' 'unsafe-eval';style-src vscode-resource: 'unsafe-inline' http: https: data:;connect-src ${getTraceServerUrl()};">
+				<meta http-equiv="Content-Security-Policy"
+					content="default-src 'none';
+					img-src vscode-resource: https:;
+					script-src 'nonce-${nonce}' 'unsafe-eval';
+					style-src ${webview.cspSource} vscode-resource: 'unsafe-inline' http: https: data:;
+					connect-src ${getTraceServerUrl()};
+					font-src ${webview.cspSource}">
+				<link href="${codiconsUri}" rel="stylesheet" />
 				<base href="${vscode.Uri.joinPath(this._extensionUri, 'pack').with({ scheme: 'vscode-resource' })}/">
 			</head>
 

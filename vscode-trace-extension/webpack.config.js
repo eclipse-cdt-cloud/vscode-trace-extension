@@ -1,6 +1,13 @@
 'use strict';
 
 const path = require('path');
+const CopyPlugin = require("copy-webpack-plugin");
+
+/**
+ * Path to Codicons css and ttf files.
+ */
+const codiconsCssPath = path.resolve(__dirname, '..', 'node_modules', '@vscode', 'codicons', 'dist', 'codicon.css');
+const codiconsFontPath = path.resolve(__dirname, '..', 'node_modules', '@vscode', 'codicons', 'dist', 'codicon.ttf');
 
 /**@type {import('webpack').Configuration}*/
 const config = {
@@ -65,6 +72,14 @@ const config = {
             }
         ]
     },
+    plugins: [
+        new CopyPlugin({
+          patterns: [
+            { from: codiconsCssPath, to: "./codicons" }, // Copy codicons css and font files to lib/codicons so that they are packaged with the extension
+            { from: codiconsFontPath, to: "./codicons" }
+          ],
+        }),
+    ]
 }
 
 module.exports = config;
