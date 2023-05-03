@@ -14,6 +14,7 @@
     "start:openvscode-server": "cd test-resources/openvscode-server-v1.77.3-linux-x64/bin/; ./openvscode-server ${0}"
   },
   "devDependencies": {
+    "copy-webpack-plugin": "^11.0.0",
     "lerna": "^3.20.2"
   },
   "workspaces": [
