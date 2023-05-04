@@ -5,7 +5,7 @@ import { TraceServerConnectionStatusService } from '../utils/trace-server-status
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
 import { handleStatusMessage, handleRemoveMessage, setStatusFromPanel } from '../common/trace-message';
 import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
-import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/vscode-message-manager';
+import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import JSONBigConfig from 'json-bigint';
 import * as fs from 'fs';
 

@@ -5,7 +5,7 @@
  ***************************************************************************************/
 /* eslint-disable @typescript-eslint/ban-types */
 import React from 'react';
-import { VsCodeMessageManager } from 'vscode-trace-common/lib/vscode-message-manager';
+import { VsCodeMessageManager } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import { ReactItemPropertiesWidget } from 'traceviewer-react-components/lib/trace-explorer/trace-explorer-properties-widget';
 import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 
