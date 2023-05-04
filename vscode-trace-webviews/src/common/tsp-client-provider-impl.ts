@@ -3,7 +3,7 @@ import { RestClient, ConnectionStatusListener } from 'tsp-typescript-client/lib/
 import { ExperimentManager } from 'traceviewer-base/lib/experiment-manager';
 import { TraceManager } from 'traceviewer-base/lib/trace-manager';
 import { ITspClientProvider } from 'traceviewer-base/lib/tsp-client-provider';
-import { VsCodeMessageManager } from 'vscode-trace-common/lib/vscode-message-manager';
+import { VsCodeMessageManager } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 
 export class TspClientProvider implements ITspClientProvider {
 

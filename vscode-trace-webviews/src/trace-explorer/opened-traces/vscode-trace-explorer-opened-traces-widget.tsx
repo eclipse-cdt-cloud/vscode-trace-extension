@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import * as React from 'react';
 import { ReactOpenTracesWidget } from 'traceviewer-react-components/lib/trace-explorer/trace-explorer-opened-traces-widget';
-import { VsCodeMessageManager, VSCODE_MESSAGES } from 'vscode-trace-common/lib/vscode-message-manager';
+import { VsCodeMessageManager, VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import { Menu, Item, useContextMenu, ItemParams } from 'react-contexify';
 import { TspClientProvider } from '../../common/tsp-client-provider-impl';
 import { ITspClientProvider } from 'traceviewer-base/lib/tsp-client-provider';

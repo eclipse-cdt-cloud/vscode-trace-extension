@@ -7,7 +7,7 @@ import { convertSignalExperiment } from 'vscode-trace-extension/src/common/signa
 import { TraceViewerPanel } from '../../trace-viewer-panel/trace-viewer-webview-panel';
 import { TraceServerConnectionStatusService } from '../../utils/trace-server-status';
 import { getTraceServerUrl, getTspClientUrl } from '../../utils/tspClient';
-import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/vscode-message-manager';
+import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
