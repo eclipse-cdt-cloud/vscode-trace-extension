@@ -11,7 +11,7 @@ import { VsCodeMessageManager, VSCODE_MESSAGES } from 'vscode-trace-common/lib/m
 import '../../style/react-contextify.css';
 import '../../style/trace-viewer.css';
 import JSONBigConfig from 'json-bigint';
-import { convertSignalExperiment } from 'vscode-trace-webviews/src/common/vscode-signal-converter';
+import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
