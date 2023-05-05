@@ -3,7 +3,7 @@ import { OpenedTracesUpdatedSignalPayload } from 'traceviewer-base/lib/signals/o
 import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import * as vscode from 'vscode';
-import { convertSignalExperiment } from 'vscode-trace-extension/src/common/signal-converter';
+import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import { TraceViewerPanel } from '../../trace-viewer-panel/trace-viewer-webview-panel';
 import { TraceServerConnectionStatusService } from '../../utils/trace-server-status';
 import { getTraceServerUrl, getTspClientUrl } from '../../utils/tspClient';

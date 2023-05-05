@@ -11,7 +11,7 @@ import '../../style/trace-viewer.css';
 import 'traceviewer-react-components/style/trace-explorer.css';
 import '../../style/react-contextify.css';
 import { ExperimentManager } from 'traceviewer-base/lib/experiment-manager';
-import { convertSignalExperiment } from 'vscode-trace-webviews/src/common/vscode-signal-converter';
+import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import JSONBigConfig from 'json-bigint';
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,

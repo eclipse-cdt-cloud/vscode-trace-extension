@@ -14,7 +14,7 @@ import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
 import { TspClientProvider } from '../common/tsp-client-provider-impl';
 import { VsCodeMessageManager, VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
-import { convertSignalExperiment } from '../common/vscode-signal-converter';
+import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import '../style/trace-viewer.css';
 
 const JSONBig = JSONBigConfig({
