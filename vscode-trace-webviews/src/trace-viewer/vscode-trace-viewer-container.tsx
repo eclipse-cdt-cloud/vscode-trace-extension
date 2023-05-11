@@ -102,6 +102,15 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState>  {
           case VSCODE_MESSAGES.RESET_ZOOM:
               this.resetZoom();
               break;
+          case 'undo':
+              this.undo();
+              break;
+          case 'redo':
+              this.redo();
+              break;
+          case 'updateZoom':
+              this.updateZoom(message.data);
+              break;
           }
       });
       window.addEventListener('resize', this.onResize);
@@ -138,6 +147,18 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState>  {
 
   protected resetZoom(): void {
       signalManager().fireResetZoomSignal();
+  }
+
+  protected undo(): void {
+      signalManager().fireUndoSignal();
+  }
+
+  protected redo(): void {
+      signalManager().fireRedoSignal();
+  }
+
+  protected updateZoom(hasZoomedIn: boolean): void {
+      signalManager().fireUpdateZoomSignal(hasZoomedIn);
   }
 
   protected async doHandleExperimentSetSignal(experiment: Experiment| undefined): Promise<void> {

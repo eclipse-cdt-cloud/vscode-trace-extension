@@ -111,6 +111,14 @@ export const keyboardShortcutsHandler = (extensionUri: vscode.Uri): void => {
     KeyboardShortcutsPanel.createOrShow(extensionUri, 'Trace Viewer Shortcuts');
 };
 
+export const undoRedoHandler = (undo: boolean): void => {
+    TraceViewerPanel.undoRedoOnCurrent(undo);
+};
+
+export const zoomHandler = (hasZoomedIn: boolean): void => {
+    TraceViewerPanel.zoomOnCurrent(hasZoomedIn);
+};
+
 const openDialog = async (): Promise<vscode.Uri | undefined> => {
     const props: vscode.OpenDialogOptions = {
         title: 'Open Trace',

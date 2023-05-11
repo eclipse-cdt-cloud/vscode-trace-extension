@@ -31,10 +31,39 @@
       },
       {
         "command": "outputs.openOverview",
-        "title": "Open Overview View",
+        "title": "Show trace overview",
+        "icon": "$(graph-line)"
+      },
+      {
+        "command": "outputs.undo",
+        "title": "Undo",
         "icon": {
-          "light": "assets/media/graph-line-light.svg",
-          "dark": "assets/media/graph-line.svg"
+          "light": "assets/media/arrow-rotate-left-light.svg",
+          "dark": "assets/media/arrow-rotate-left.svg"
+        }
+      },
+      {
+        "command": "outputs.redo",
+        "title": "Redo",
+        "icon": {
+          "light": "assets/media/arrow-rotate-right-light.svg",
+          "dark": "assets/media/arrow-rotate-right.svg"
+        }
+      },
+      {
+        "command": "outputs.zoomIn",
+        "title": "Zoom In",
+        "icon": {
+          "light": "assets/media/square-plus-light.svg",
+          "dark": "assets/media/square-plus.svg"
+        }
+      },
+      {
+        "command": "outputs.zoomOut",
+        "title": "Zoom Out",
+        "icon": {
+          "light": "assets/media/square-minus-light.svg",
+          "dark": "assets/media/square-minus.svg"
         }
       },
       {
@@ -112,18 +141,38 @@
       "editor/title": [
         {
           "when": "activeWebviewPanelId == 'react'",
-          "command": "outputs.reset",
+          "command": "outputs.undo",
           "group": "navigation@1"
         },
         {
           "when": "activeWebviewPanelId == 'react'",
-          "command": "outputs.openOverview",
+          "command": "outputs.redo",
           "group": "navigation@2"
         },
         {
           "when": "activeWebviewPanelId == 'react'",
-          "command": "traceViewer.shortcuts",
+          "command": "outputs.zoomIn",
           "group": "navigation@3"
+        },
+        {
+          "when": "activeWebviewPanelId == 'react'",
+          "command": "outputs.zoomOut",
+          "group": "navigation@4"
+        },
+        {
+          "when": "activeWebviewPanelId == 'react'",
+          "command": "outputs.reset",
+          "group": "navigation@5"
+        },
+        {
+          "when": "activeWebviewPanelId == 'react'",
+          "command": "outputs.openOverview",
+          "group": "navigation@6"
+        },
+        {
+          "when": "activeWebviewPanelId == 'react'",
+          "command": "traceViewer.shortcuts",
+          "group": "navigation@7"
         }
       ]
     },
