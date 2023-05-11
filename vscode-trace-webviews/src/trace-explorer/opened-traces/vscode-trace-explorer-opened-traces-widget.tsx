@@ -155,7 +155,7 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
 
           return;
       default:
-        // Do nothing
+      // Do nothing
       }
   };
 }
