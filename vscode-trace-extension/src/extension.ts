@@ -41,6 +41,7 @@ export function activate(context: vscode.ExtensionContext): void {
     // TODO: For now, a different command opens traces from file explorer. Remove when we have a proper trace finder
     const fileOpenHandler = fileHandler(analysisProvider);
     context.subscriptions.push(vscode.commands.registerCommand('traces.openTraceFile', file => {
+        startTraceServerIfAvailable();
         fileOpenHandler(context, file);
     }));
 
@@ -79,6 +80,7 @@ export function activate(context: vscode.ExtensionContext): void {
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('openedTraces.openTraceFolder', () => {
+        startTraceServerIfAvailable();
         fileOpenHandler(context, undefined);
     }));
 
@@ -89,4 +91,9 @@ export function activate(context: vscode.ExtensionContext): void {
 
 export function deactivate(): void {
     traceLogger.disposeChannel();
+}
+
+function startTraceServerIfAvailable() {
+    const extensionId = 'vscode-trace-server';
+    vscode.commands.executeCommand(extensionId + '.start-if-stopped');
 }
