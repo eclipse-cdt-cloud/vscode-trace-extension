@@ -85,6 +85,14 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(vscode.commands.registerCommand('traceViewer.shortcuts', () => {
         keyboardShortcutsHandler(context.extensionUri);
     }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('serverStatus.started', () => {
+        serverStatusService.render(true);
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('serverStatus.stopped', () => {
+        serverStatusService.render(false);
+    }));
 }
 
 export function deactivate(): void {
