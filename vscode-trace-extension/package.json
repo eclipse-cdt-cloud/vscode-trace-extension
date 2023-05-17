@@ -80,6 +80,14 @@
         "command": "traceViewer.shortcuts",
         "title": "Trace Viewer Keyboard and Mouse Shortcuts",
         "icon": "$(info)"
+      },
+      {
+        "command": "serverStatus.started",
+        "title": "Trace Server: started"
+      },
+      {
+        "command": "serverStatus.stopped",
+        "title": "Trace Server: stopped"
       }
     ],
     "viewsContainers": {
@@ -173,6 +181,16 @@
           "when": "activeWebviewPanelId == 'react'",
           "command": "traceViewer.shortcuts",
           "group": "navigation@7"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "serverStatus.started",
+          "when": "false"
+        },
+        {
+          "command": "serverStatus.stopped",
+          "when": "false"
         }
       ]
     },
