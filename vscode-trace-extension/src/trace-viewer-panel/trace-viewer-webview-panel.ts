@@ -6,12 +6,17 @@ import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descri
 import { handleStatusMessage, handleRemoveMessage, setStatusFromPanel } from '../common/trace-message';
 import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
 import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
+import { MarkerSet } from 'tsp-typescript-client/lib/models/markerset';
 import JSONBigConfig from 'json-bigint';
 import * as fs from 'fs';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
 });
+
+interface QuickPickItem extends vscode.QuickPickItem {
+	id: string;
+}
 
 // TODO: manage multiple panels (currently just a hack around, need to be fixed)
 
@@ -84,6 +89,14 @@ export class TraceViewerPanel {
 
 	public static zoomOnCurrent(hasZoomedIn: boolean): void {
 		TraceViewerPanel.currentPanel?.updateZoom(hasZoomedIn);
+	}
+
+	public static showMarkerSetsOnCurrent(): void {
+		TraceViewerPanel.currentPanel?.showMarkerSets();
+	}
+
+	public static showMarkersFilterOnCurrent(): void {
+		TraceViewerPanel.currentPanel?.showMarkersFilter();
 	}
 
 	private static async saveTraceCsv(csvData: string, defaultFileName: string) {
@@ -187,9 +200,33 @@ export class TraceViewerPanel {
 	            }
 	            return;
 	        case VSCODE_MESSAGES.CONNECTION_STATUS:
-	            if (message.data && message.data.status && this._statusService) {
+	            if (message.data?.status && this._statusService) {
 	                const status: boolean = JSON.parse(message.data.status);
 	                this._statusService.render(status);
+	            }
+	            return;
+	        case VSCODE_MESSAGES.SHOW_MARKER_CATEGORIES:
+	            if (message.data?.wrapper) {
+	                const markerCategories = new Map<string, { categoryCount: number, toggleInd: boolean }>(JSON.parse(message.data.wrapper));
+					TraceViewerPanel.currentPanel?.renderMarkersFilter(markerCategories);
+	            }
+	            return;
+	        case VSCODE_MESSAGES.SEND_MARKER_SETS:
+	            if (message.data?.wrapper) {
+	                const markerSetsMap = new Map<string, { marker: MarkerSet, enabled: boolean }>(JSON.parse(message.data.wrapper));
+					TraceViewerPanel.currentPanel?.renderMarkerSets(markerSetsMap);
+	            }
+	            return;
+	        case VSCODE_MESSAGES.MARKER_SETS_CONTEXT:
+	            if (message.data?.status) {
+	                const status: boolean = JSON.parse(message.data.status);
+	                vscode.commands.executeCommand('setContext', 'traceViewer.markerSetsPresent', status);
+	            }
+	            return;
+	        case VSCODE_MESSAGES.MARKER_CATEGORIES_CONTEXT:
+	            if (message.data?.status) {
+	                const status: boolean = JSON.parse(message.data.status);
+	                vscode.commands.executeCommand('setContext', 'traceViewer.markerCategoriesPresent', status);
 	            }
 	            return;
 	        }
@@ -221,6 +258,8 @@ export class TraceViewerPanel {
 	protected doHandleExperimentSelectedSignal(experiment: Experiment | undefined): void {
 	    if (this._experiment && experiment && this._experiment.UUID === experiment.UUID) {
 	        this._panel.reveal();
+	        const wrapper: string = JSONBig.stringify(experiment);
+	    	this._panel.webview.postMessage({command: VSCODE_MESSAGES.EXPERIMENT_SELECTED, data: wrapper});
 	    }
 	}
 
@@ -255,6 +294,85 @@ export class TraceViewerPanel {
 
 	updateZoom(hasZoomedIn: boolean): void {
 	    this._panel.webview.postMessage({ command: VSCODE_MESSAGES.UPDATE_ZOOM, data: hasZoomedIn});
+	}
+
+	showMarkersFilter(): void {
+	    this._panel.webview.postMessage({ command: VSCODE_MESSAGES.GET_MARKER_CATEGORIES});
+	}
+
+	showMarkerSets(): void {
+	    this._panel.webview.postMessage({ command: VSCODE_MESSAGES.GET_MARKER_SETS});
+	}
+
+	renderMarkersFilter(markerCategories: Map<string, {
+		categoryCount: number;
+		toggleInd: boolean;
+	}>): void {
+	    const items: vscode.QuickPickItem[] = [];
+
+	    markerCategories.forEach((categoryInfo, categoryName) => {
+	        items.push({
+	            label: categoryName,
+	            picked: categoryInfo.toggleInd
+	        });
+	    });
+
+	    vscode.window.showQuickPick(
+	        items,
+	        {
+	            title: 'Select Markers Filter',
+	            placeHolder: 'Filter',
+	            canPickMany: true
+	        }
+
+	    ).then(selection => {
+	        // the user canceled the selection
+	        if (!selection) {
+			  return;
+	        }
+
+	        const selectedCategories: string[] = [];
+	        for (const category of selection) {
+	            selectedCategories.push(category.label);
+	        }
+	        const wrapper = JSON.stringify(selectedCategories);
+	        this._panel.webview.postMessage({ command: VSCODE_MESSAGES.UPDATE_MARKER_CATEGORY_STATE, data: wrapper });
+	    });
+
+	}
+
+	renderMarkerSets(markerSetsMap: Map<string, { marker: MarkerSet, enabled: boolean }>): void {
+	    const items: QuickPickItem[] = [];
+
+	    markerSetsMap.forEach((value: { marker: MarkerSet, enabled: boolean }, key: string) => {
+	        const item: QuickPickItem = {
+	            id: key,
+	            label: value.marker.name,
+	            picked: value.enabled
+	        };
+	        if (value.enabled) {
+	            item.detail = 'Selected';
+	        }
+	        items.push(item);
+	    });
+
+	    vscode.window.showQuickPick(
+	        items,
+	        {
+	            title: 'Select Marker Set',
+	            placeHolder: 'Filter',
+	        }
+
+	    ).then(selection => {
+	        // the user canceled the selection
+	        if (!selection) {
+			  return;
+	        }
+
+	        if (markerSetsMap.has(selection.id)) {
+	        	this._panel.webview.postMessage({ command: VSCODE_MESSAGES.UPDATE_MARKER_SET_STATE, data: selection.id });
+	        }
+	    });
 	}
 
 	loadTheme(): void {
