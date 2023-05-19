@@ -9,6 +9,7 @@ import { TraceServerConnectionStatusService } from './utils/trace-server-status'
 import { updateTspClient } from './utils/tspClient';
 import { TraceExtensionLogger } from './utils/trace-extension-logger';
 import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
+import { TraceViewerPanel } from './trace-viewer-panel/trace-viewer-webview-panel';
 
 export let traceLogger: TraceExtensionLogger;
 
@@ -79,6 +80,14 @@ export function activate(context: vscode.ExtensionContext): void {
         zoomHandler(false);
     }));
 
+    context.subscriptions.push(vscode.commands.registerCommand('trace.viewer.toolbar.markersets', () => {
+        TraceViewerPanel.showMarkerSetsOnCurrent();
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('trace.viewer.toolbar.filter', () => {
+        TraceViewerPanel.showMarkersFilterOnCurrent();
+    }));
+
     context.subscriptions.push(vscode.commands.registerCommand('openedTraces.openTraceFolder', () => {
         fileOpenHandler(context, undefined);
     }));
@@ -97,6 +106,9 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(vscode.commands.registerCommand('serverStatus.stopped', () => {
         serverStatusService.render(false);
     }));
+
+    vscode.commands.executeCommand('setContext', 'traceViewer.markerSetsPresent', false);
+    vscode.commands.executeCommand('setContext', 'traceViewer.markerCategoriesPresent', false);
 }
 
 export function deactivate(): void {

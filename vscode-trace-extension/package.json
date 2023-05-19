@@ -88,6 +88,16 @@
       {
         "command": "serverStatus.stopped",
         "title": "Trace Server: stopped"
+      },
+      {
+        "command": "trace.viewer.toolbar.markersets",
+        "title": "Marker Sets",
+        "icon": "$(three-bars)"
+      },
+      {
+        "command": "trace.viewer.toolbar.filter",
+        "title": "Markers filter",
+        "icon": "$(filter-filled)"
       }
     ],
     "viewsContainers": {
@@ -175,14 +185,24 @@
           "group": "navigation@5"
         },
         {
+          "when": "activeWebviewPanelId == 'react' && traceViewer.markerCategoriesPresent",
+          "command": "trace.viewer.toolbar.filter",
+          "group": "navigation@6"
+        },
+        {
+          "when": "activeWebviewPanelId == 'react' && traceViewer.markerSetsPresent",
+          "command": "trace.viewer.toolbar.markersets",
+          "group": "navigation@7"
+        },
+        {
           "when": "activeWebviewPanelId == 'react'",
           "command": "outputs.openOverview",
-          "group": "navigation@6"
+          "group": "navigation@8"
         },
         {
           "when": "activeWebviewPanelId == 'react'",
           "command": "traceViewer.shortcuts",
-          "group": "navigation@7"
+          "group": "navigation@9"
         }
       ],
       "commandPalette": [

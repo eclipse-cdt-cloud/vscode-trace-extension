@@ -1,6 +1,7 @@
 import * as Messages from 'traceviewer-base/lib/message-manager';
 import { OutputAddedSignalPayload } from 'traceviewer-base/lib/signals/output-added-signal-payload';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
+import { MarkerSet } from 'tsp-typescript-client/lib/models/markerset';
 import JSONBigConfig from 'json-bigint';
 
 const JSONBig = JSONBigConfig({
@@ -47,7 +48,15 @@ export const VSCODE_MESSAGES = {
     REDO: 'redo',
     UPDATE_ZOOM: 'updateZoom',
     OPEN_TRACE: 'openTrace',
-    TRACE_SERVER_STARTED: 'traceServerStarted'
+    TRACE_SERVER_STARTED: 'traceServerStarted',
+    SHOW_MARKER_CATEGORIES: 'showMarkerCategories',
+    SEND_MARKER_SETS: 'sendMarkerSets',
+    GET_MARKER_CATEGORIES: 'getMarkerCategories',
+    GET_MARKER_SETS: 'getMarkerSets',
+    UPDATE_MARKER_CATEGORY_STATE: 'updateMarkerCategoryState',
+    UPDATE_MARKER_SET_STATE: 'updateMarkerSetState',
+    MARKER_SETS_CONTEXT: 'markerSetsContext',
+    MARKER_CATEGORIES_CONTEXT: 'markerCategoriesContext'
 };
 
 export class VsCodeMessageManager extends Messages.MessageManager {
@@ -121,5 +130,25 @@ export class VsCodeMessageManager extends Messages.MessageManager {
 
     saveAsCSV(payload: {traceId: string, data: string}): void {
         vscode.postMessage({command: VSCODE_MESSAGES.SAVE_AS_CSV, payload});
+    }
+
+    fetchMarkerCategories(payload: Map<string, { categoryCount: number, toggleInd: boolean }>): void {
+        const wrapper: string = JSON.stringify([...payload]);
+        vscode.postMessage({command: VSCODE_MESSAGES.SHOW_MARKER_CATEGORIES, data: {wrapper}});
+    }
+
+    fetchMarkerSets(payload: Map<string, { marker: MarkerSet, enabled: boolean }>): void {
+        const wrapper: string = JSON.stringify([...payload]);
+        vscode.postMessage({command: VSCODE_MESSAGES.SEND_MARKER_SETS, data: {wrapper}});
+    }
+
+    setMarkerSetsContext(context: boolean): void {
+        const status: string = JSON.stringify(context);
+        vscode.postMessage({command: VSCODE_MESSAGES.MARKER_SETS_CONTEXT, data: { status }});
+    }
+
+    setMarkerCategoriesContext(context: boolean): void {
+        const status: string = JSON.stringify(context);
+        vscode.postMessage({command: VSCODE_MESSAGES.MARKER_CATEGORIES_CONTEXT, data: { status }});
     }
 }
