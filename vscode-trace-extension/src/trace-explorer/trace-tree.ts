@@ -8,6 +8,7 @@ import { AnalysisProvider } from './analysis-tree';
 import { TraceViewerPanel } from '../trace-viewer-panel/trace-viewer-webview-panel';
 import { getTspClient } from '../utils/tspClient';
 import { traceLogger } from '../extension';
+import { KeyboardShortcutsPanel } from '../trace-viewer-panel/keyboard-shortcuts-panel';
 
 const rootPath = path.resolve(__dirname, '../../..');
 
@@ -104,6 +105,10 @@ export const openOverviewHandler = () => (): void => {
 
 export const resetZoomHandler = () => (): void => {
     TraceViewerPanel.resetZoomOnCurrent();
+};
+
+export const keyboardShortcutsHandler = (extensionUri: vscode.Uri): void => {
+    KeyboardShortcutsPanel.createOrShow(extensionUri, 'Trace Viewer Shortcuts');
 };
 
 const openDialog = async (): Promise<vscode.Uri | undefined> => {
