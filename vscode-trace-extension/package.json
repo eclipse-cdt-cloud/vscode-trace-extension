@@ -46,6 +46,11 @@
         "command": "openedTraces.openTraceFolder",
         "title": "Open Trace",
         "icon": "$(new-folder)"
+      },
+      {
+        "command": "traceViewer.shortcuts",
+        "title": "Trace Viewer Keyboard and Mouse Shortcuts",
+        "icon": "$(info)"
       }
     ],
     "viewsContainers": {
@@ -114,6 +119,11 @@
           "when": "activeWebviewPanelId == 'react'",
           "command": "outputs.openOverview",
           "group": "navigation@2"
+        },
+        {
+          "when": "activeWebviewPanelId == 'react'",
+          "command": "traceViewer.shortcuts",
+          "group": "navigation@3"
         }
       ]
     },
@@ -131,7 +141,14 @@
           "description": "Enter the trace server's API path, to be appended to the server URL. Eg: 'tsp/api'."
         }
       }
-    }
+    },
+    "keybindings": [
+      {
+        "command": "traceViewer.shortcuts",
+        "key": "ctrl+f1",
+        "mac": "cmd+f1"
+      }
+    ]
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.17",

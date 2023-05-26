@@ -24,8 +24,13 @@
     --trace-viewer-statusBar-foreground: var(--vscode-statusBar-foreground);
     --trace-viewer-ui-font-size1: var(--vscode-font-size);
     --trace-viewer-editorWidget-background: var(--vscode-editorWidget-background);
-    --trace-viewer-ui-padding: 6px;
-    --trace-viewer-list-line-height: 16px;
     --trace-viewer-layout-color4: var(--vscode-editorWidget-background);
     --trace-viewer-foreground: var(--vscode-editorWidget-foreground);
+    --trace-viewer-keybindingLabel-background: var(--vscode-keybindingLabel-background);
+    --trace-viewer-keybindingLabel-border: var(--vscode-keybindingLabel-border);
+    --trace-viewer-keybindingLabel-bottomBorder: var(--vscode-keybindingLabel-bottomBorder);
+    --trace-viewer-keybindingLabel-foreground: var(--vscode-keybindingLabel-foreground);
+    --trace-viewer-button-background: var(--vscode-button-background);
+    --trace-viewer-ui-padding: 6px;
+    --trace-viewer-list-line-height: 16px;
 }
