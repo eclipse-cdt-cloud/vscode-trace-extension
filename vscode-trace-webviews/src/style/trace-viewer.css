@@ -1,38 +1,31 @@
 :root {
-    --theia-layout-color0: #1d1d1d;
-    --theia-layout-color1: #252526;
-    --theia-layout-color2: #333333;
-    --theia-layout-color3: #383838;
-    --theia-layout-color4: #383838;
-    --theia-list-hoverBackground: var(--vscode-list-hoverBackground);
-    --theia-selection-background: var(--vscode-list-activeSelectionBackground);
-    --theia-ui-font-color2: var(--vscode-editor-foreground);
-    --theia-ui-button-color: var(--vscode-button-background);
-    --theia-accent-color3: var(--vscode-button-background);
-    --theia-menu-background: var(--vscode-menu-background);
-    --theia-menu-foreground: var(--vscode-menu-foreground);
-    --theia-menu-selectionBackground: var(--vscode-menubar-selectionBackground);
-    --theia-menu-selectionForeground: var(--vscode-menubar-selectionForeground);
-    --theia-menu-selectionBorder: var(--vscode-menubar-selectionBorder);
-    --theia-widget-shadow: var(--vscode-widget-shadow);
-    --theia-menu-border: var(--vscode-dropdown-border);
-    --theia-ui-font-color0: var(--vscode-editor-foreground);
-    --theia-editor-background: var(--vscode-editor-background);
-    --theia-tree-inactiveIndentGuidesStroke: var(--vscode-tree-indentGuidesStroke);
-    --theia-input-background: var(--vscode-input-background);
-    --theia-input-placeholder-foreground: var(--vscode-input-placeholderForeground);
-    --theia-ui-font-family: var(--vscode-editor-fontFamily);
-    --theia-statusBar-background: var(--vscode-statusBar-background);
-    --theia-statusBar-foreground: var(--vscode-statusBar-foreground);
-    --theia-ui-font-size1: var(--vscode-font-size);
-    --theia-editorWidget-background: var(--vscode-editorWidget-background);
-    --theia-ui-padding: 6px;
-    --trace-extension-list-line-height: 16px;
-    --theia-secondaryButton-foreground: var(--vscode-input-background);
-    --theia-layout-color4: var(--vscode-editorWidget-background);
-    --theia-foreground: var(--vscode-editorWidget-foreground);
+    /* vs-code variables */
     --vscode-editor-foreground: var(--vscode-foreground);
-    --theia-secondaryButton-foreground: var(--vscode-button-secondaryForeground);
-    --theia-secondaryButton-background: var(--vscode-button-secondaryBackground);
-    --theia-sideBar-foreground: var(--vscode-sideBarTitle-foreground);
+
+    /* mapped CSS variables from traceviewer-react-components */
+    --trace-viewer-list-hoverBackground: var(--vscode-list-hoverBackground);
+    --trace-viewer-selection-background: var(--vscode-list-activeSelectionBackground);
+    --trace-viewer-ui-font-color2: var(--vscode-editor-foreground);
+    --trace-viewer-ui-button-color: var(--vscode-button-background);
+    --trace-viewer-menu-background: var(--vscode-menu-background);
+    --trace-viewer-menu-foreground: var(--vscode-menu-foreground);
+    --trace-viewer-menu-selectionBackground: var(--vscode-menubar-selectionBackground);
+    --trace-viewer-menu-selectionForeground: var(--vscode-menubar-selectionForeground);
+    --trace-viewer-menu-selectionBorder: var(--vscode-menubar-selectionBorder);
+    --trace-viewer-widget-shadow: var(--vscode-widget-shadow);
+    --trace-viewer-menu-border: var(--vscode-dropdown-border);
+    --trace-viewer-ui-font-color0: var(--vscode-editor-foreground);
+    --trace-viewer-editor-background: var(--vscode-editor-background);
+    --trace-viewer-tree-inactiveIndentGuidesStroke: var(--vscode-tree-indentGuidesStroke);
+    --trace-viewer-input-background: var(--vscode-input-background);
+    --trace-viewer-input-placeholder-foreground: var(--vscode-input-placeholderForeground);
+    --trace-viewer-ui-font-family: var(--vscode-editor-fontFamily);
+    --trace-viewer-statusBar-background: var(--vscode-statusBar-background);
+    --trace-viewer-statusBar-foreground: var(--vscode-statusBar-foreground);
+    --trace-viewer-ui-font-size1: var(--vscode-font-size);
+    --trace-viewer-editorWidget-background: var(--vscode-editorWidget-background);
+    --trace-viewer-ui-padding: 6px;
+    --trace-viewer-list-line-height: 16px;
+    --trace-viewer-layout-color4: var(--vscode-editorWidget-background);
+    --trace-viewer-foreground: var(--vscode-editorWidget-foreground);
 }
