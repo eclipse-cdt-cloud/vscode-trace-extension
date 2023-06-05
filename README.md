@@ -215,3 +215,67 @@ yarn playwright test --retries <retries>
 [vscode-messages]: https://code.visualstudio.com/api/extension-guides/webview#passing-messages-from-an-extension-to-a-webview
 [vscode-webview]: https://github.com/rebornix/vscode-webview-react
 [vscode-webview-react]: https://github.com/rebornix/vscode-webview-react
+
+## Using the External API
+
+VSCode Trace Extension provides an external API that adopter extensions can rely on for communication. Currently the API is limited to the following:
+
+```javascript
+getActiveExperiment(): Experiment | undefined
+getActiveWebviewPanels(): { [key: string]: TraceViewerPanel | undefined; }
+getActiveWebviews(): vscode.WebviewView[]
+onWebviewCreated(listener: (data: vscode.WebviewView) => void): void
+onWebviewPanelCreated(listener: (data: vscode.WebviewPanel) => void): void
+```
+
+### Using the API from Adopter Extensions
+
+```javascript
+//The following retrieves the API object from the vscode-trace-extension
+const ext = vscode.extensions.getExtension("tracecompass-community.vscode-trace-extension");
+const importedApi = ext.exports;
+```
+
+Once you have the API object, you can proceed to make API calls. For example, if you wish to retrieve the active experiment in the Trace Viewer, the following API call can be used:
+
+```javascript
+const experiment = importedApi.getActiveExperiment();
+```
+
+The API provides getters to retrieve the active webviews and panels. This can be useful for scenarios when webviews/panels were created before the adopter extension was activated but the adopter extension still wants to handle messages from them.
+
+```javascript
+for (const webview of importedApi.getActiveWebviews()) {
+    webview.webview.onDidReceiveMessage((message) => {
+        switch (message.command) {
+            case "webviewReady":
+            console.log("From adopter extension - webviewReady signal received");
+            break;
+            default:
+            break;
+        }
+    });
+}
+```
+
+The API also provides a way to attach a listener for when webview or webview panel is created. Note that this listener will not be called for webviews and panels created before the registration of the listener. It is recommended to register the listeners during the activation of the adopter extensions.
+
+```javascript
+importedApi.onWebviewPanelCreated(_panel => {
+    // For newly created panel, handle messages from webviews
+    _panel.webview.onDidReceiveMessage((message) => {
+        switch (message.command) {
+            case "webviewReady":
+            console.log("From adopter extension - webviewReady signal received");
+            break;
+            default:
+            break;
+        }
+    });
+    _panel.onDidDispose(() => {
+        console.log("panel disposed");
+    });
+});
+```
+
+As a general rule, adopter extensions should retrieve and handle the webviews and webview panels once during their activation by calling `getActiveWebviews` and `getActiveWebviewPanels`. This ensures that the webviews and panels created before the activation of the adopter extension are handled. To handle any new webviews and panels created afterwards, listeners can be registered by calling `onWebviewCreated` and `onWebviewPanelCreated`.

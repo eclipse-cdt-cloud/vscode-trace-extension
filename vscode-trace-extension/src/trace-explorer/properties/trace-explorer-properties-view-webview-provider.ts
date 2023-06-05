@@ -4,6 +4,7 @@
  * Licensed under the MIT license. See LICENSE file in the project root for details.
  ***************************************************************************************/
 import * as vscode from 'vscode';
+import { traceExtensionWebviewManager } from 'vscode-trace-extension/src/extension';
 import { getTraceServerUrl } from 'vscode-trace-extension/src/utils/tspClient';
 
 export class TraceExplorerItemPropertiesProvider implements vscode.WebviewViewProvider {
@@ -26,6 +27,7 @@ export class TraceExplorerItemPropertiesProvider implements vscode.WebviewViewPr
           ]
       };
       webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+      traceExtensionWebviewManager.fireWebviewCreated(webviewView);
   }
 
   postMessagetoWebview(_command: string, _data: unknown): void {

@@ -8,14 +8,17 @@ import { fileHandler, openOverviewHandler, resetZoomHandler, undoRedoHandler, zo
 import { TraceServerConnectionStatusService } from './utils/trace-server-status';
 import { getTspClientUrl, updateTspClient } from './utils/tspClient';
 import { TraceExtensionLogger } from './utils/trace-extension-logger';
+import { ExternalAPI, traceExtensionAPI} from './external-api/external-api';
+import { TraceExtensionWebviewManager } from './utils/trace-extension-webview-manager';
 import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import { TraceViewerPanel } from './trace-viewer-panel/trace-viewer-webview-panel';
 import { TspClientProvider } from 'vscode-trace-common/lib/client/tsp-client-provider-impl';
 
 export let traceLogger: TraceExtensionLogger;
+export const traceExtensionWebviewManager: TraceExtensionWebviewManager = new TraceExtensionWebviewManager();
 const tspClientProvider = new TspClientProvider(getTspClientUrl(), undefined);
 
-export function activate(context: vscode.ExtensionContext): void {
+export function activate(context: vscode.ExtensionContext): ExternalAPI {
     traceLogger = new TraceExtensionLogger('Trace Extension');
 
     const serverStatusBarItemPriority = 1;
@@ -117,10 +120,12 @@ export function activate(context: vscode.ExtensionContext): void {
 
     vscode.commands.executeCommand('setContext', 'traceViewer.markerSetsPresent', false);
     vscode.commands.executeCommand('setContext', 'traceViewer.markerCategoriesPresent', false);
+    return traceExtensionAPI;
 }
 
 export function deactivate(): void {
     traceLogger.disposeChannel();
+    traceExtensionWebviewManager.dispose();
 }
 
 async function startTraceServerIfAvailable(): Promise<void> {
