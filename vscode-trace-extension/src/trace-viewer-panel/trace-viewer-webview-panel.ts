@@ -9,6 +9,7 @@ import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message
 import { MarkerSet } from 'tsp-typescript-client/lib/models/markerset';
 import JSONBigConfig from 'json-bigint';
 import * as fs from 'fs';
+import { traceExtensionWebviewManager } from '../extension';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
@@ -99,6 +100,10 @@ export class TraceViewerPanel {
 		TraceViewerPanel.currentPanel?.showMarkersFilter();
 	}
 
+	public static getCurrentExperiment(): Experiment | undefined {
+	    return TraceViewerPanel.currentPanel?._experiment;
+	}
+
 	private static async saveTraceCsv(csvData: string, defaultFileName: string) {
 	    const saveDialogOptions = {
 	        defaultUri: vscode.workspace.workspaceFolders
@@ -143,6 +148,7 @@ export class TraceViewerPanel {
 
 	    // Set the webview's initial html content
 	    this._panel.webview.html = this._getHtmlForWebview();
+	    traceExtensionWebviewManager.fireWebviewPanelCreated(this._panel);
 
 	    // Listen for when the panel is disposed
 	    // This happens when the user closes the panel or when the panel is closed programmatically

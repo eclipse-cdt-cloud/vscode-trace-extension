@@ -8,6 +8,7 @@ import { TraceServerConnectionStatusService } from '../../utils/trace-server-sta
 import { getTraceServerUrl, getTspClientUrl } from '../../utils/tspClient';
 import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
+import { traceExtensionWebviewManager } from 'vscode-trace-extension/src/extension';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
@@ -47,6 +48,7 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
 	    };
 
 	    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+	    traceExtensionWebviewManager.fireWebviewCreated(webviewView);
 
 	    // Handle messages from the webview
 	    webviewView.webview.onDidReceiveMessage(message => {
