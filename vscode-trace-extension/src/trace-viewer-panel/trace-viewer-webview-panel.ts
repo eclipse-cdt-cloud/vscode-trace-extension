@@ -247,14 +247,14 @@ export class TraceViewerPanel {
 
 	undoRedo(undo: boolean): void {
 	    if (undo) {
-	        this._panel.webview.postMessage({ command: 'undo' });
+	        this._panel.webview.postMessage({ command: VSCODE_MESSAGES.UNDO });
 	    } else {
-	        this._panel.webview.postMessage({ command: 'redo' });
+	        this._panel.webview.postMessage({ command: VSCODE_MESSAGES.REDO });
 	    }
 	}
 
 	updateZoom(hasZoomedIn: boolean): void {
-	    this._panel.webview.postMessage({ command: 'updateZoom', data: hasZoomedIn});
+	    this._panel.webview.postMessage({ command: VSCODE_MESSAGES.UPDATE_ZOOM, data: hasZoomedIn});
 	}
 
 	loadTheme(): void {

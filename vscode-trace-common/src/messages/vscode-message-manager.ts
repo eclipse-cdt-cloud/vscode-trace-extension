@@ -43,6 +43,9 @@ export const VSCODE_MESSAGES = {
     TRACE_VIEWER_TAB_ACTIVATED: 'traceViewerTabActivated',
     UPDATE_PROPERTIES: 'updateProperties',
     WEBVIEW_READY: 'webviewReady',
+    UNDO: 'undo',
+    REDO: 'redo',
+    UPDATE_ZOOM: 'updateZoom'
 };
 
 export class VsCodeMessageManager extends Messages.MessageManager {
