@@ -102,13 +102,13 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState>  {
           case VSCODE_MESSAGES.RESET_ZOOM:
               this.resetZoom();
               break;
-          case 'undo':
+          case VSCODE_MESSAGES.UNDO:
               this.undo();
               break;
-          case 'redo':
+          case VSCODE_MESSAGES.REDO:
               this.redo();
               break;
-          case 'updateZoom':
+          case VSCODE_MESSAGES.UPDATE_ZOOM:
               this.updateZoom(message.data);
               break;
           }
