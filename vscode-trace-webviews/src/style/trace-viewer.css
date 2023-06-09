@@ -18,6 +18,7 @@
     --trace-viewer-editor-background: var(--vscode-editor-background);
     --trace-viewer-tree-inactiveIndentGuidesStroke: var(--vscode-tree-indentGuidesStroke);
     --trace-viewer-input-background: var(--vscode-input-background);
+    --trace-viewer-input-foreground: var(--vscode-input-foreground);
     --trace-viewer-input-placeholder-foreground: var(--vscode-input-placeholderForeground);
     --trace-viewer-ui-font-family: var(--vscode-editor-fontFamily);
     --trace-viewer-statusBar-background: var(--vscode-statusBar-background);
