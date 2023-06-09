@@ -2,6 +2,7 @@
 import * as vscode from 'vscode';
 import { AnalysisProvider } from './trace-explorer/analysis-tree';
 import { TraceExplorerItemPropertiesProvider } from './trace-explorer/properties/trace-explorer-properties-view-webview-provider';
+import { TraceExplorerTimeRangeDataProvider } from './trace-explorer/time-range/trace-explorer-time-range-data-webview-provider';
 import { TraceExplorerAvailableViewsProvider } from './trace-explorer/available-views/trace-explorer-available-views-webview-provider';
 import { TraceExplorerOpenedTracesViewProvider } from './trace-explorer/opened-traces/trace-explorer-opened-traces-webview-provider';
 import { fileHandler, openOverviewHandler, resetZoomHandler, undoRedoHandler, zoomHandler, keyboardShortcutsHandler } from './trace-explorer/trace-tree';
@@ -38,6 +39,10 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
     const propertiesProvider = new TraceExplorerItemPropertiesProvider(context.extensionUri);
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(TraceExplorerItemPropertiesProvider.viewType, propertiesProvider));
+
+    const timeRangeDataProvider = new TraceExplorerTimeRangeDataProvider(context.extensionUri);
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider(TraceExplorerTimeRangeDataProvider.viewType, timeRangeDataProvider));
 
     context.subscriptions.push(vscode.commands.registerCommand('messages.post.propertiespanel', (command: string, data) => {
         if (propertiesProvider) {

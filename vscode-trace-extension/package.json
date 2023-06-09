@@ -124,6 +124,12 @@
         },
         {
           "type": "webview",
+          "id": "traceExplorer.timeRangeDataView",
+          "name": "Time Range Data",
+          "when": "!trace-explorer.noExperiments"
+        },
+        {
+          "type": "webview",
           "id": "traceExplorer.itemPropertiesView",
           "name": "Item Properties",
           "when": "!trace-explorer.noExperiments"

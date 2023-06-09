@@ -18,6 +18,8 @@ import { VsCodeMessageManager, VSCODE_MESSAGES } from 'vscode-trace-common/lib/m
 import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import '../style/trace-viewer.css';
 import { TraceServerUrlProvider } from 'vscode-trace-common/lib/server/trace-server-url-provider';
+import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
+import { TimeRange } from 'traceviewer-base/lib/utils/time-range';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
@@ -36,6 +38,10 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState>  {
 
   private _signalHandler: VsCodeMessageManager;
   private _urlProvider: TraceServerUrlProvider;
+
+  private onViewRangeUpdated = (payload: TimeRangeUpdatePayload): void => this._signalHandler.viewRangeUpdated(payload);
+  private onSelectionRangeUpdated = (payload: TimeRangeUpdatePayload): void => this._signalHandler.selectionRangeUpdated(payload);
+  private onExperimentUpdated = (payload: Experiment): void => this._signalHandler.experimentUpdated(payload);
 
   private _onProperties = (properties: { [key: string]: string }): void => this.doHandlePropertiesSignal(properties);
   private _onSaveAsCSV = (payload: {traceId: string, data: string}): void => this.doHandleSaveAsCSVSignal(payload);
@@ -119,6 +125,19 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState>  {
               break;
           case VSCODE_MESSAGES.UPDATE_ZOOM:
               this.updateZoom(message.data);
+          case VSCODE_MESSAGES.VIEW_RANGE_UPDATED:
+              signalManager().fireViewRangeUpdated(JSONBig.parse(message.data));
+              break;
+          case VSCODE_MESSAGES.SELECTION_RANGE_UPDATED:
+              signalManager().fireSelectionRangeUpdated(JSONBig.parse(message.data));
+              break;
+          case VSCODE_MESSAGES.REQUEST_SELECTION_RANGE_CHANGE:
+              const { experimentUUID, timeRange } = JSONBig.parse(message.data);
+              const payload = {
+                  experimentUUID,
+                  timeRange: new TimeRange(BigInt(timeRange.start),BigInt(timeRange.end))
+              } as TimeRangeUpdatePayload;
+              signalManager().fireRequestSelectionRangeChange(payload);
               break;
           case VSCODE_MESSAGES.UPDATE_MARKER_CATEGORY_STATE:
               if (message?.data) {
@@ -158,6 +177,9 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState>  {
       signalManager().on(Signals.ITEM_PROPERTIES_UPDATED, this._onProperties);
       signalManager().on(Signals.SAVE_AS_CSV, this._onSaveAsCSV);
       signalManager().on(Signals.MARKER_CATEGORY_CLOSED, this.onMarkerCategoryClosedSignal);
+      signalManager().on(Signals.VIEW_RANGE_UPDATED, this.onViewRangeUpdated);
+      signalManager().on(Signals.SELECTION_RANGE_UPDATED, this.onSelectionRangeUpdated);
+      signalManager().on(Signals.EXPERIMENT_UPDATED, this.onExperimentUpdated);
   }
 
   componentWillUnmount(): void {
@@ -165,6 +187,9 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState>  {
       signalManager().off(Signals.OVERVIEW_OUTPUT_SELECTED, this._onOverviewSelected);
       signalManager().off(Signals.SAVE_AS_CSV, this._onSaveAsCSV);
       signalManager().off(Signals.MARKER_CATEGORY_CLOSED, this.onMarkerCategoryClosedSignal);
+      signalManager().off(Signals.VIEW_RANGE_UPDATED, this.onViewRangeUpdated);
+      signalManager().off(Signals.SELECTION_RANGE_UPDATED, this.onSelectionRangeUpdated);
+      signalManager().off(Signals.EXPERIMENT_UPDATED, this.onExperimentUpdated);
       window.removeEventListener('resize', this.onResize);
   }
 

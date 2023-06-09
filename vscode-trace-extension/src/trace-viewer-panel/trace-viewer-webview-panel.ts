@@ -10,6 +10,8 @@ import { MarkerSet } from 'tsp-typescript-client/lib/models/markerset';
 import JSONBigConfig from 'json-bigint';
 import * as fs from 'fs';
 import { traceExtensionWebviewManager } from '../extension';
+import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
+import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
@@ -42,6 +44,7 @@ export class TraceViewerPanel {
 	private _disposables: vscode.Disposable[] = [];
 	private _experiment: Experiment | undefined = undefined;
 	private _onExperimentSelected = (openedExperiment: Experiment | undefined): void => this.doHandleExperimentSelectedSignal(openedExperiment);
+	private _onRequestSelectionRangeChange = (payload: TimeRangeUpdatePayload): void => this.doHandleRequestSelectionRangeChange(payload);
 
 	public static createOrShow(extensionUri: vscode.Uri, name: string, statusService: TraceServerConnectionStatusService | undefined): TraceViewerPanel {
 
@@ -160,9 +163,16 @@ export class TraceViewerPanel {
 	    // Listen for when the panel is disposed
 	    // This happens when the user closes the panel or when the panel is closed programmatically
 	    this._panel.onDidDispose(() => {
+	        const isActivePanel = TraceViewerPanel.activePanels[name] === TraceViewerPanel.currentPanel;
+	        const traceUUID = TraceViewerPanel.activePanels[name]?._experiment?.UUID;
 	        this.dispose();
 	        TraceViewerPanel.activePanels[name] = undefined;
-	        signalManager().fireExperimentSelectedSignal(undefined);
+	        if (traceUUID) {
+	            signalManager().fireCloseTraceViewerTabSignal(traceUUID);
+	        }
+	        if (isActivePanel) {
+	            signalManager().fireExperimentSelectedSignal(undefined);
+	        }
 	        return this._disposables;
 	    });
 
@@ -242,9 +252,20 @@ export class TraceViewerPanel {
 	                vscode.commands.executeCommand('setContext', 'traceViewer.markerCategoriesPresent', status);
 	            }
 	            return;
+	        case VSCODE_MESSAGES.VIEW_RANGE_UPDATED:
+	            signalManager().fireViewRangeUpdated(JSONBig.parse(message.data));
+	            break;
+	        case VSCODE_MESSAGES.SELECTION_RANGE_UPDATED:
+	            signalManager().fireSelectionRangeUpdated(JSONBig.parse(message.data));
+	            break;
+	        case VSCODE_MESSAGES.EXPERIMENT_UPDATED:
+	            const experiment = convertSignalExperiment(JSONBig.parse(message.data));
+	            signalManager().fireExperimentUpdatedSignal(experiment);
+	            break;
 	        }
 	    }, undefined, this._disposables);
 	    signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
+	    signalManager().on(Signals.REQUEST_SELECTION_RANGE_CHANGE, this._onRequestSelectionRangeChange);
 	}
 
 	public doRefactor(): void {
@@ -266,6 +287,7 @@ export class TraceViewerPanel {
 	        }
 	    }
 	    signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
+	    signalManager().off(Signals.REQUEST_SELECTION_RANGE_CHANGE, this._onRequestSelectionRangeChange);
 	}
 
 	protected doHandleExperimentSelectedSignal(experiment: Experiment | undefined): void {
@@ -276,6 +298,13 @@ export class TraceViewerPanel {
 	    }
 	}
 
+	protected doHandleExperimentUpdatedSignal(experiment: Experiment): void {
+	    signalManager().fireExperimentUpdatedSignal(experiment);
+	}
+
+	protected doHandleRequestSelectionRangeChange(payload: TimeRangeUpdatePayload): void {
+	    this._panel.webview.postMessage({ command: VSCODE_MESSAGES.REQUEST_SELECTION_RANGE_CHANGE, data: JSONBig.stringify(payload)});
+	}
 	setExperiment(experiment: Experiment): void {
 	    this._experiment = experiment;
 	    const wrapper: string = JSONBig.stringify(experiment);

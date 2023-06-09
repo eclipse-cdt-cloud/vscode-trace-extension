@@ -3,6 +3,7 @@ import { OutputAddedSignalPayload } from 'traceviewer-base/lib/signals/output-ad
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { MarkerSet } from 'tsp-typescript-client/lib/models/markerset';
 import JSONBigConfig from 'json-bigint';
+import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
@@ -29,6 +30,8 @@ export const VSCODE_MESSAGES = {
     DELETE_TRACE: 'deleteTrace',
     EXPERIMENT_OPENED: 'experimentOpened',
     EXPERIMENT_SELECTED: 'experimentSelected',
+    EXPERIMENT_UPDATED: 'experimentUpdated',
+    EXPERIMENT_CLOSED: 'experimentClosed',
     NEW_STATUS: 'newStatus',
     OPENED_TRACES_UPDATED: 'openedTracesUpdated',
     OPEN_OVERVIEW: 'open-overview',
@@ -42,6 +45,7 @@ export const VSCODE_MESSAGES = {
     SET_THEME: 'set-theme',
     SET_TSP_CLIENT: 'set-tspClient',
     TRACE_VIEWER_TAB_ACTIVATED: 'traceViewerTabActivated',
+    TRACE_VIEWER_TAB_CLOSED: 'traceViewerTabClosed',
     UPDATE_PROPERTIES: 'updateProperties',
     WEBVIEW_READY: 'webviewReady',
     UNDO: 'undo',
@@ -57,7 +61,12 @@ export const VSCODE_MESSAGES = {
     UPDATE_MARKER_SET_STATE: 'updateMarkerSetState',
     MARKER_SETS_CONTEXT: 'markerSetsContext',
     MARKER_CATEGORIES_CONTEXT: 'markerCategoriesContext',
-    TRACE_SERVER_URL_CHANGED: 'traceServerUrlChanged'
+    TRACE_SERVER_URL_CHANGED: 'traceServerUrlChanged',
+    VIEW_RANGE_UPDATED: 'viewRangeUpdated',
+    SELECTION_RANGE_UPDATED: 'selectionRangeUpdated',
+    REQUEST_SELECTION_RANGE_CHANGE: 'requestSelectionRangeChange',
+    RESTORE_VIEW: 'restoreView',
+    RESTORE_COMPLETE: 'restoreComplete',
 };
 
 export class VsCodeMessageManager extends Messages.MessageManager {
@@ -111,12 +120,20 @@ export class VsCodeMessageManager extends Messages.MessageManager {
         vscode.postMessage({command: VSCODE_MESSAGES.DELETE_TRACE, data: {wrapper}});
     }
 
-    experimentSelected(experiment: Experiment | undefined): void {
-        let wrapper = undefined;
-        if (experiment) {
-            wrapper = JSONBig.stringify(experiment);
-        }
-        vscode.postMessage({command: VSCODE_MESSAGES.EXPERIMENT_SELECTED, data: {wrapper}});
+    experimentSelected(experiment?: Experiment | undefined): void {
+        const wrapper = experiment ? JSONBig.stringify(experiment) : undefined;
+        const data = { wrapper };
+        vscode.postMessage({ command: VSCODE_MESSAGES.EXPERIMENT_SELECTED, data });
+    }
+
+    experimentUpdated(experiment: Experiment): void {
+        const data = JSONBig.stringify(experiment);
+        vscode.postMessage({ command: VSCODE_MESSAGES.EXPERIMENT_UPDATED, data });
+    }
+
+    experimentClosed(experiment: Experiment): void {
+        const data = JSONBig.stringify(experiment);
+        vscode.postMessage({ command: VSCODE_MESSAGES.EXPERIMENT_CLOSED, data });
     }
 
     outputAdded(payload: OutputAddedSignalPayload): void {
@@ -127,6 +144,21 @@ export class VsCodeMessageManager extends Messages.MessageManager {
 
     propertiesUpdated(properties: { [key: string]: string }): void {
         vscode.postMessage({command: VSCODE_MESSAGES.UPDATE_PROPERTIES, data: {properties}});
+    }
+
+    viewRangeUpdated(payload: TimeRangeUpdatePayload): void {
+        const data = JSONBig.stringify(payload);
+        vscode.postMessage({ command: VSCODE_MESSAGES.VIEW_RANGE_UPDATED, data });
+    }
+
+    selectionRangeUpdated(payload: TimeRangeUpdatePayload): void {
+        const data = JSONBig.stringify(payload);
+        vscode.postMessage({ command: VSCODE_MESSAGES.SELECTION_RANGE_UPDATED, data });
+    }
+
+    requestSelectionRangeChange(payload: TimeRangeUpdatePayload): void {
+        const data = JSONBig.stringify(payload);
+        vscode.postMessage({ command: VSCODE_MESSAGES.REQUEST_SELECTION_RANGE_CHANGE, data });
     }
 
     saveAsCSV(payload: {traceId: string, data: string}): void {
