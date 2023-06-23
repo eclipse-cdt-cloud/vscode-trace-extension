@@ -6,7 +6,7 @@ import { ITspClientProvider } from 'traceviewer-base/lib/tsp-client-provider';
 import { ReactAvailableViewsWidget } from 'traceviewer-react-components/lib/trace-explorer/trace-explorer-views-widget';
 import 'traceviewer-react-components/style/trace-explorer.css';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
-import { TspClientProvider } from '../../common/tsp-client-provider-impl';
+import { TspClientProvider } from 'vscode-trace-common/lib/client/tsp-client-provider-impl';
 import { VsCodeMessageManager, VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import '../../style/react-contextify.css';
 import '../../style/trace-viewer.css';
