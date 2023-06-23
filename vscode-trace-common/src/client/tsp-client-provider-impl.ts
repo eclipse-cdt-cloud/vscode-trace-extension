@@ -3,18 +3,18 @@ import { RestClient, ConnectionStatusListener } from 'tsp-typescript-client/lib/
 import { ExperimentManager } from 'traceviewer-base/lib/experiment-manager';
 import { TraceManager } from 'traceviewer-base/lib/trace-manager';
 import { ITspClientProvider } from 'traceviewer-base/lib/tsp-client-provider';
-import { VsCodeMessageManager } from 'vscode-trace-common/lib/messages/vscode-message-manager';
+import { VsCodeMessageManager } from '../messages/vscode-message-manager';
 
 export class TspClientProvider implements ITspClientProvider {
 
     private _tspClient: TspClient;
     private _traceManager: TraceManager;
     private _experimentManager: ExperimentManager;
-    private _signalHandler: VsCodeMessageManager;
+    private _signalHandler: VsCodeMessageManager | undefined;
     private _statusListener: ConnectionStatusListener;
     // private _listeners: ((tspClient: TspClient) => void)[];
 
-    constructor(traceServerUrl: string, signalHandler: VsCodeMessageManager
+    constructor(traceServerUrl: string, signalHandler: VsCodeMessageManager | undefined
     ) {
         this._tspClient = new TspClient(traceServerUrl);
         this._traceManager = new TraceManager(this._tspClient);
@@ -22,7 +22,7 @@ export class TspClientProvider implements ITspClientProvider {
 
         this._signalHandler = signalHandler;
         this._statusListener = ((status: boolean) => {
-            this._signalHandler.notifyConnection(status);
+            this._signalHandler?.notifyConnection(status);
         });
         RestClient.addConnectionStatusListener(this._statusListener);
         // this._listeners = [];
