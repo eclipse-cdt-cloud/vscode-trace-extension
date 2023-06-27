@@ -46,7 +46,8 @@ export const VSCODE_MESSAGES = {
     UNDO: 'undo',
     REDO: 'redo',
     UPDATE_ZOOM: 'updateZoom',
-    OPEN_TRACE: 'openTrace'
+    OPEN_TRACE: 'openTrace',
+    TRACE_SERVER_STARTED: 'traceServerStarted'
 };
 
 export class VsCodeMessageManager extends Messages.MessageManager {
