@@ -86,6 +86,10 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
                       this.setState({experimentsOpened: true});
                   }
               }
+              break;
+          case VSCODE_MESSAGES.TRACE_SERVER_STARTED:
+              signalManager().fireTraceServerStartedSignal();
+              this.setState({experimentsOpened: true});
           }
       });
       // this.onOutputRemoved = this.onOutputRemoved.bind(this);

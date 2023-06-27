@@ -8,6 +8,7 @@ import { fileHandler, openOverviewHandler, resetZoomHandler, undoRedoHandler, zo
 import { TraceServerConnectionStatusService } from './utils/trace-server-status';
 import { updateTspClient } from './utils/tspClient';
 import { TraceExtensionLogger } from './utils/trace-extension-logger';
+import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 
 export let traceLogger: TraceExtensionLogger;
 
@@ -88,6 +89,9 @@ export function activate(context: vscode.ExtensionContext): void {
 
     context.subscriptions.push(vscode.commands.registerCommand('serverStatus.started', () => {
         serverStatusService.render(true);
+        if (tracesProvider) {
+            tracesProvider.postMessagetoWebview(VSCODE_MESSAGES.TRACE_SERVER_STARTED, undefined);
+        }
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('serverStatus.stopped', () => {

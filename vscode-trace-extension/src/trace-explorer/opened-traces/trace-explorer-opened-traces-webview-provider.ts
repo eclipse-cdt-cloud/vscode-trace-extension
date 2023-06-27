@@ -136,6 +136,16 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 	    }, undefined, this._disposables);
 	}
 
+	postMessagetoWebview(_command: string, _data: unknown): void {
+	    if (this._view && _command) {
+	        if (_data) {
+	        	this._view.webview.postMessage({command: _command, data: _data});
+	        } else {
+	            this._view.webview.postMessage({command: _command});
+	        }
+	    }
+	}
+
 	/* eslint-disable max-len */
 	private _getHtmlForWebview(webview: vscode.Webview) {
 	    // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
