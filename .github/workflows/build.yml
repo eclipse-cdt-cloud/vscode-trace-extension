@@ -60,6 +60,8 @@ jobs:
       run: yarn download:sample-traces
     - name: Download trace server
       run: yarn download:server
+    - name: Check Java
+      run : java -version  
     - name: Start trace server
       run: yarn start:server &
     - name: Download openvscode-server

@@ -13,6 +13,7 @@ import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message
 export let traceLogger: TraceExtensionLogger;
 
 export function activate(context: vscode.ExtensionContext): void {
+    console.log('ENTER: activate');
     traceLogger = new TraceExtensionLogger('Trace Extension');
 
     const serverStatusBarItemPriority = 1;
@@ -97,6 +98,7 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(vscode.commands.registerCommand('serverStatus.stopped', () => {
         serverStatusService.render(false);
     }));
+    console.log('EXIT: activate');
 }
 
 export function deactivate(): void {
