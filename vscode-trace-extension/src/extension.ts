@@ -6,17 +6,18 @@ import { TraceExplorerAvailableViewsProvider } from './trace-explorer/available-
 import { TraceExplorerOpenedTracesViewProvider } from './trace-explorer/opened-traces/trace-explorer-opened-traces-webview-provider';
 import { fileHandler, openOverviewHandler, resetZoomHandler, undoRedoHandler, zoomHandler, keyboardShortcutsHandler } from './trace-explorer/trace-tree';
 import { TraceServerConnectionStatusService } from './utils/trace-server-status';
-import { getTspClientUrl, updateTspClient } from './utils/tspClient';
+import { getTraceServerUrl, getTspClientUrl, updateTspClient } from './utils/tspClient';
 import { TraceExtensionLogger } from './utils/trace-extension-logger';
 import { ExternalAPI, traceExtensionAPI} from './external-api/external-api';
 import { TraceExtensionWebviewManager } from './utils/trace-extension-webview-manager';
 import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import { TraceViewerPanel } from './trace-viewer-panel/trace-viewer-webview-panel';
 import { TspClientProvider } from 'vscode-trace-common/lib/client/tsp-client-provider-impl';
+import { TraceServerUrlProvider } from 'vscode-trace-common/lib/server/trace-server-url-provider';
 
 export let traceLogger: TraceExtensionLogger;
 export const traceExtensionWebviewManager: TraceExtensionWebviewManager = new TraceExtensionWebviewManager();
-const tspClientProvider = new TspClientProvider(getTspClientUrl(), undefined);
+const tspClientProvider = new TspClientProvider(getTspClientUrl(), undefined, new TraceServerUrlProvider());
 
 export function activate(context: vscode.ExtensionContext): ExternalAPI {
     traceLogger = new TraceExtensionLogger('Trace Extension');
@@ -58,6 +59,17 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
         if (e.affectsConfiguration('trace-compass.traceserver.url') || e.affectsConfiguration('trace-compass.traceserver.apiPath')) {
             updateTspClient();
+        }
+
+        if (e.affectsConfiguration('trace-compass.traceserver.url')) {
+            const newUrl = getTraceServerUrl();
+
+            // Signal the change to the `Opened traces` and `Available views` webview
+            tracesProvider.updateTraceServerUrl(newUrl);
+            myAnalysisProvider.updateTraceServerUrl(newUrl);
+
+            // Signal the change to all trace panels
+            TraceViewerPanel.updateTraceServerUrl(newUrl);
         }
     }));
 

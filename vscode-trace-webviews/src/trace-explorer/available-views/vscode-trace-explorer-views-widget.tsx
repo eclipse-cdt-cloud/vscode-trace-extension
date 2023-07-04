@@ -12,6 +12,7 @@ import '../../style/react-contextify.css';
 import '../../style/trace-viewer.css';
 import JSONBigConfig from 'json-bigint';
 import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
+import { TraceServerUrlProvider } from 'vscode-trace-common/lib/server/trace-server-url-provider';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
@@ -23,6 +24,7 @@ interface AvailableViewsAppState {
 
 class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppState>  {
   private _signalHandler: VsCodeMessageManager;
+  private _urlProvider: TraceServerUrlProvider;
 
   static ID = 'trace-explorer-analysis-widget';
   static LABEL = 'Available Analyses';
@@ -41,7 +43,8 @@ class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppStat
           const message = event.data; // The JSON data our extension sent
           switch (message.command) {
           case VSCODE_MESSAGES.SET_TSP_CLIENT:
-              this.setState({ tspClientProvider: new TspClientProvider(message.data, this._signalHandler) });
+              this._urlProvider = new TraceServerUrlProvider();
+              this.setState({ tspClientProvider: new TspClientProvider(message.data, this._signalHandler, this._urlProvider) });
               break;
           case VSCODE_MESSAGES.EXPERIMENT_SELECTED:
               let experiment: Experiment | undefined = undefined;
@@ -49,6 +52,11 @@ class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppStat
                   experiment = convertSignalExperiment(JSONBig.parse(message.data));
               }
               signalManager().fireExperimentSelectedSignal(experiment);
+              break;
+          case VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED:
+              if (message.data && this.state.tspClientProvider && this._urlProvider) {
+                  this._urlProvider.updateTraceServerUrl(message.data);
+              }
               break;
           }
       });

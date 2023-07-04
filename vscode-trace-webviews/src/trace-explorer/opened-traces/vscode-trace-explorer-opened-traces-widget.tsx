@@ -15,6 +15,7 @@ import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-
 import JSONBigConfig from 'json-bigint';
 import { OpenedTracesUpdatedSignalPayload } from 'traceviewer-base/lib/signals/opened-traces-updated-signal-payload';
 import { ReactExplorerPlaceholderWidget } from 'traceviewer-react-components/lib/trace-explorer/trace-explorer-placeholder-widget';
+import { TraceServerUrlProvider } from 'vscode-trace-common/lib/server/trace-server-url-provider';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
@@ -30,6 +31,7 @@ const MENU_ID = 'traceExplorer.openedTraces.menuId';
 class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState>  {
   private _signalHandler: VsCodeMessageManager;
   private _experimentManager: ExperimentManager;
+  private _urlProvider: TraceServerUrlProvider;
 
   static ID = 'trace-explorer-opened-traces-widget';
   static LABEL = 'Opened Traces';
@@ -57,20 +59,20 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
       };
       this._signalHandler = new VsCodeMessageManager();
       window.addEventListener('message', event => {
-
           const message = event.data; // The JSON data our extension sent
           switch (message.command) {
           case VSCODE_MESSAGES.SET_TSP_CLIENT:
-              const tspClientProvider: ITspClientProvider = new TspClientProvider(message.data, this._signalHandler);
+              this._urlProvider = new TraceServerUrlProvider();
+              const tspClientProvider: ITspClientProvider = new TspClientProvider(message.data, this._signalHandler, this._urlProvider);
               this._experimentManager = tspClientProvider.getExperimentManager();
+
+              tspClientProvider.addTspClientChangeListener(() => {
+                  if (this.state.tspClientProvider) {
+                      this._experimentManager = this.state.tspClientProvider.getExperimentManager();
+                  }
+              });
+
               this.setState({ tspClientProvider: tspClientProvider });
-              if (this.state.tspClientProvider) {
-                  this.state.tspClientProvider.addTspClientChangeListener(() => {
-                      if (this.state.tspClientProvider) {
-                          this._experimentManager = this.state.tspClientProvider.getExperimentManager();
-                      }
-                  });
-              }
               break;
           case VSCODE_MESSAGES.TRACE_VIEWER_TAB_ACTIVATED:
               if (message.data) {
@@ -90,6 +92,11 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
           case VSCODE_MESSAGES.TRACE_SERVER_STARTED:
               signalManager().fireTraceServerStartedSignal();
               this.setState({experimentsOpened: true});
+          case VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED:
+              if (message.data && this.state.tspClientProvider && this._urlProvider) {
+                  this._urlProvider.updateTraceServerUrl(message.data);
+              }
+              break;
           }
       });
       // this.onOutputRemoved = this.onOutputRemoved.bind(this);

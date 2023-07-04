@@ -126,6 +126,13 @@ export class TraceViewerPanel {
 	    }
 	}
 
+	public static updateTraceServerUrl(newUrl: string): void {
+	    Object.values(TraceViewerPanel.activePanels)
+	        .forEach(trace => trace?._panel.webview.postMessage({
+	            command: VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED, data: newUrl
+	        }));
+	}
+
 	private constructor(extensionUri: vscode.Uri, column: vscode.ViewColumn, name: string, statusService: TraceServerConnectionStatusService | undefined) {
 	    this._extensionUri = extensionUri;
 	    this._statusService = statusService;
