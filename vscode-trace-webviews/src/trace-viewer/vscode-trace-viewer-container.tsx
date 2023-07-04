@@ -17,6 +17,7 @@ import { MarkerSet } from 'tsp-typescript-client/lib/models/markerset';
 import { VsCodeMessageManager, VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import '../style/trace-viewer.css';
+import { TraceServerUrlProvider } from 'vscode-trace-common/lib/server/trace-server-url-provider';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true,
@@ -34,6 +35,7 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState>  {
   private DEFAULT_OVERVIEW_DATA_PROVIDER_ID = 'org.eclipse.tracecompass.internal.tmf.core.histogram.HistogramDataProvider';
 
   private _signalHandler: VsCodeMessageManager;
+  private _urlProvider: TraceServerUrlProvider;
 
   private _onProperties = (properties: { [key: string]: string }): void => this.doHandlePropertiesSignal(properties);
   private _onSaveAsCSV = (payload: {traceId: string, data: string}): void => this.doHandleSaveAsCSVSignal(payload);
@@ -85,7 +87,8 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState>  {
               this.doHandleExperimentSetSignal(convertSignalExperiment(JSONBig.parse(message.data)), false);
               break;
           case VSCODE_MESSAGES.SET_TSP_CLIENT:
-              this.setState({tspClientProvider: new TspClientProvider(message.data, this._signalHandler)}, () => {
+              this._urlProvider = new TraceServerUrlProvider();
+              this.setState({tspClientProvider: new TspClientProvider(message.data, this._signalHandler, this._urlProvider)}, () => {
                   if (message.experiment) {
                       this.doHandleExperimentSetSignal(convertSignalExperiment(JSONBig.parse(message.experiment)), true);
                   }
@@ -136,6 +139,11 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState>  {
               break;
           case VSCODE_MESSAGES.EXPERIMENT_SELECTED:
               this.doHandleExperimentSelectedSignal(convertSignalExperiment(JSONBig.parse(message.data)));
+              break;
+          case VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED:
+              if (message.data && this.state.tspClientProvider && this._urlProvider) {
+                  this._urlProvider.updateTraceServerUrl(message.data);
+              }
               break;
           }
       });

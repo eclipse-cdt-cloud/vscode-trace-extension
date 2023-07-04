@@ -56,7 +56,8 @@ export const VSCODE_MESSAGES = {
     UPDATE_MARKER_CATEGORY_STATE: 'updateMarkerCategoryState',
     UPDATE_MARKER_SET_STATE: 'updateMarkerSetState',
     MARKER_SETS_CONTEXT: 'markerSetsContext',
-    MARKER_CATEGORIES_CONTEXT: 'markerCategoriesContext'
+    MARKER_CATEGORIES_CONTEXT: 'markerCategoriesContext',
+    TRACE_SERVER_URL_CHANGED: 'traceServerUrlChanged'
 };
 
 export class VsCodeMessageManager extends Messages.MessageManager {

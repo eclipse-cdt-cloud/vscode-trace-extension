@@ -4,6 +4,7 @@ import { ExperimentManager } from 'traceviewer-base/lib/experiment-manager';
 import { TraceManager } from 'traceviewer-base/lib/trace-manager';
 import { ITspClientProvider } from 'traceviewer-base/lib/tsp-client-provider';
 import { VsCodeMessageManager } from '../messages/vscode-message-manager';
+import { TraceServerUrlProvider } from '../server/trace-server-url-provider';
 
 export class TspClientProvider implements ITspClientProvider {
 
@@ -12,9 +13,10 @@ export class TspClientProvider implements ITspClientProvider {
     private _experimentManager: ExperimentManager;
     private _signalHandler: VsCodeMessageManager | undefined;
     private _statusListener: ConnectionStatusListener;
-    // private _listeners: ((tspClient: TspClient) => void)[];
+    private _urlProvider: TraceServerUrlProvider;
+    private _listeners: ((tspClient: TspClient) => void)[];
 
-    constructor(traceServerUrl: string, signalHandler: VsCodeMessageManager | undefined
+    constructor(traceServerUrl: string, signalHandler: VsCodeMessageManager | undefined, _urlProvider: TraceServerUrlProvider
     ) {
         this._tspClient = new TspClient(traceServerUrl);
         this._traceManager = new TraceManager(this._tspClient);
@@ -27,13 +29,14 @@ export class TspClientProvider implements ITspClientProvider {
         RestClient.addConnectionStatusListener(this._statusListener);
         this._tspClient.checkHealth();
 
-        // this._listeners = [];
-        // tspUrlProvider.addTraceServerUrlChangedListener(url => {
-        //     this._tspClient = new TspClient(url);
-        //     this._traceManager = new TraceManager(this._tspClient);
-        //     this._experimentManager = new ExperimentManager(this._tspClient, this._traceManager);
-        //     this._listeners.forEach(listener => listener(this._tspClient));
-        // });
+        this._urlProvider = _urlProvider;
+        this._listeners = [];
+        this._urlProvider.onTraceServerUrlChange((url: string) => {
+            this._tspClient = new TspClient(url);
+            this._traceManager = new TraceManager(this._tspClient);
+            this._experimentManager = new ExperimentManager(this._tspClient, this._traceManager);
+            this._listeners.forEach(listener => listener(this._tspClient));
+        });
     }
 
     public getTspClient(): TspClient {
@@ -53,7 +56,7 @@ export class TspClientProvider implements ITspClientProvider {
      * @param listener The listener function to be called when the url is
      * changed
      */
-    addTspClientChangeListener(_listener: (tspClient: TspClient) => void): void {
-        // this._listeners.push(listener);
+    addTspClientChangeListener(listener: (tspClient: TspClient) => void): void {
+        this._listeners.push(listener);
     }
 }

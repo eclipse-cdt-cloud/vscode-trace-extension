@@ -30,6 +30,12 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
 		private readonly _statusService: TraceServerConnectionStatusService,
 	) { }
 
+	public updateTraceServerUrl(newUrl: string): void {
+	    if (this._view) {
+	        this._view.webview.postMessage({command: VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED, data: newUrl});
+	    }
+	}
+
 	public resolveWebviewView(
 	    webviewView: vscode.WebviewView,
 	    _context: vscode.WebviewViewResolveContext,
