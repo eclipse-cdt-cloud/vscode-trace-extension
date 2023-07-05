@@ -28,7 +28,10 @@
     "semantic-ui-react": "^0.86.0",
     "traceviewer-base": "next",
     "traceviewer-react-components": "next",
-    "vscode-trace-common": "0.0.0"
+    "vscode-trace-common": "0.0.0",
+    "@emotion/react": "^11.10.5",
+    "@emotion/styled": "^11.10.5",
+    "@mui/material": "^5.10.14"
     },
   "devDependencies": {
     "@types/jest": "^23.3.13",
