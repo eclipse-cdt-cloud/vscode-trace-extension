@@ -132,7 +132,7 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
   }
 
   protected doHandleClickEvent(event: React.MouseEvent<HTMLDivElement>, experiment: Experiment): void {
-      this._signalHandler.reOpenTrace(experiment);
+      this.doHandleReOpenTrace(experiment);
   }
 
   protected doHandleExperimentSelectedSignal(experiment: Experiment | undefined): void {
@@ -171,10 +171,21 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
       this.loading = false;
   }
 
+  protected async doHandleReOpenTrace(experiment: Experiment): Promise<void> {
+      let myExperiment: Experiment | undefined = experiment;
+      if (this.state.tspClientProvider) {
+          const exp = await this.state.tspClientProvider.getExperimentManager().updateExperiment(experiment.UUID);
+          if (exp) {
+              myExperiment = exp;
+          }
+      }
+      this._signalHandler.reOpenTrace(myExperiment);
+  }
+
   protected handleItemClick = (args: ItemParams): void => {
       switch (args.event.currentTarget.id) {
       case 'open-id':
-          this._signalHandler.reOpenTrace(args.props.experiment as Experiment);
+          this.doHandleReOpenTrace(args.props.experiment as Experiment);
           return;
       case 'close-id':
           this._signalHandler.closeTrace(args.props.experiment as Experiment);
