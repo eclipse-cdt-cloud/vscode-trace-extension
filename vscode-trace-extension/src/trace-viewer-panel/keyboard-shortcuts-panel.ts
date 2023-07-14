@@ -36,6 +36,7 @@ export class KeyboardShortcutsPanel {
 	private static _getHtmlForWebview(webview: vscode.Webview, extensionUri: vscode.Uri): string {
 	    // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
 	    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'pack', 'shortcutsPanel.js'));
+	    const packUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'pack'));
 
 	    // Use a nonce to whitelist which scripts can be run
 	    const nonce = getNonce();
@@ -54,7 +55,7 @@ export class KeyboardShortcutsPanel {
 					style-src ${webview.cspSource} vscode-resource: 'unsafe-inline' http: https: data:;
 					connect-src ${getTraceServerUrl()};
                     font-src ${webview.cspSource}">
-                <base href="${vscode.Uri.joinPath(extensionUri, 'pack').with({ scheme: 'vscode-resource' })}/">
+                <base href="${packUri}/">
 			</head>
 
 			<body>
