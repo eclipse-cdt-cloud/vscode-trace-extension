@@ -153,6 +153,7 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 	    // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
 	    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'pack', 'openedTracesPanel.js'));
 	    const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'lib', 'codicons', 'codicon.css'));
+	    const packUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'pack'));
 
 	    // Use a nonce to only allow a specific script to be run.
 	    const nonce = getNonce();
@@ -172,7 +173,7 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
 					connect-src ${getTraceServerUrl()};
 					font-src ${webview.cspSource}">
 				<link href="${codiconsUri}" rel="stylesheet" />
-				<base href="${vscode.Uri.joinPath(this._extensionUri, 'pack').with({ scheme: 'vscode-resource' })}/">
+				<base href="${packUri}/">
 			</head>
 
 			<body>

@@ -389,6 +389,7 @@ export class TraceViewerPanel {
 	private _getHtmlForWebview() {
 	    const webview = this._panel.webview;
 	    const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'lib', 'codicons', 'codicon.css'));
+	    const packUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'pack'));
 	    const nonce = getNonce();
 
 	    try {
@@ -409,7 +410,7 @@ export class TraceViewerPanel {
 					connect-src ${getTraceServerUrl()};
 					font-src ${webview.cspSource}">
 				<link href="${codiconsUri}" rel="stylesheet" />
-				<base href="${vscode.Uri.joinPath(this._extensionUri, 'pack').with({ scheme: 'vscode-resource' })}/">
+				<base href="${packUri}/">
 			</head>
 
 			<body>
@@ -422,15 +423,12 @@ export class TraceViewerPanel {
 
 	/* eslint-disable max-len */
 	private _getReactHtmlForWebview(): string {
-	    // eslint-disable-next-line @typescript-eslint/no-var-requires
-	    const scriptPathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'pack', 'trace_panel.js');
-	    const scriptUri = scriptPathOnDisk.with({ scheme: 'vscode-resource' });
-	    // const stylePathOnDisk = vscode.Uri.file(path.join(this._extensionPath, 'build', mainStyle));
-	    // const styleUri = stylePathOnDisk.with({ scheme: 'vscode-resource' });
 
 	    // Fetching codicons styles
 	    const webview = this._panel.webview;
+	    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'pack', 'trace_panel.js'));
 	    const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'lib', 'codicons', 'codicon.css'));
+	    const packUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'pack'));
 
 	    // Use a nonce to whitelist which scripts can be run
 	    const nonce = getNonce();
@@ -450,7 +448,7 @@ export class TraceViewerPanel {
 					connect-src ${getTraceServerUrl()};
 					font-src ${webview.cspSource}">
 				<link href="${codiconsUri}" rel="stylesheet" />
-				<base href="${vscode.Uri.joinPath(this._extensionUri, 'pack').with({ scheme: 'vscode-resource' })}/">
+				<base href="${packUri}/">
 			</head>
 
 			<body>
