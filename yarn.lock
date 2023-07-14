@@ -8883,17 +8883,17 @@ tr46@~0.0.3:
   resolved "https://registry.yarnpkg.com/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
   integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
 
-traceviewer-base@0.2.0-next.20230705192024.981689f.0+981689f, traceviewer-base@next:
-  version "0.2.0-next.20230705192024.981689f.0"
-  resolved "https://registry.yarnpkg.com/traceviewer-base/-/traceviewer-base-0.2.0-next.20230705192024.981689f.0.tgz#0803cb40ec040817a920a0a1a3d6f18f6866a2cf"
-  integrity sha512-w5E7+CQfxw2EJqN3EAjYYE4kmLrG5eBR7ZB/Iwma+/0jIPABZXsRkhq5uaJ+fjsDx1bEREKyowjo+6PyntQ/ow==
+traceviewer-base@0.2.0-next.20230714144744.f65b9ed.0+f65b9ed, traceviewer-base@next:
+  version "0.2.0-next.20230714144744.f65b9ed.0"
+  resolved "https://registry.yarnpkg.com/traceviewer-base/-/traceviewer-base-0.2.0-next.20230714144744.f65b9ed.0.tgz#588bacb64a6e5df0621546b3c4da4b6877bff03e"
+  integrity sha512-I6BsH1WddUHM4MXiue/SMKme3lQlFP6mFHIXBJHHrVTPShREe16rSaQXkQho5TM979cDsQgS/Mh5NK0e7dzhfQ==
   dependencies:
     tsp-typescript-client next
 
 traceviewer-react-components@next:
-  version "0.2.0-next.20230705192024.981689f.0"
-  resolved "https://registry.yarnpkg.com/traceviewer-react-components/-/traceviewer-react-components-0.2.0-next.20230705192024.981689f.0.tgz#a38031e4124d790776ed6a91d7827089b13d8bab"
-  integrity sha512-L0FUfaXtz/+LdYBr7JoHWuXFb4XplPUdT/Bma9RjWWtLsXi5U7xKMPiP0N5ui6KyA+vNvw2HYr+G3yX8pisO9g==
+  version "0.2.0-next.20230714144744.f65b9ed.0"
+  resolved "https://registry.yarnpkg.com/traceviewer-react-components/-/traceviewer-react-components-0.2.0-next.20230714144744.f65b9ed.0.tgz#2bb2a54eec003d202730864e16218975689e33c3"
+  integrity sha512-d0DwlKJzSZJDZzCRWjvbiN2irwVqsFqtJsAXald6wgAJywacbL05+s3SqpoYKw8G1U4j/lY6JCed715CpHsTBg==
   dependencies:
     "@fortawesome/fontawesome-svg-core" "^1.2.17 <1.3.0"
     "@fortawesome/free-solid-svg-icons" "^5.8.1"
@@ -8913,7 +8913,7 @@ traceviewer-react-components@next:
     semantic-ui-css "^2.4.1"
     semantic-ui-react "^0.86.0"
     timeline-chart next
-    traceviewer-base "0.2.0-next.20230705192024.981689f.0+981689f"
+    traceviewer-base "0.2.0-next.20230714144744.f65b9ed.0+f65b9ed"
     tsp-typescript-client next
 
 trim-newlines@^1.0.0:
