@@ -186,6 +186,24 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
                         this._urlProvider.updateTraceServerUrl(message.data);
                     }
                     break;
+                case VSCODE_MESSAGES.CANCEL_REQUESTS:
+                    if (this.state.tspClientProvider instanceof TspClientProvider) {
+                        const RequestManager = this.state.tspClientProvider?.getRequestManager();
+                        if (RequestManager) {
+                            RequestManager.cancelAllRequests();
+                        }
+                    }
+                    break;
+                case VSCODE_MESSAGES.TRACE_SERVER_STATUS:
+                    if (this.state.tspClientProvider instanceof TspClientProvider) {
+                        const RequestManager = this.state.tspClientProvider.getRequestManager();
+                        if (RequestManager) {
+                            RequestManager.serverStatus = message.data === 'true';
+                            console.log('trace viewer webview');
+                            console.dir(RequestManager);
+                        }
+                    }
+                    break;
             }
         });
         window.addEventListener('resize', this.onResize);

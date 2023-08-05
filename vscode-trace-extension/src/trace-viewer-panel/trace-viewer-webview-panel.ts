@@ -36,7 +36,7 @@ export class TraceViewerPanel {
 
     private static readonly viewType = 'react';
     private static currentPanel: TraceViewerPanel | undefined;
-
+ 
     private readonly _panel: vscode.WebviewPanel;
     private readonly _extensionUri: vscode.Uri;
     private readonly _statusService: TraceServerConnectionStatusService | undefined;
@@ -144,6 +144,20 @@ export class TraceViewerPanel {
         );
     }
 
+    public static cancelHttpRequests(): void {
+        Object.values(TraceViewerPanel.activePanels).forEach(
+            trace =>
+                trace?._panel.webview.postMessage({ command: VSCODE_MESSAGES.CANCEL_REQUESTS })
+        );
+    }
+
+    public static setServerStatus(status: boolean): void {
+        Object.values(TraceViewerPanel.activePanels).forEach(
+            trace =>
+                trace?._panel.webview.postMessage({ command: VSCODE_MESSAGES.TRACE_SERVER_STATUS, data: status.toString() })
+        );
+    }
+
     private constructor(
         extensionUri: vscode.Uri,
         column: vscode.ViewColumn,
@@ -233,6 +247,7 @@ export class TraceViewerPanel {
                                 data: getTspClientUrl()
                             });
                         }
+                        this._statusService?.serverStatus().then(TraceViewerPanel.setServerStatus);
                         this.loadTheme();
                         return;
                     case VSCODE_MESSAGES.UPDATE_PROPERTIES:

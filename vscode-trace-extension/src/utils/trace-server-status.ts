@@ -1,10 +1,11 @@
 import { StatusBarItem, ThemeColor } from 'vscode';
 
 export class TraceServerConnectionStatusService {
-    private statusBarItem: StatusBarItem;
 
-    public constructor(statusBarItem: StatusBarItem) {
-        this.statusBarItem = statusBarItem;
+    public constructor(
+        private statusBarItem: StatusBarItem,
+        private serverStatusFetcher: () => Promise<boolean>
+    ) {
         this.statusBarItem.hide();
     }
 
@@ -20,4 +21,9 @@ export class TraceServerConnectionStatusService {
         }
         this.statusBarItem.show();
     }
+
+    public async serverStatus(): Promise<boolean> {
+        return this.serverStatusFetcher();
+    }
+
 }

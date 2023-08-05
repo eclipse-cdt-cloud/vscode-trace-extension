@@ -1,5 +1,6 @@
 import { TspClient } from 'tsp-typescript-client/lib/protocol/tsp-client';
 import { RestClient, ConnectionStatusListener } from 'tsp-typescript-client/lib/protocol/rest-client';
+import { ServerStateManager } from 'tsp-typescript-client/lib/protocol/request-manager';
 import { ExperimentManager } from 'traceviewer-base/lib/experiment-manager';
 import { TraceManager } from 'traceviewer-base/lib/trace-manager';
 import { ITspClientProvider } from 'traceviewer-base/lib/tsp-client-provider';
@@ -29,7 +30,6 @@ export class TspClientProvider implements ITspClientProvider {
             this._signalHandler?.notifyConnection(status);
         };
         RestClient.addConnectionStatusListener(this._statusListener);
-        this._tspClient.checkHealth();
 
         this._urlProvider = _urlProvider;
         this._listeners = [];
@@ -53,6 +53,10 @@ export class TspClientProvider implements ITspClientProvider {
         return this._experimentManager;
     }
 
+    public getRequestManager(): typeof ServerStateManager {
+        return ServerStateManager;
+    }
+
     /**
      * Add a listener for trace server url changes
      * @param listener The listener function to be called when the url is
@@ -61,4 +65,9 @@ export class TspClientProvider implements ITspClientProvider {
     addTspClientChangeListener(listener: (tspClient: TspClient) => void): void {
         this._listeners.push(listener);
     }
+}
+
+// Perhaps this should live somewhere else or in its own file.
+export const cancelAllOngoingRequests = (): void => {
+    ServerStateManager.cancelAllRequests();
 }

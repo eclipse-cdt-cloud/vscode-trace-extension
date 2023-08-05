@@ -101,6 +101,7 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
                             // experimentSelectedSignal will update available views widget
                             signalManager().fireExperimentSelectedSignal(this._selectedExperiment);
                         }
+                        this._statusService.serverStatus().then(stat => this.setServerStatus(stat));
                         return;
                     case VSCODE_MESSAGES.RE_OPEN_TRACE:
                         if (message.data && message.data.wrapper) {
@@ -132,15 +133,19 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
                     case VSCODE_MESSAGES.OPEN_TRACE:
                         vscode.commands.executeCommand('openedTraces.openTraceFolder');
                         return;
-                    case VSCODE_MESSAGES.EXPERIMENT_SELECTED: {
-                        let experiment: Experiment | undefined;
-                        if (message.data && message.data.wrapper) {
-                            experiment = convertSignalExperiment(JSONBig.parse(message.data.wrapper));
-                        } else {
-                            experiment = undefined;
+                    case VSCODE_MESSAGES.EXPERIMENT_SELECTED:
+                        if (true) {
+                            let experiment: Experiment | undefined;
+                            if (message.data && message.data.wrapper) {
+                                experiment = convertSignalExperiment(JSONBig.parse(message.data.wrapper));
+                            } else {
+                                experiment = undefined;
+                            }
+                            signalManager().fireExperimentSelectedSignal(experiment);
+                            return;
                         }
-                        signalManager().fireExperimentSelectedSignal(experiment);
-                    }
+                    case VSCODE_MESSAGES.START_SERVER:
+                        vscode.commands.executeCommand('traceViewer.startServer');
                 }
             },
             undefined,
@@ -168,6 +173,15 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
                 this._view.webview.postMessage({ command: _command });
             }
         }
+    }
+
+    public cancelHttpRequests(): void {
+        this._view?.webview.postMessage({ command: VSCODE_MESSAGES.CANCEL_REQUESTS });
+    }
+
+    public setServerStatus(status: boolean): void {
+        console.log(`Opened Traces - The server is ${status}`);
+        this?._view?.webview.postMessage({ command: VSCODE_MESSAGES.TRACE_SERVER_STATUS, data: status.toString() });
     }
 
     /* eslint-disable max-len */

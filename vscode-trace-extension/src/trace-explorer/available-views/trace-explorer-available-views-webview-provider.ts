@@ -66,16 +66,16 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
                             this._statusService.render(status);
                         }
                         return;
-                    case VSCODE_MESSAGES.WEBVIEW_READY:
-                        // Post the tspTypescriptClient
-                        webviewView.webview.postMessage({
-                            command: VSCODE_MESSAGES.SET_TSP_CLIENT,
-                            data: getTspClientUrl()
-                        });
-                        if (this._selectedExperiment !== undefined) {
-                            signalManager().fireExperimentSelectedSignal(this._selectedExperiment);
-                        }
-                        return;
+                        case VSCODE_MESSAGES.WEBVIEW_READY:
+                            // Post the tspTypescriptClient
+                            webviewView.webview.postMessage({
+                                command: VSCODE_MESSAGES.SET_TSP_CLIENT,
+                                data: getTspClientUrl()
+                            });
+                            if (this._selectedExperiment !== undefined) {
+                                signalManager().fireExperimentSelectedSignal(this._selectedExperiment);
+                            }
+                            return;
                     case VSCODE_MESSAGES.OUTPUT_ADDED:
                         if (message.data && message.data.descriptor) {
                             // FIXME: JSONBig.parse() created bigint if numbers are small.
@@ -124,6 +124,14 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
             const wrapper: string = JSONBig.stringify(experiment);
             this._view.webview.postMessage({ command: VSCODE_MESSAGES.EXPERIMENT_SELECTED, data: wrapper });
         }
+    }
+
+    public cancelHttpRequests(): void {
+        this._view?.webview.postMessage({ command: VSCODE_MESSAGES.CANCEL_REQUESTS });
+    }
+
+    public setServerStatus(status: boolean): void {
+        this._view?.webview.postMessage({ command: VSCODE_MESSAGES.TRACE_SERVER_STATUS, data: status.toString() });
     }
 
     /* eslint-disable max-len */

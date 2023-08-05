@@ -24,6 +24,7 @@ const JSONBig = JSONBigConfig({
 interface OpenedTracesAppState {
     tspClientProvider: ITspClientProvider | undefined;
     experimentsOpened: boolean;
+    serverOnline: boolean;
 }
 
 const MENU_ID = 'traceExplorer.openedTraces.menuId';
@@ -60,7 +61,8 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
         super(props);
         this.state = {
             tspClientProvider: undefined,
-            experimentsOpened: true
+            experimentsOpened: true,
+            serverOnline: false,
         };
         this._signalHandler = new VsCodeMessageManager();
         window.addEventListener('message', event => {
@@ -74,13 +76,11 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
                         this._urlProvider
                     );
                     this._experimentManager = tspClientProvider.getExperimentManager();
-
                     tspClientProvider.addTspClientChangeListener(() => {
                         if (this.state.tspClientProvider) {
                             this._experimentManager = this.state.tspClientProvider.getExperimentManager();
                         }
                     });
-
                     this.setState({ tspClientProvider: tspClientProvider });
                     break;
                 case VSCODE_MESSAGES.TRACE_VIEWER_TAB_ACTIVATED:
@@ -104,6 +104,25 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
                 case VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED:
                     if (message.data && this.state.tspClientProvider && this._urlProvider) {
                         this._urlProvider.updateTraceServerUrl(message.data);
+                    }
+                    break;
+                case VSCODE_MESSAGES.CANCEL_REQUESTS:
+                    if (this.state.tspClientProvider instanceof TspClientProvider) {
+                        const RequestManager = this.state.tspClientProvider.getRequestManager();
+                        if (RequestManager) {
+                            RequestManager.cancelAllRequests();
+                        }
+                    }
+                    break;
+                case VSCODE_MESSAGES.TRACE_SERVER_STATUS:
+                    const serverOnline = message.data === 'true';
+                    this.setState({ serverOnline });
+                    if (this.state.tspClientProvider instanceof TspClientProvider) {
+                        const RequestManager = this.state.tspClientProvider.getRequestManager();
+                        if (RequestManager) {
+                            console.log('Opend Traces server status is: ' + serverOnline.toString(), typeof serverOnline);
+                            RequestManager.serverStatus = serverOnline;
+                        }
                     }
                     break;
             }
@@ -155,8 +174,20 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
         this._signalHandler.experimentSelected(experiment);
     }
 
+    protected startServer(): void {
+        this._signalHandler.startServer();
+    }
+
     public render(): React.ReactNode {
-        return this.state.experimentsOpened ? (
+        const provider = this.state.tspClientProvider ? this.state.tspClientProvider as TspClientProvider : undefined;
+        const RequestManager = provider?.getRequestManager();
+
+        console.log('render');
+        console.dir(RequestManager);
+        console.dir(this.state);
+
+        return !this.state.serverOnline ? <StartServerComponent onClick={() => this.startServer()}/> : 
+            this.state.experimentsOpened ? (
             <>
                 <div>
                     {this.state.tspClientProvider && (
@@ -233,5 +264,20 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
         }
     };
 }
+
+const StartServerComponent: React.FC<{ onClick: () => void }> = ({ onClick }): JSX.Element => (
+    <div className="placeholder-container" tabIndex={0}>
+            <div className="center">{'The Trace Server is offline.'}</div>
+            <div className="placeholder-open-workspace-button-container">
+                <button
+                    className="plcaeholder-open-workspace-button"
+                    title="Start Trace Server"
+                    onClick={() => onClick()}
+                >
+                    <span>Start Trace Server</span>
+                </button>
+            </div>
+        </div>
+)
 
 export default TraceExplorerOpenedTraces;

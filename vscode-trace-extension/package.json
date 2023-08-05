@@ -120,23 +120,28 @@
           "type": "webview",
           "id": "traceExplorer.availableViews",
           "name": "Views",
-          "when": "!trace-explorer.noExperiments"
+          "when": "!trace-explorer.noExperiments && traceViewer.serverOn"
         },
         {
           "type": "webview",
           "id": "traceExplorer.timeRangeDataView",
           "name": "Time Range Data",
-          "when": "!trace-explorer.noExperiments"
+          "when": "!trace-explorer.noExperiments && traceViewer.serverOn"
         },
         {
           "type": "webview",
           "id": "traceExplorer.itemPropertiesView",
           "name": "Item Properties",
-          "when": "!trace-explorer.noExperiments"
+          "when": "!trace-explorer.noExperiments && traceViewer.serverOn"
         }
       ]
     },
     "viewsWelcome": [
+      {
+        "view": "activitybar",
+        "contents": "The Trace Server is currently offline.  You can start it by executing the command or pressing the button below. \n [Start Trace Server](command:traceViewer.startServer)",
+        "when": "traceViewer.serverOn == false"
+      },
       {
         "view": "traces",
         "contents": "No traces found [learn more](https://www.eclipse.org/tracecompass/).\n[Add traces](command:nodeDependencies.addEntry)"
