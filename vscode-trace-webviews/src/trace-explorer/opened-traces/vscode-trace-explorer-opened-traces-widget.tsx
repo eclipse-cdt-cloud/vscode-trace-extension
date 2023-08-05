@@ -4,25 +4,22 @@ import { ReactOpenTracesWidget } from 'traceviewer-react-components/lib/trace-ex
 import { VsCodeMessageManager, VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import { Menu, Item, useContextMenu, ItemParams } from 'react-contexify';
 import { TspClientProvider } from 'vscode-trace-common/lib/client/tsp-client-provider-impl';
-import { ITspClientProvider } from 'traceviewer-base/lib/tsp-client-provider';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
 import '../../style/trace-viewer.css';
 import 'traceviewer-react-components/style/trace-explorer.css';
 import '../../style/react-contextify.css';
-import { ExperimentManager } from 'traceviewer-base/lib/experiment-manager';
 import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import JSONBigConfig from 'json-bigint';
 import { OpenedTracesUpdatedSignalPayload } from 'traceviewer-base/lib/signals/opened-traces-updated-signal-payload';
 import { ReactExplorerPlaceholderWidget } from 'traceviewer-react-components/lib/trace-explorer/trace-explorer-placeholder-widget';
-import { TraceServerUrlProvider } from 'vscode-trace-common/lib/server/trace-server-url-provider';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true
 });
 
 interface OpenedTracesAppState {
-    tspClientProvider: ITspClientProvider | undefined;
+    tspClientProvider: TspClientProvider | undefined;
     experimentsOpened: boolean;
 }
 
@@ -30,8 +27,6 @@ const MENU_ID = 'traceExplorer.openedTraces.menuId';
 
 class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState> {
     private _signalHandler: VsCodeMessageManager;
-    private _experimentManager: ExperimentManager;
-    private _urlProvider: TraceServerUrlProvider;
 
     static ID = 'trace-explorer-opened-traces-widget';
     static LABEL = 'Opened Traces';
@@ -44,7 +39,14 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
     private loading = false;
 
     private doHandleRemoveTraceSignal(traceUUID: string) {
-        this._experimentManager
+        const { tspClientProvider } = this.state;
+
+        if (!tspClientProvider) {
+            return;
+        }
+
+        tspClientProvider
+            .getExperimentManager()
             .getExperiment(traceUUID)
             .then(experimentOpen => {
                 if (experimentOpen) {
@@ -67,20 +69,10 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
             const message = event.data; // The JSON data our extension sent
             switch (message.command) {
                 case VSCODE_MESSAGES.SET_TSP_CLIENT:
-                    this._urlProvider = new TraceServerUrlProvider();
-                    const tspClientProvider: ITspClientProvider = new TspClientProvider(
+                    const tspClientProvider: TspClientProvider = new TspClientProvider(
                         message.data,
-                        this._signalHandler,
-                        this._urlProvider
+                        this._signalHandler
                     );
-                    this._experimentManager = tspClientProvider.getExperimentManager();
-
-                    tspClientProvider.addTspClientChangeListener(() => {
-                        if (this.state.tspClientProvider) {
-                            this._experimentManager = this.state.tspClientProvider.getExperimentManager();
-                        }
-                    });
-
                     this.setState({ tspClientProvider: tspClientProvider });
                     break;
                 case VSCODE_MESSAGES.TRACE_VIEWER_TAB_ACTIVATED:
@@ -102,8 +94,8 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
                     signalManager().fireTraceServerStartedSignal();
                     this.setState({ experimentsOpened: true });
                 case VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED:
-                    if (message.data && this.state.tspClientProvider && this._urlProvider) {
-                        this._urlProvider.updateTraceServerUrl(message.data);
+                    if (message.data && this.state.tspClientProvider) {
+                        this.state.tspClientProvider.updateTspClientUri(message.data);
                     }
                     break;
             }
@@ -223,8 +215,10 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
                 return;
             case 'remove-id':
                 this._signalHandler.deleteTrace(args.props.experiment as Experiment);
-                if (this._experimentManager) {
-                    this._experimentManager.deleteExperiment((args.props.experiment as Experiment).UUID);
+                if (this.state.tspClientProvider) {
+                    this.state.tspClientProvider
+                        .getExperimentManager()
+                        .deleteExperiment((args.props.experiment as Experiment).UUID);
                 }
 
                 return;

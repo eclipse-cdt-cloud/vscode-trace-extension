@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
-import { getTraceServerUrl } from 'vscode-trace-extension/src/utils/tspClient';
 import JSONBigConfig from 'json-bigint';
 import { Signals, signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
 import { TimeRangeDataMap } from 'traceviewer-react-components/lib/components/utils/time-range-data-map';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
+import { VSCodeBackendTspClientProvider } from 'vscode-trace-extension/src/utils/vscode-backend-tsp-client-provider';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true
@@ -16,7 +16,10 @@ export class TraceExplorerTimeRangeDataProvider implements vscode.WebviewViewPro
     private _view: vscode.WebviewView;
     private _disposables: vscode.Disposable[] = [];
     private _experimentDataMap: TimeRangeDataMap;
-    constructor(private readonly _extensionUri: vscode.Uri) {
+    constructor(
+        private readonly _extensionUri: vscode.Uri,
+        private readonly _tspClientProvider: VSCodeBackendTspClientProvider
+    ) {
         this._experimentDataMap = new TimeRangeDataMap();
     }
 
@@ -140,7 +143,12 @@ export class TraceExplorerTimeRangeDataProvider implements vscode.WebviewViewPro
 				<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
 				<meta name="theme-color" content="#000000">
 				<title>React App</title>
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src vscode-resource: https:; script-src 'nonce-${nonce}' 'unsafe-eval';style-src vscode-resource: 'unsafe-inline' http: https: data:;connect-src ${getTraceServerUrl()};">
+				<meta http-equiv="Content-Security-Policy"
+                    content="default-src 'none';
+                    img-src vscode-resource: https:;
+                    script-src 'nonce-${nonce}' 'unsafe-eval';
+                    style-src vscode-resource: 'unsafe-inline' http: https: data:;
+                    connect-src ${this._tspClientProvider.getBaseUri()};">
 				<base href="${packUri}/">
 			</head>
 

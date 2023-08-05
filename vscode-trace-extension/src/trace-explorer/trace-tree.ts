@@ -2,18 +2,14 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Trace as TspTrace } from 'tsp-typescript-client/lib/models/trace';
-import { TraceManager } from 'traceviewer-base/lib/trace-manager';
-import { ExperimentManager } from 'traceviewer-base/lib/experiment-manager';
 import { AnalysisProvider } from './analysis-tree';
 import { TraceViewerPanel } from '../trace-viewer-panel/trace-viewer-webview-panel';
-import { getTspClient } from '../utils/tspClient';
+import { ITspClientProvider } from 'traceviewer-base/lib/tsp-client-provider';
 import { traceLogger } from '../extension';
 import { KeyboardShortcutsPanel } from '../trace-viewer-panel/keyboard-shortcuts-panel';
 
 const rootPath = path.resolve(__dirname, '../../..');
 
-const traceManager = new TraceManager(getTspClient());
-const experimentManager = new ExperimentManager(getTspClient(), traceManager);
 
 // eslint-disable-next-line no-shadow
 export enum ProgressMessages {
@@ -87,20 +83,21 @@ export class Trace extends vscode.TreeItem {
     };
 }
 
+// Is this even used??????????????????????
 export const traceHandler =
-    (analysisTree: AnalysisProvider) =>
+    (analysisTree: AnalysisProvider, tspClientProvider: ITspClientProvider) =>
     (context: vscode.ExtensionContext, trace: Trace): void => {
         const panel = TraceViewerPanel.createOrShow(context.extensionUri, trace.name, undefined);
         (async () => {
             const traces = new Array<TspTrace>();
-            const t = await traceManager.openTrace(trace.uri, trace.name);
+            const t = await tspClientProvider.getTraceManager().openTrace(trace.uri, trace.name);
             if (t) {
                 traces.push(t);
             }
-            const experiment = await experimentManager.openExperiment(trace.name, traces);
+            const experiment = await tspClientProvider.getExperimentManager().openExperiment(trace.name, traces);
             if (experiment) {
                 panel.setExperiment(experiment);
-                const descriptors = await experimentManager.getAvailableOutputs(experiment.UUID);
+                const descriptors = await tspClientProvider.getExperimentManager().getAvailableOutputs(experiment.UUID);
                 if (descriptors && descriptors.length) {
                     analysisTree.refresh(descriptors);
                 }
@@ -144,7 +141,7 @@ export const openDialog = async (): Promise<vscode.Uri | undefined> => {
 };
 
 export const fileHandler =
-    (analysisTree: AnalysisProvider) =>
+    (analysisTree: AnalysisProvider, tspClientProvider: ITspClientProvider) =>
     async (context: vscode.ExtensionContext, traceUri: vscode.Uri): Promise<void> => {
         const resolvedTraceURI: vscode.Uri = traceUri;
         vscode.window.withProgress(
@@ -202,7 +199,7 @@ export const fileHandler =
                 const traces = new Array<TspTrace>();
                 for (let i = 0; i < tracesArray.length; i++) {
                     const traceName = path.basename(tracesArray[i]);
-                    const trace = await traceManager.openTrace(tracesArray[i], traceName);
+                    const trace = await tspClientProvider.getTraceManager().openTrace(tracesArray[i], traceName);
                     if (trace) {
                         traces.push(trace);
                     } else {
@@ -228,10 +225,12 @@ export const fileHandler =
                     return;
                 }
 
-                const experiment = await experimentManager.openExperiment(name, traces);
+                const experiment = await tspClientProvider.getExperimentManager().openExperiment(name, traces);
                 if (experiment) {
                     panel.setExperiment(experiment);
-                    const descriptors = await experimentManager.getAvailableOutputs(experiment.UUID);
+                    const descriptors = await tspClientProvider
+                        .getExperimentManager()
+                        .getAvailableOutputs(experiment.UUID);
                     if (descriptors && descriptors.length) {
                         analysisTree.refresh(descriptors);
                     }
@@ -239,7 +238,7 @@ export const fileHandler =
 
                 if (token.isCancellationRequested) {
                     if (experiment) {
-                        experimentManager.deleteExperiment(experiment.UUID);
+                        tspClientProvider.getExperimentManager().deleteExperiment(experiment.UUID);
                     }
                     rollbackTraces(traces, 20, progress);
                     progress.report({ message: ProgressMessages.COMPLETE, increment: 10 });
@@ -249,21 +248,20 @@ export const fileHandler =
                 progress.report({ message: ProgressMessages.COMPLETE, increment: 30 });
             }
         );
+        const rollbackTraces = async (
+            traces: Array<TspTrace>,
+            progressIncrement: number,
+            progress: vscode.Progress<{
+                message: string | undefined;
+                increment: number | undefined;
+            }>
+        ) => {
+            progress.report({ message: ProgressMessages.ROLLING_BACK_TRACES, increment: progressIncrement });
+            for (let i = 0; i < traces.length; i++) {
+                await tspClientProvider.getTraceManager().deleteTrace(traces[i].UUID);
+            }
+        };
     };
-
-const rollbackTraces = async (
-    traces: Array<TspTrace>,
-    progressIncrement: number,
-    progress: vscode.Progress<{
-        message: string | undefined;
-        increment: number | undefined;
-    }>
-) => {
-    progress.report({ message: ProgressMessages.ROLLING_BACK_TRACES, increment: progressIncrement });
-    for (let i = 0; i < traces.length; i++) {
-        await traceManager.deleteTrace(traces[i].UUID);
-    }
-};
 
 /*
  * TODO: Make a proper trace finder, not just CTF

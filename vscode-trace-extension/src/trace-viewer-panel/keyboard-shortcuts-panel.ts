@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { getTraceServerUrl } from '../utils/tspClient';
+import { VSCodeBackendTspClientProvider } from '../utils/vscode-backend-tsp-client-provider';
 
 /**
  * Manages the keyboard and mouse shortcuts panel
@@ -7,6 +7,7 @@ import { getTraceServerUrl } from '../utils/tspClient';
 export class KeyboardShortcutsPanel {
     private static readonly viewType = 'trace.viewer.shortcuts';
     private static _panel: vscode.WebviewPanel | undefined = undefined;
+    private static _tspClientProvider: VSCodeBackendTspClientProvider;
 
     public static createOrShow(extensionUri: vscode.Uri, name: string): void {
         const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
@@ -35,6 +36,10 @@ export class KeyboardShortcutsPanel {
         }
     }
 
+    public static bindTspClientProvider(provider: VSCodeBackendTspClientProvider): void {
+        KeyboardShortcutsPanel._tspClientProvider = provider;
+    }
+
     /* eslint-disable max-len */
     private static _getHtmlForWebview(webview: vscode.Webview, extensionUri: vscode.Uri): string {
         // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
@@ -56,7 +61,7 @@ export class KeyboardShortcutsPanel {
 					img-src vscode-resource: https:;
 					script-src 'nonce-${nonce}' 'unsafe-eval';
 					style-src ${webview.cspSource} vscode-resource: 'unsafe-inline' http: https: data:;
-					connect-src ${getTraceServerUrl()};
+					connect-src ${this._tspClientProvider.getBaseUri()};
                     font-src ${webview.cspSource}">
                 <base href="${packUri}/">
 			</head>

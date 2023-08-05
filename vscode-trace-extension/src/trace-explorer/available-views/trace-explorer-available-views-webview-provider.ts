@@ -5,10 +5,10 @@ import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descri
 import * as vscode from 'vscode';
 import { TraceViewerPanel } from '../../trace-viewer-panel/trace-viewer-webview-panel';
 import { TraceServerConnectionStatusService } from '../../utils/trace-server-status';
-import { getTraceServerUrl, getTspClientUrl } from '../../utils/tspClient';
 import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import { traceExtensionWebviewManager } from 'vscode-trace-extension/src/extension';
+import { VSCodeBackendTspClientProvider } from 'vscode-trace-extension/src/utils/vscode-backend-tsp-client-provider';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true
@@ -27,10 +27,11 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
 
     constructor(
         private readonly _extensionUri: vscode.Uri,
-        private readonly _statusService: TraceServerConnectionStatusService
+        private readonly _statusService: TraceServerConnectionStatusService,
+        private readonly _tspClientProvider: VSCodeBackendTspClientProvider
     ) {}
 
-    public updateTraceServerUrl(newUrl: string): void {
+    public updateTspClientUri(newUrl: string): void {
         if (this._view) {
             this._view.webview.postMessage({ command: VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED, data: newUrl });
         }
@@ -70,7 +71,7 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
                         // Post the tspTypescriptClient
                         webviewView.webview.postMessage({
                             command: VSCODE_MESSAGES.SET_TSP_CLIENT,
-                            data: getTspClientUrl()
+                            data: this._tspClientProvider.getTspClientUri()
                         });
                         if (this._selectedExperiment !== undefined) {
                             signalManager().fireExperimentSelectedSignal(this._selectedExperiment);
@@ -150,7 +151,7 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
 					img-src vscode-resource: https:;
 					script-src 'nonce-${nonce}' 'unsafe-eval';
 					style-src ${webview.cspSource} vscode-resource: 'unsafe-inline' http: https: data:;
-					connect-src ${getTraceServerUrl()};
+					connect-src ${this._tspClientProvider.getBaseUri()};
 					font-src ${webview.cspSource}">
 				<link href="${codiconsUri}" rel="stylesheet" />
 				<base href="${packUri}/">

@@ -17,7 +17,6 @@ import { MarkerSet } from 'tsp-typescript-client/lib/models/markerset';
 import { VsCodeMessageManager, VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import '../style/trace-viewer.css';
-import { TraceServerUrlProvider } from 'vscode-trace-common/lib/server/trace-server-url-provider';
 import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
 import { TimeRange } from 'traceviewer-base/lib/utils/time-range';
 
@@ -38,7 +37,6 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
         'org.eclipse.tracecompass.internal.tmf.core.histogram.HistogramDataProvider';
 
     private _signalHandler: VsCodeMessageManager;
-    private _urlProvider: TraceServerUrlProvider;
 
     private onViewRangeUpdated = (payload: TimeRangeUpdatePayload): void =>
         this._signalHandler.viewRangeUpdated(payload);
@@ -97,14 +95,9 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
                     this.doHandleExperimentSetSignal(convertSignalExperiment(JSONBig.parse(message.data)), false);
                     break;
                 case VSCODE_MESSAGES.SET_TSP_CLIENT:
-                    this._urlProvider = new TraceServerUrlProvider();
                     this.setState(
                         {
-                            tspClientProvider: new TspClientProvider(
-                                message.data,
-                                this._signalHandler,
-                                this._urlProvider
-                            )
+                            tspClientProvider: new TspClientProvider(message.data, this._signalHandler)
                         },
                         () => {
                             if (message.experiment) {
@@ -182,8 +175,8 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
                     this.doHandleExperimentSelectedSignal(convertSignalExperiment(JSONBig.parse(message.data)));
                     break;
                 case VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED:
-                    if (message.data && this.state.tspClientProvider && this._urlProvider) {
-                        this._urlProvider.updateTraceServerUrl(message.data);
+                    if (message.data && this.state.tspClientProvider) {
+                        this.state.tspClientProvider.updateTspClientUri(message.data);
                     }
                     break;
             }

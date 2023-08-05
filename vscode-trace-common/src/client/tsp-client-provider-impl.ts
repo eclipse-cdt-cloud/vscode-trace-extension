@@ -4,41 +4,41 @@ import { ExperimentManager } from 'traceviewer-base/lib/experiment-manager';
 import { TraceManager } from 'traceviewer-base/lib/trace-manager';
 import { ITspClientProvider } from 'traceviewer-base/lib/tsp-client-provider';
 import { VsCodeMessageManager } from '../messages/vscode-message-manager';
-import { TraceServerUrlProvider } from '../server/trace-server-url-provider';
 
 export class TspClientProvider implements ITspClientProvider {
-    private _tspClient: TspClient;
-    private _traceManager: TraceManager;
-    private _experimentManager: ExperimentManager;
-    private _signalHandler: VsCodeMessageManager | undefined;
-    private _statusListener: ConnectionStatusListener;
-    private _urlProvider: TraceServerUrlProvider;
-    private _listeners: ((tspClient: TspClient) => void)[];
+    protected _tspClient: TspClient;
+    protected _traceManager: TraceManager;
+    protected _experimentManager: ExperimentManager;
+    protected _statusListener: ConnectionStatusListener;
+    protected _listeners: ((tspClient: TspClient) => void)[] = [];
 
     constructor(
-        traceServerUrl: string,
-        signalHandler: VsCodeMessageManager | undefined,
-        _urlProvider: TraceServerUrlProvider
+        protected _uri: string,
+        protected _signalHandler: VsCodeMessageManager | undefined
     ) {
-        this._tspClient = new TspClient(traceServerUrl);
-        this._traceManager = new TraceManager(this._tspClient);
-        this._experimentManager = new ExperimentManager(this._tspClient, this._traceManager);
+        this.createNewClients(_uri);
 
-        this._signalHandler = signalHandler;
         this._statusListener = (status: boolean) => {
             this._signalHandler?.notifyConnection(status);
         };
-        RestClient.addConnectionStatusListener(this._statusListener);
-        this._tspClient.checkHealth();
 
-        this._urlProvider = _urlProvider;
-        this._listeners = [];
-        this._urlProvider.onTraceServerUrlChange((url: string) => {
-            this._tspClient = new TspClient(url);
-            this._traceManager = new TraceManager(this._tspClient);
-            this._experimentManager = new ExperimentManager(this._tspClient, this._traceManager);
-            this._listeners.forEach(listener => listener(this._tspClient));
-        });
+        RestClient.addConnectionStatusListener(this._statusListener);
+    }
+
+    private createNewClients(tspClientUri: string): void {
+        this._tspClient = new TspClient(tspClientUri);
+        this._traceManager = new TraceManager(this._tspClient);
+        this._experimentManager = new ExperimentManager(this._tspClient, this._traceManager);
+    }
+
+    public updateTspClientUri(tspClientUri: string): void {
+        this._uri = tspClientUri;
+        this.createNewClients(tspClientUri);
+        this._listeners.forEach(fn => fn(this._tspClient));
+    }
+
+    public getTspClientUri(): string {
+        return this._uri;
     }
 
     public getTspClient(): TspClient {

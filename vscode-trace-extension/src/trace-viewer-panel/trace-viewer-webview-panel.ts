@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
-import { getTspClientUrl, getTraceServerUrl } from '../utils/tspClient';
 import { TraceServerConnectionStatusService } from '../utils/trace-server-status';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
 import { handleStatusMessage, handleRemoveMessage, setStatusFromPanel } from '../common/trace-message';
@@ -13,6 +12,7 @@ import * as fs from 'fs';
 import { traceExtensionWebviewManager } from '../extension';
 import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
 import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
+import { VSCodeBackendTspClientProvider } from '../utils/vscode-backend-tsp-client-provider';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true
@@ -34,6 +34,8 @@ export class TraceViewerPanel {
     public static activePanels = {} as {
         [key: string]: TraceViewerPanel | undefined;
     };
+
+    private static _tspClientProvider: VSCodeBackendTspClientProvider;
 
     private static readonly viewType = 'react';
     private static currentPanel: TraceViewerPanel | undefined;
@@ -79,6 +81,10 @@ export class TraceViewerPanel {
             TraceViewerPanel.activePanels[name] = undefined;
             TraceViewerPanel.currentPanel = undefined;
         }
+    }
+
+    public static bindTspClientProvider(provider: VSCodeBackendTspClientProvider): void {
+        TraceViewerPanel._tspClientProvider = provider;
     }
 
     public static addOutputToCurrent(descriptor: OutputDescriptor): void {
@@ -135,7 +141,7 @@ export class TraceViewerPanel {
         }
     }
 
-    public static updateTraceServerUrl(newUrl: string): void {
+    public static updateTspClientUri(newUrl: string): void {
         Object.values(TraceViewerPanel.activePanels).forEach(
             trace =>
                 trace?._panel.webview.postMessage({
@@ -225,13 +231,13 @@ export class TraceViewerPanel {
                             const wrapper: string = JSONBig.stringify(this._experiment);
                             this._panel.webview.postMessage({
                                 command: VSCODE_MESSAGES.SET_TSP_CLIENT,
-                                data: getTspClientUrl(),
+                                data: TraceViewerPanel._tspClientProvider.getTspClientUri(), // TODO
                                 experiment: wrapper
                             });
                         } else {
                             this._panel.webview.postMessage({
                                 command: VSCODE_MESSAGES.SET_TSP_CLIENT,
-                                data: getTspClientUrl()
+                                data: TraceViewerPanel._tspClientProvider.getTspClientUri() // TODO
                             });
                         }
                         this.loadTheme();
@@ -490,7 +496,7 @@ export class TraceViewerPanel {
 					img-src vscode-resource: https:;
 					script-src 'nonce-${nonce}' 'unsafe-eval';
 					style-src ${webview.cspSource} vscode-resource: 'unsafe-inline' http: https: data:;
-					connect-src ${getTraceServerUrl()};
+					connect-src ${TraceViewerPanel._tspClientProvider.getBaseUri()}; 
 					font-src ${webview.cspSource}">
 				<link href="${codiconsUri}" rel="stylesheet" />
 				<base href="${packUri}/">
@@ -529,7 +535,7 @@ export class TraceViewerPanel {
 					img-src vscode-resource: https:;
 					script-src 'nonce-${nonce}' 'unsafe-eval';
 					style-src ${webview.cspSource} vscode-resource: 'unsafe-inline' http: https: data:;
-					connect-src ${getTraceServerUrl()};
+					connect-src ${TraceViewerPanel._tspClientProvider.getBaseUri()};
 					font-src ${webview.cspSource}">
 				<link href="${codiconsUri}" rel="stylesheet" />
 				<base href="${packUri}/">

@@ -5,12 +5,15 @@
  ***************************************************************************************/
 import * as vscode from 'vscode';
 import { traceExtensionWebviewManager } from 'vscode-trace-extension/src/extension';
-import { getTraceServerUrl } from 'vscode-trace-extension/src/utils/tspClient';
+import { VSCodeBackendTspClientProvider } from 'vscode-trace-extension/src/utils/vscode-backend-tsp-client-provider';
 
 export class TraceExplorerItemPropertiesProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'traceExplorer.itemPropertiesView';
     private _view?: vscode.WebviewView;
-    constructor(private readonly _extensionUri: vscode.Uri) {}
+    constructor(
+        private readonly _extensionUri: vscode.Uri,
+        private readonly _tspClientProvider: VSCodeBackendTspClientProvider
+    ) {}
 
     resolveWebviewView(
         webviewView: vscode.WebviewView,
@@ -59,8 +62,8 @@ export class TraceExplorerItemPropertiesProvider implements vscode.WebviewViewPr
 					content="default-src 'none';
 					img-src vscode-resource: https:;
 					script-src 'nonce-${nonce}' 'unsafe-eval';
+                    connect-src ${this._tspClientProvider.getBaseUri()};
 					style-src ${webview.cspSource} vscode-resource: 'unsafe-inline' http: https: data:;
-					connect-src ${getTraceServerUrl()};
                     font-src ${webview.cspSource}">
 				<link href="${codiconsUri}" rel="stylesheet" />
                 <base href="${packUri}/">
