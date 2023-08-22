@@ -301,7 +301,9 @@
     "vsce:package": "vsce package --yarn",
     "vsce:ls": "vsce ls --yarn",
     "watch": "tsc -w -p tsconfig.json",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "format:write": "prettier --write ./src",
+    "format:check": "prettier --check ./src"
   },
   "browserslist": [
     ">0.2%",

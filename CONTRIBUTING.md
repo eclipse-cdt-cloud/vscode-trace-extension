@@ -64,6 +64,26 @@ have written the code and that, from a licensing perspective, the >
 * [How to format the message][commit-message-message]
 * [Example commit message][commit-message-example]
 
+## Formatting code with Prettier
+
+If a commit fails to pass CI checks because of its format, contributors can use Prettier, which is already conveniently set up in the project,
+to quickly format their commit.
+
+* To format a single file, simply run `yarn prettier --write <path-to-file>`.
+* To run Prettier on all source code files, run `yarn format:write`. Prettier will only format files that are not formatted correctly.
+* To check if new changes comply with Prettier rules, run `yarn prettier --check <path-to-file>` or `yarn format:check` to perform the check on a single file
+  or all source code file, respectively.
+  
+## Ignoring linting/formatting commits
+
+Should one be needing to use `git blame` to view the changes that were made recently to a file, it might be necessary to
+ignore the changes that were made in linting/formatting commits. In the root of the repo, there is a `.git-blame-ignore-revs`
+file. Adding the SHA-1 of a commit to this file will make `git-blame` ignore that commit. To use this file:
+
+* For GitHub, this file is automatically detected and will ignore all the commits that are included in the file.
+* With Git CLI, run `git blame --ignore-revs-file=.git-blame-ignore-revs <pathToSomeFile>` to ignore the commits.
+* `git config --global blame.ignoreRevsFile .git-blame-ignore-revs` will automatically detect these files for every repository.
+
 ## Contact
 
 For issues related to this extension, please open a GitHub tracker for the [VS Code Trace Extension][vscode-ext] repository.
