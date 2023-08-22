@@ -1,12 +1,12 @@
 body {
-  margin: 0;
-  padding: 0;
-  font-family: sans-serif;
-  padding: calc(var(--trace-viewer-ui-padding)*2)
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    padding: calc(var(--trace-viewer-ui-padding) * 2);
 }
 
 .componentBody {
-  background-color: var(--trace-viewer-editorWidget-background);
-  color: var(--trace-viewer-foreground);
-  padding: calc(var(--trace-viewer-ui-padding)*2)
+    background-color: var(--trace-viewer-editorWidget-background);
+    color: var(--trace-viewer-foreground);
+    padding: calc(var(--trace-viewer-ui-padding) * 2);
 }

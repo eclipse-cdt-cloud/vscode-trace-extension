@@ -8,45 +8,47 @@ import { traceExtensionWebviewManager } from 'vscode-trace-extension/src/extensi
 import { getTraceServerUrl } from 'vscode-trace-extension/src/utils/tspClient';
 
 export class TraceExplorerItemPropertiesProvider implements vscode.WebviewViewProvider {
-  public static readonly viewType = 'traceExplorer.itemPropertiesView';
-  private _view?: vscode.WebviewView;
-  constructor(private readonly _extensionUri: vscode.Uri) {}
+    public static readonly viewType = 'traceExplorer.itemPropertiesView';
+    private _view?: vscode.WebviewView;
+    constructor(private readonly _extensionUri: vscode.Uri) {}
 
-  resolveWebviewView(
-      webviewView: vscode.WebviewView,
-      _context: vscode.WebviewViewResolveContext,
-      _token: vscode.CancellationToken
-  ): void {
-      this._view = webviewView;
-      webviewView.webview.options = {
-          // Allow scripts in the webview
-          enableScripts: true,
-          localResourceRoots: [
-              vscode.Uri.joinPath(this._extensionUri, 'pack'),
-              vscode.Uri.joinPath(this._extensionUri, 'lib', 'codicons')
-          ]
-      };
-      webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
-      traceExtensionWebviewManager.fireWebviewCreated(webviewView);
-  }
+    resolveWebviewView(
+        webviewView: vscode.WebviewView,
+        _context: vscode.WebviewViewResolveContext,
+        _token: vscode.CancellationToken
+    ): void {
+        this._view = webviewView;
+        webviewView.webview.options = {
+            // Allow scripts in the webview
+            enableScripts: true,
+            localResourceRoots: [
+                vscode.Uri.joinPath(this._extensionUri, 'pack'),
+                vscode.Uri.joinPath(this._extensionUri, 'lib', 'codicons')
+            ]
+        };
+        webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+        traceExtensionWebviewManager.fireWebviewCreated(webviewView);
+    }
 
-  postMessagetoWebview(_command: string, _data: unknown): void {
-      if (this._view && _command && _data) {
-          this._view.webview.postMessage({command: _command, data: _data});
-      }
-  }
+    postMessagetoWebview(_command: string, _data: unknown): void {
+        if (this._view && _command && _data) {
+            this._view.webview.postMessage({ command: _command, data: _data });
+        }
+    }
 
-  /* eslint-disable max-len */
-  private _getHtmlForWebview(webview: vscode.Webview) {
-      // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
-      const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'pack', 'propertiesPanel.js'));
-	  const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'lib', 'codicons', 'codicon.css'));
-      const packUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'pack'));
+    /* eslint-disable max-len */
+    private _getHtmlForWebview(webview: vscode.Webview) {
+        // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
+        const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'pack', 'propertiesPanel.js'));
+        const codiconsUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(this._extensionUri, 'lib', 'codicons', 'codicon.css')
+        );
+        const packUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'pack'));
 
-      // Use a nonce to only allow a specific script to be run.
-      const nonce = getNonce();
+        // Use a nonce to only allow a specific script to be run.
+        const nonce = getNonce();
 
-      return `<!DOCTYPE html>
+        return `<!DOCTYPE html>
 			<html lang="en">
 			<head>
 				<meta charset="utf-8">
@@ -74,7 +76,7 @@ export class TraceExplorerItemPropertiesProvider implements vscode.WebviewViewPr
                 <script nonce="${nonce}" src="${scriptUri}"></script>
             </body>
 			</html>`;
-  }
+    }
 }
 
 function getNonce() {

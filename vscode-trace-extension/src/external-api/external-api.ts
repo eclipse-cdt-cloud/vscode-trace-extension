@@ -9,11 +9,11 @@ import * as vscode from 'vscode';
 import { traceExtensionWebviewManager } from '../extension';
 
 export interface ExternalAPI {
-    getActiveExperiment(): Experiment | undefined,
-    getActiveWebviewPanels(): { [key: string]: TraceViewerPanel | undefined; },
-    getActiveWebviews(): vscode.WebviewView[],
-    onWebviewCreated(listener: (data: vscode.WebviewView) => void): void,
-    onWebviewPanelCreated(listener: (data: vscode.WebviewPanel) => void): void,
+    getActiveExperiment(): Experiment | undefined;
+    getActiveWebviewPanels(): { [key: string]: TraceViewerPanel | undefined };
+    getActiveWebviews(): vscode.WebviewView[];
+    onWebviewCreated(listener: (data: vscode.WebviewView) => void): void;
+    onWebviewPanelCreated(listener: (data: vscode.WebviewPanel) => void): void;
 }
 
 export const traceExtensionAPI: ExternalAPI = {
@@ -31,7 +31,7 @@ export const traceExtensionAPI: ExternalAPI = {
      *
      * @returns Key value pairs where the value is of TraceViewerPanel type if panel with that key is active, otherwise undefined
      */
-    getActiveWebviewPanels(): { [key: string]: TraceViewerPanel | undefined; } {
+    getActiveWebviewPanels(): { [key: string]: TraceViewerPanel | undefined } {
         return TraceViewerPanel.activePanels;
     },
 

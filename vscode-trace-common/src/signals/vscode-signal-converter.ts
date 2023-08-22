@@ -31,4 +31,3 @@ export function convertSignalTraces(signalExperiment: Experiment): Trace[] {
     });
     return traces;
 }
-

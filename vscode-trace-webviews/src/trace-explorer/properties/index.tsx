@@ -10,6 +10,4 @@ import TraceExplorerProperties from './vscode-trace-explorer-properties-widget';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 
-root.render(
-    <TraceExplorerProperties />
-);
+root.render(<TraceExplorerProperties />);

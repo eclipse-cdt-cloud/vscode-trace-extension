@@ -5,6 +5,4 @@ import ChartShortcutsComponent from './vscode-trace-explorer-shortcuts-widget';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 
-root.render(
-    <ChartShortcutsComponent />
-);
+root.render(<ChartShortcutsComponent />);

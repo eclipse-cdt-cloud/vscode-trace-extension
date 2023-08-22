@@ -7,7 +7,6 @@ import { VsCodeMessageManager } from '../messages/vscode-message-manager';
 import { TraceServerUrlProvider } from '../server/trace-server-url-provider';
 
 export class TspClientProvider implements ITspClientProvider {
-
     private _tspClient: TspClient;
     private _traceManager: TraceManager;
     private _experimentManager: ExperimentManager;
@@ -16,16 +15,19 @@ export class TspClientProvider implements ITspClientProvider {
     private _urlProvider: TraceServerUrlProvider;
     private _listeners: ((tspClient: TspClient) => void)[];
 
-    constructor(traceServerUrl: string, signalHandler: VsCodeMessageManager | undefined, _urlProvider: TraceServerUrlProvider
+    constructor(
+        traceServerUrl: string,
+        signalHandler: VsCodeMessageManager | undefined,
+        _urlProvider: TraceServerUrlProvider
     ) {
         this._tspClient = new TspClient(traceServerUrl);
         this._traceManager = new TraceManager(this._tspClient);
         this._experimentManager = new ExperimentManager(this._tspClient, this._traceManager);
 
         this._signalHandler = signalHandler;
-        this._statusListener = ((status: boolean) => {
+        this._statusListener = (status: boolean) => {
             this._signalHandler?.notifyConnection(status);
-        });
+        };
         RestClient.addConnectionStatusListener(this._statusListener);
         this._tspClient.checkHealth();
 

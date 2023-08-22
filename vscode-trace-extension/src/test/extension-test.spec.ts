@@ -11,7 +11,7 @@ test('Open Trace from Explorer', async ({ page }) => {
     await page.getByRole('treeitem', { name: 'cat-kernel' }).locator('a').click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Open with Trace Viewer' }).hover();
     await page.getByRole('menuitem', { name: 'Open with Trace Viewer' }).click();
-    await expect(page.getByRole('tab', { name: 'cat-kernel'})).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'cat-kernel' })).toBeVisible();
 });
 
 test('Open Trace from Trace Viewer', async ({ page }) => {
@@ -22,5 +22,5 @@ test('Open Trace from Trace Viewer', async ({ page }) => {
     await page.getByRole('option', { name: 'cat-kernel' }).locator('a').click();
     await page.waitForTimeout(1000);
     await page.getByRole('button', { name: 'OK' }).click();
-    await expect(page.getByRole('tab', { name: 'cat-kernel'})).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'cat-kernel' })).toBeVisible();
 });
