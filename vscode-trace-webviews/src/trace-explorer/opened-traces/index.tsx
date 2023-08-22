@@ -5,6 +5,4 @@ import TraceExplorerOpenedTraces from './vscode-trace-explorer-opened-traces-wid
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 
-root.render(
-    <TraceExplorerOpenedTraces />
-);
+root.render(<TraceExplorerOpenedTraces />);

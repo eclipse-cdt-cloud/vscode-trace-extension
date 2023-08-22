@@ -5,43 +5,46 @@ import { getTraceServerUrl } from '../utils/tspClient';
  * Manages the keyboard and mouse shortcuts panel
  */
 export class KeyboardShortcutsPanel {
-
     private static readonly viewType = 'trace.viewer.shortcuts';
-	private static _panel: vscode.WebviewPanel | undefined = undefined;
+    private static _panel: vscode.WebviewPanel | undefined = undefined;
 
-	public static createOrShow(extensionUri: vscode.Uri, name: string): void {
-	    const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
+    public static createOrShow(extensionUri: vscode.Uri, name: string): void {
+        const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
 
-	    if (this._panel) {
-	        this._panel.reveal(column);
-	    } else {
-	        this._panel = vscode.window.createWebviewPanel(KeyboardShortcutsPanel.viewType, name, column || vscode.ViewColumn.One, {
-	            // Enable javascript in the webview
-	            enableScripts: true,
-	        });
+        if (this._panel) {
+            this._panel.reveal(column);
+        } else {
+            this._panel = vscode.window.createWebviewPanel(
+                KeyboardShortcutsPanel.viewType,
+                name,
+                column || vscode.ViewColumn.One,
+                {
+                    // Enable javascript in the webview
+                    enableScripts: true
+                }
+            );
 
-	        // Set the webview's initial html content
-	        this._panel.webview.html = this._getHtmlForWebview(this._panel.webview, extensionUri);
+            // Set the webview's initial html content
+            this._panel.webview.html = this._getHtmlForWebview(this._panel.webview, extensionUri);
 
-	        // Listen for when the panel is disposed
-	        // This happens when the user closes the panel or when the panel is closed programmatically
-	        this._panel.onDidDispose(() => {
-	            this._panel = undefined;
-	        });
+            // Listen for when the panel is disposed
+            // This happens when the user closes the panel or when the panel is closed programmatically
+            this._panel.onDidDispose(() => {
+                this._panel = undefined;
+            });
+        }
+    }
 
-	    }
-	}
+    /* eslint-disable max-len */
+    private static _getHtmlForWebview(webview: vscode.Webview, extensionUri: vscode.Uri): string {
+        // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
+        const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'pack', 'shortcutsPanel.js'));
+        const packUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'pack'));
 
-	/* eslint-disable max-len */
-	private static _getHtmlForWebview(webview: vscode.Webview, extensionUri: vscode.Uri): string {
-	    // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
-	    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'pack', 'shortcutsPanel.js'));
-	    const packUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'pack'));
+        // Use a nonce to whitelist which scripts can be run
+        const nonce = getNonce();
 
-	    // Use a nonce to whitelist which scripts can be run
-	    const nonce = getNonce();
-
-	    return `<!DOCTYPE html>
+        return `<!DOCTYPE html>
 			<html lang="en">
 			<head>
 				<meta charset="utf-8">
@@ -68,7 +71,7 @@ export class KeyboardShortcutsPanel {
                 <script nonce="${nonce}" src="${scriptUri}"></script>
             </body>
 			</html>`;
-	}
+    }
 }
 
 function getNonce() {

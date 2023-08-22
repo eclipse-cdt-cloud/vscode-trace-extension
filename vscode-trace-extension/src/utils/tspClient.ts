@@ -14,7 +14,7 @@ export function getTraceServerUrl(): string {
     if (!traceServerUrl) {
         return 'http://localhost:8080/';
     }
-    return traceServerUrl.endsWith('/') ? traceServerUrl : traceServerUrl + '/' ;
+    return traceServerUrl.endsWith('/') ? traceServerUrl : traceServerUrl + '/';
 }
 
 export function getTspClientUrl(): string {

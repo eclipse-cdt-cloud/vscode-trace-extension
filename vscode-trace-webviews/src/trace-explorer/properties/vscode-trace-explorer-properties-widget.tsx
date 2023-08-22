@@ -28,9 +28,9 @@ class TraceExplorerProperties extends React.Component<{}, PropertiesViewState> {
         window.addEventListener('message', event => {
             const message = event.data; // The JSON data our extension sent
             switch (message.command) {
-            case 'receivedProperties':
-                signalManager().fireItemPropertiesSignalUpdated(message.data.properties);
-                break;
+                case 'receivedProperties':
+                    signalManager().fireItemPropertiesSignalUpdated(message.data.properties);
+                    break;
             }
         });
     }
@@ -51,14 +51,16 @@ class TraceExplorerProperties extends React.Component<{}, PropertiesViewState> {
         );
     }
 
-    protected handleSourcecodeLookup = (e: React.MouseEvent<HTMLParagraphElement>): void => this.doHandleSourcecodeLookup(e);
+    protected handleSourcecodeLookup = (e: React.MouseEvent<HTMLParagraphElement>): void =>
+        this.doHandleSourcecodeLookup(e);
 
     private doHandleSourcecodeLookup(e: React.MouseEvent<HTMLParagraphElement>) {
-        const { fileLocation, line }: { fileLocation: string, line: string } = JSON.parse(`${e.currentTarget.getAttribute('data-id')}`);
+        const { fileLocation, line }: { fileLocation: string; line: string } = JSON.parse(
+            `${e.currentTarget.getAttribute('data-id')}`
+        );
         console.log('filename: ' + fileLocation + ':' + line);
         console.log('Source lookup method not implemented');
     }
-
 }
 
 export default TraceExplorerProperties;

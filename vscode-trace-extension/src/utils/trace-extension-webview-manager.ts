@@ -40,7 +40,7 @@ export class TraceExtensionWebviewManager {
         }
     }
 
-    onWebviewPanelCreated(listener: (data: vscode.WebviewPanel) => unknown): void  {
+    onWebviewPanelCreated(listener: (data: vscode.WebviewPanel) => unknown): void {
         if (!this.isDisposed()) {
             this.webviewPanelCreated.event(listener);
         }
@@ -68,11 +68,13 @@ export class TraceExtensionWebviewManager {
     }
 
     private removeWebview(_webview: vscode.WebviewView): void {
-        this.webviews.filter(webview => webview === _webview).forEach(webview => {
-            const index = this.webviews.indexOf(webview);
-            if (index !== -1) {
-                this.webviews.splice(index, 1);
-            }
-        });
+        this.webviews
+            .filter(webview => webview === _webview)
+            .forEach(webview => {
+                const index = this.webviews.indexOf(webview);
+                if (index !== -1) {
+                    this.webviews.splice(index, 1);
+                }
+            });
     }
 }

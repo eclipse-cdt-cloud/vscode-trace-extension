@@ -11,121 +11,134 @@ import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message
 import { traceExtensionWebviewManager } from 'vscode-trace-extension/src/extension';
 
 const JSONBig = JSONBigConfig({
-    useNativeBigInt: true,
+    useNativeBigInt: true
 });
 
 export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewProvider {
+    public static readonly viewType = 'traceExplorer.availableViews';
 
-	public static readonly viewType = 'traceExplorer.availableViews';
+    private _view?: vscode.WebviewView;
+    private _disposables: vscode.Disposable[] = [];
+    private _selectionOngoing = false;
+    private _selectedExperiment: Experiment | undefined;
 
-	private _view?: vscode.WebviewView;
-	private _disposables: vscode.Disposable[] = [];
-	private _selectionOngoing = false;
-	private _selectedExperiment: Experiment | undefined;
+    private _onExperimentSelected = (experiment: Experiment | undefined): void =>
+        this.doHandleExperimentSelectedSignal(experiment);
 
-	private _onExperimentSelected = (experiment: Experiment | undefined): void => this.doHandleExperimentSelectedSignal(experiment);
+    constructor(
+        private readonly _extensionUri: vscode.Uri,
+        private readonly _statusService: TraceServerConnectionStatusService
+    ) {}
 
-	constructor(
-		private readonly _extensionUri: vscode.Uri,
-		private readonly _statusService: TraceServerConnectionStatusService,
-	) { }
+    public updateTraceServerUrl(newUrl: string): void {
+        if (this._view) {
+            this._view.webview.postMessage({ command: VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED, data: newUrl });
+        }
+    }
 
-	public updateTraceServerUrl(newUrl: string): void {
-	    if (this._view) {
-	        this._view.webview.postMessage({command: VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED, data: newUrl});
-	    }
-	}
+    public resolveWebviewView(
+        webviewView: vscode.WebviewView,
+        _context: vscode.WebviewViewResolveContext,
+        _token: vscode.CancellationToken
+    ): void {
+        this._view = webviewView;
 
-	public resolveWebviewView(
-	    webviewView: vscode.WebviewView,
-	    _context: vscode.WebviewViewResolveContext,
-	    _token: vscode.CancellationToken,
-	): void {
-	    this._view = webviewView;
+        webviewView.webview.options = {
+            // Allow scripts in the webview
+            enableScripts: true,
 
-	    webviewView.webview.options = {
-	        // Allow scripts in the webview
-	        enableScripts: true,
+            localResourceRoots: [
+                vscode.Uri.joinPath(this._extensionUri, 'pack'),
+                vscode.Uri.joinPath(this._extensionUri, 'lib', 'codicons')
+            ]
+        };
 
-	        localResourceRoots: [
-	            vscode.Uri.joinPath(this._extensionUri, 'pack'),
-	            vscode.Uri.joinPath(this._extensionUri, 'lib', 'codicons')
-	        ]
-	    };
+        webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+        traceExtensionWebviewManager.fireWebviewCreated(webviewView);
 
-	    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
-	    traceExtensionWebviewManager.fireWebviewCreated(webviewView);
+        // Handle messages from the webview
+        webviewView.webview.onDidReceiveMessage(
+            message => {
+                switch (message.command) {
+                    case VSCODE_MESSAGES.CONNECTION_STATUS:
+                        if (message.data && message.data.status) {
+                            const status: boolean = JSON.parse(message.data.status);
+                            this._statusService.render(status);
+                        }
+                        return;
+                    case VSCODE_MESSAGES.WEBVIEW_READY:
+                        // Post the tspTypescriptClient
+                        webviewView.webview.postMessage({
+                            command: VSCODE_MESSAGES.SET_TSP_CLIENT,
+                            data: getTspClientUrl()
+                        });
+                        if (this._selectedExperiment !== undefined) {
+                            signalManager().fireExperimentSelectedSignal(this._selectedExperiment);
+                        }
+                        return;
+                    case VSCODE_MESSAGES.OUTPUT_ADDED:
+                        if (message.data && message.data.descriptor) {
+                            // FIXME: JSONBig.parse() created bigint if numbers are small.
+                            // Not an issue right now for output descriptors.
+                            const descriptor = JSONBig.parse(message.data.descriptor) as OutputDescriptor;
+                            // TODO: Don't use static current panel, i.e. find better design to add output...
 
-	    // Handle messages from the webview
-	    webviewView.webview.onDidReceiveMessage(message => {
-	        switch (message.command) {
-	        case VSCODE_MESSAGES.CONNECTION_STATUS:
-	            if (message.data && message.data.status) {
-	                const status: boolean = JSON.parse(message.data.status);
-	                this._statusService.render(status);
-	            }
-	            return;
-	        case VSCODE_MESSAGES.WEBVIEW_READY:
-	            // Post the tspTypescriptClient
-	            webviewView.webview.postMessage({command: VSCODE_MESSAGES.SET_TSP_CLIENT, data: getTspClientUrl()});
-	            if (this._selectedExperiment !== undefined) {
-	                signalManager().fireExperimentSelectedSignal(this._selectedExperiment);
-	            }
-	            return;
-	        case VSCODE_MESSAGES.OUTPUT_ADDED:
-	            if (message.data && message.data.descriptor) {
-	                 // FIXME: JSONBig.parse() created bigint if numbers are small.
-					 // Not an issue right now for output descriptors.
-	                const descriptor = JSONBig.parse(message.data.descriptor) as OutputDescriptor;
-	                // TODO: Don't use static current panel, i.e. find better design to add output...
+                            TraceViewerPanel.addOutputToCurrent(descriptor);
+                            // const panel = TraceViewerPanel.createOrShow(this._extensionUri, message.data.experiment.name);
+                            // panel.setExperiment(message.data.experiment);
+                        }
+                        return;
+                    case VSCODE_MESSAGES.EXPERIMENT_SELECTED: {
+                        try {
+                            this._selectionOngoing = true;
+                            if (message.data && message.data.wrapper) {
+                                // Avoid endless forwarding of signal
+                                this._selectedExperiment = convertSignalExperiment(JSONBig.parse(message.data.wrapper));
+                            } else {
+                                this._selectedExperiment = undefined;
+                            }
+                            signalManager().fireExperimentSelectedSignal(this._selectedExperiment);
+                        } finally {
+                            this._selectionOngoing = false;
+                        }
+                    }
+                }
+            },
+            undefined,
+            this._disposables
+        );
 
-	                TraceViewerPanel.addOutputToCurrent(descriptor);
-	                // const panel = TraceViewerPanel.createOrShow(this._extensionUri, message.data.experiment.name);
-	                // panel.setExperiment(message.data.experiment);
-	            }
-	            return;
-	        case VSCODE_MESSAGES.EXPERIMENT_SELECTED: {
-	            try {
-	                this._selectionOngoing = true;
-	            	if (message.data && message.data.wrapper) {
-	                    // Avoid endless forwarding of signal
-	                    this._selectedExperiment = convertSignalExperiment(JSONBig.parse(message.data.wrapper));
-	                } else {
-	                    this._selectedExperiment = undefined;
-	                }
-	                signalManager().fireExperimentSelectedSignal(this._selectedExperiment);
-	            } finally {
-	                this._selectionOngoing = false;
-	            }
-	        }
-	        }
-	    }, undefined, this._disposables);
+        signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
+        webviewView.onDidDispose(
+            _event => {
+                signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
+            },
+            undefined,
+            this._disposables
+        );
+    }
 
-	    signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
-	    webviewView.onDidDispose(_event => {
-	        signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
-	    }, undefined, this._disposables);
-	}
+    protected doHandleExperimentSelectedSignal(experiment: Experiment | undefined): void {
+        if (!this._selectionOngoing && this._view) {
+            this._selectedExperiment = experiment;
+            const wrapper: string = JSONBig.stringify(experiment);
+            this._view.webview.postMessage({ command: VSCODE_MESSAGES.EXPERIMENT_SELECTED, data: wrapper });
+        }
+    }
 
-	protected doHandleExperimentSelectedSignal(experiment: Experiment | undefined): void {
-	    if (!this._selectionOngoing && this._view) {
-	        this._selectedExperiment = experiment;
-	        const wrapper: string = JSONBig.stringify(experiment);
-	        this._view.webview.postMessage({command: VSCODE_MESSAGES.EXPERIMENT_SELECTED, data: wrapper});
-	    }
-	}
+    /* eslint-disable max-len */
+    private _getHtmlForWebview(webview: vscode.Webview) {
+        // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
+        const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'pack', 'analysisPanel.js'));
+        const codiconsUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(this._extensionUri, 'lib', 'codicons', 'codicon.css')
+        );
+        const packUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'pack'));
 
-	/* eslint-disable max-len */
-	private _getHtmlForWebview(webview: vscode.Webview) {
-	    // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
-	    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'pack', 'analysisPanel.js'));
-	    const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'lib', 'codicons', 'codicon.css'));
-	    const packUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'pack'));
+        // Use a nonce to only allow a specific script to be run.
+        const nonce = getNonce();
 
-	    // Use a nonce to only allow a specific script to be run.
-	    const nonce = getNonce();
-
-	    return `<!DOCTYPE html>
+        return `<!DOCTYPE html>
 			<html lang="en">
 			<head>
 				<meta charset="utf-8">
@@ -153,7 +166,7 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;
-	}
+    }
 }
 
 function getNonce() {

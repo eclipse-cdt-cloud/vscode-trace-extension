@@ -6,7 +6,7 @@ import JSONBigConfig from 'json-bigint';
 import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
 
 const JSONBig = JSONBigConfig({
-    useNativeBigInt: true,
+    useNativeBigInt: true
 });
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
@@ -66,7 +66,7 @@ export const VSCODE_MESSAGES = {
     SELECTION_RANGE_UPDATED: 'selectionRangeUpdated',
     REQUEST_SELECTION_RANGE_CHANGE: 'requestSelectionRangeChange',
     RESTORE_VIEW: 'restoreView',
-    RESTORE_COMPLETE: 'restoreComplete',
+    RESTORE_COMPLETE: 'restoreComplete'
 };
 
 export class VsCodeMessageManager extends Messages.MessageManager {
@@ -74,23 +74,28 @@ export class VsCodeMessageManager extends Messages.MessageManager {
         super();
     }
 
-    addStatusMessage(messageKey: string, {text,
-        category = Messages.MessageCategory.SERVER_MESSAGE,
-        severity = Messages.MessageSeverity.INFO }: Messages.StatusMessage): void {
-        vscode.postMessage({command: VSCODE_MESSAGES.NEW_STATUS, data: {messageKey, text, category, severity }});
+    addStatusMessage(
+        messageKey: string,
+        {
+            text,
+            category = Messages.MessageCategory.SERVER_MESSAGE,
+            severity = Messages.MessageSeverity.INFO
+        }: Messages.StatusMessage
+    ): void {
+        vscode.postMessage({ command: VSCODE_MESSAGES.NEW_STATUS, data: { messageKey, text, category, severity } });
     }
 
     removeStatusMessage(messageKey: string): void {
-        vscode.postMessage({command: VSCODE_MESSAGES.REMOVE_STATUS, data: { messageKey }});
+        vscode.postMessage({ command: VSCODE_MESSAGES.REMOVE_STATUS, data: { messageKey } });
     }
 
     notifyReady(): void {
-        vscode.postMessage({command: VSCODE_MESSAGES.WEBVIEW_READY});
+        vscode.postMessage({ command: VSCODE_MESSAGES.WEBVIEW_READY });
     }
 
     notifyConnection(serverStatus: boolean): void {
         const status: string = JSON.stringify(serverStatus);
-        vscode.postMessage({command: VSCODE_MESSAGES.CONNECTION_STATUS, data: { status }});
+        vscode.postMessage({ command: VSCODE_MESSAGES.CONNECTION_STATUS, data: { status } });
     }
 
     /**************************************************************************
@@ -98,26 +103,26 @@ export class VsCodeMessageManager extends Messages.MessageManager {
      *************************************************************************/
 
     openTrace(): void {
-        vscode.postMessage({command: VSCODE_MESSAGES.OPEN_TRACE});
+        vscode.postMessage({ command: VSCODE_MESSAGES.OPEN_TRACE });
     }
 
     updateOpenedTraces(numberOfOpenedTraces: number): void {
-        vscode.postMessage({command: VSCODE_MESSAGES.OPENED_TRACES_UPDATED, numberOfOpenedTraces});
+        vscode.postMessage({ command: VSCODE_MESSAGES.OPENED_TRACES_UPDATED, numberOfOpenedTraces });
     }
 
     reOpenTrace(experiment: Experiment): void {
         const wrapper: string = JSONBig.stringify(experiment);
-        vscode.postMessage({command: VSCODE_MESSAGES.RE_OPEN_TRACE, data: {wrapper}});
+        vscode.postMessage({ command: VSCODE_MESSAGES.RE_OPEN_TRACE, data: { wrapper } });
     }
 
     closeTrace(experiment: Experiment): void {
         const wrapper: string = JSONBig.stringify(experiment);
-        vscode.postMessage({command: VSCODE_MESSAGES.CLOSE_TRACE, data: {wrapper}});
+        vscode.postMessage({ command: VSCODE_MESSAGES.CLOSE_TRACE, data: { wrapper } });
     }
 
     deleteTrace(experiment: Experiment): void {
         const wrapper: string = JSONBig.stringify(experiment);
-        vscode.postMessage({command: VSCODE_MESSAGES.DELETE_TRACE, data: {wrapper}});
+        vscode.postMessage({ command: VSCODE_MESSAGES.DELETE_TRACE, data: { wrapper } });
     }
 
     experimentSelected(experiment?: Experiment | undefined): void {
@@ -139,11 +144,14 @@ export class VsCodeMessageManager extends Messages.MessageManager {
     outputAdded(payload: OutputAddedSignalPayload): void {
         const expWrapper = JSONBig.stringify(payload.getExperiment());
         const descWrapper = JSONBig.stringify(payload.getOutputDescriptor());
-        vscode.postMessage({command: VSCODE_MESSAGES.OUTPUT_ADDED, data: {data: expWrapper, descriptor: descWrapper }});
+        vscode.postMessage({
+            command: VSCODE_MESSAGES.OUTPUT_ADDED,
+            data: { data: expWrapper, descriptor: descWrapper }
+        });
     }
 
     propertiesUpdated(properties: { [key: string]: string }): void {
-        vscode.postMessage({command: VSCODE_MESSAGES.UPDATE_PROPERTIES, data: {properties}});
+        vscode.postMessage({ command: VSCODE_MESSAGES.UPDATE_PROPERTIES, data: { properties } });
     }
 
     viewRangeUpdated(payload: TimeRangeUpdatePayload): void {
@@ -161,27 +169,27 @@ export class VsCodeMessageManager extends Messages.MessageManager {
         vscode.postMessage({ command: VSCODE_MESSAGES.REQUEST_SELECTION_RANGE_CHANGE, data });
     }
 
-    saveAsCSV(payload: {traceId: string, data: string}): void {
-        vscode.postMessage({command: VSCODE_MESSAGES.SAVE_AS_CSV, payload});
+    saveAsCSV(payload: { traceId: string; data: string }): void {
+        vscode.postMessage({ command: VSCODE_MESSAGES.SAVE_AS_CSV, payload });
     }
 
-    fetchMarkerCategories(payload: Map<string, { categoryCount: number, toggleInd: boolean }>): void {
+    fetchMarkerCategories(payload: Map<string, { categoryCount: number; toggleInd: boolean }>): void {
         const wrapper: string = JSON.stringify([...payload]);
-        vscode.postMessage({command: VSCODE_MESSAGES.SHOW_MARKER_CATEGORIES, data: {wrapper}});
+        vscode.postMessage({ command: VSCODE_MESSAGES.SHOW_MARKER_CATEGORIES, data: { wrapper } });
     }
 
-    fetchMarkerSets(payload: Map<string, { marker: MarkerSet, enabled: boolean }>): void {
+    fetchMarkerSets(payload: Map<string, { marker: MarkerSet; enabled: boolean }>): void {
         const wrapper: string = JSON.stringify([...payload]);
-        vscode.postMessage({command: VSCODE_MESSAGES.SEND_MARKER_SETS, data: {wrapper}});
+        vscode.postMessage({ command: VSCODE_MESSAGES.SEND_MARKER_SETS, data: { wrapper } });
     }
 
     setMarkerSetsContext(context: boolean): void {
         const status: string = JSON.stringify(context);
-        vscode.postMessage({command: VSCODE_MESSAGES.MARKER_SETS_CONTEXT, data: { status }});
+        vscode.postMessage({ command: VSCODE_MESSAGES.MARKER_SETS_CONTEXT, data: { status } });
     }
 
     setMarkerCategoriesContext(context: boolean): void {
         const status: string = JSON.stringify(context);
-        vscode.postMessage({command: VSCODE_MESSAGES.MARKER_CATEGORIES_CONTEXT, data: { status }});
+        vscode.postMessage({ command: VSCODE_MESSAGES.MARKER_CATEGORIES_CONTEXT, data: { status } });
     }
 }

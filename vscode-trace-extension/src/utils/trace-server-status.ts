@@ -1,7 +1,6 @@
 import { StatusBarItem, ThemeColor } from 'vscode';
 
 export class TraceServerConnectionStatusService {
-
     private statusBarItem: StatusBarItem;
 
     public constructor(statusBarItem: StatusBarItem) {

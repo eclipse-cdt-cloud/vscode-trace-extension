@@ -1,16 +1,20 @@
 import * as vscode from 'vscode';
 import * as Messages from 'traceviewer-base/lib/message-manager';
 
-const statusBarItem: { [ key: string ]: vscode.StatusBarItem} = {};
+const statusBarItem: { [key: string]: vscode.StatusBarItem } = {};
 
-const statusPerExperiment: { [ key: string]: { [key: string]: string}} = {};
+const statusPerExperiment: { [key: string]: { [key: string]: string } } = {};
 
 function getOrCreateBarItem(key: string, category: Messages.MessageCategory) {
     const statusBar = getBarItem(key);
     if (statusBar) {
         return statusBar;
     }
-    const newBarItem = vscode.window.createStatusBarItem(category === Messages.MessageCategory.TRACE_CONTEXT ? vscode.StatusBarAlignment.Left : vscode.StatusBarAlignment.Right);
+    const newBarItem = vscode.window.createStatusBarItem(
+        category === Messages.MessageCategory.TRACE_CONTEXT
+            ? vscode.StatusBarAlignment.Left
+            : vscode.StatusBarAlignment.Right
+    );
     statusBarItem[key] = newBarItem;
     return newBarItem;
 }
@@ -31,33 +35,36 @@ function removeStatusForPanel(panelName: string, messageKey: string) {
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function handleStatusMessage(panelName: string, {
-    text = '',
-    category = Messages.MessageCategory.SERVER_MESSAGE,
-    severity = Messages.MessageSeverity.INFO,
-    messageKey = ''
-}): void {
+export function handleStatusMessage(
+    panelName: string,
+    {
+        text = '',
+        category = Messages.MessageCategory.SERVER_MESSAGE,
+        severity = Messages.MessageSeverity.INFO,
+        messageKey = ''
+    }
+): void {
     switch (severity) {
-    case Messages.MessageSeverity.ERROR:
-        vscode.window.showErrorMessage(text);
-        return;
-    case Messages.MessageSeverity.WARNING:
-    case Messages.MessageSeverity.INFO:
-        const barItem = getOrCreateBarItem(messageKey, category);
-        barItem.text = text;
-        barItem.show();
-        if (messageKey) {
-            setStatusForPanel(panelName, messageKey, text);
-        }
-        return;
-    case Messages.MessageSeverity.DEBUG:
-        console.log('Status message ' + messageKey + '(' + category + '): ' + text);
-        return;
+        case Messages.MessageSeverity.ERROR:
+            vscode.window.showErrorMessage(text);
+            return;
+        case Messages.MessageSeverity.WARNING:
+        case Messages.MessageSeverity.INFO:
+            const barItem = getOrCreateBarItem(messageKey, category);
+            barItem.text = text;
+            barItem.show();
+            if (messageKey) {
+                setStatusForPanel(panelName, messageKey, text);
+            }
+            return;
+        case Messages.MessageSeverity.DEBUG:
+            console.log('Status message ' + messageKey + '(' + category + '): ' + text);
+            return;
     }
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function handleRemoveMessage(panelName: string, {messageKey = '' }): void {
+export function handleRemoveMessage(panelName: string, { messageKey = '' }): void {
     const barItem = getBarItem(messageKey);
     if (barItem) {
         barItem.text = '';
