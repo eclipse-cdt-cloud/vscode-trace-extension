@@ -66,7 +66,8 @@ export const VSCODE_MESSAGES = {
     SELECTION_RANGE_UPDATED: 'selectionRangeUpdated',
     REQUEST_SELECTION_RANGE_CHANGE: 'requestSelectionRangeChange',
     RESTORE_VIEW: 'restoreView',
-    RESTORE_COMPLETE: 'restoreComplete'
+    RESTORE_COMPLETE: 'restoreComplete',
+    OUTPUT_DATA_CHANGED: 'outputDataChanged'
 };
 
 export class VsCodeMessageManager extends Messages.MessageManager {

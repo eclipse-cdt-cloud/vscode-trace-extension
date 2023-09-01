@@ -124,6 +124,12 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
                         this.doHandleOutputAddedMessage(descriptor);
                     }
                     break;
+                case VSCODE_MESSAGES.OUTPUT_DATA_CHANGED:
+                    if (message?.data) {
+                        const descriptors: OutputDescriptor[] = JSONBig.parse(message.data);
+                        this.doHandleOutputDataChanged(descriptors);
+                    }
+                    break;
                 case VSCODE_MESSAGES.OPEN_OVERVIEW:
                     this.doHandleExperimentSetSignal(this.state.experiment, false);
                     break;
@@ -233,6 +239,10 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
 
     protected redo(): void {
         signalManager().fireRedoSignal();
+    }
+
+    protected doHandleOutputDataChanged(descriptors: OutputDescriptor[]): void {
+        signalManager().fireOutputDataChanged(descriptors);
     }
 
     protected updateZoom(hasZoomedIn: boolean): void {
