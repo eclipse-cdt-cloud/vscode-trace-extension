@@ -22,9 +22,11 @@ import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message
 import { TraceViewerPanel } from './trace-viewer-panel/trace-viewer-webview-panel';
 import { TspClientProvider } from 'vscode-trace-common/lib/client/tsp-client-provider-impl';
 import { TraceServerUrlProvider } from 'vscode-trace-common/lib/server/trace-server-url-provider';
+import { TraceServerManager } from './utils/trace-server-manager';
 
 export let traceLogger: TraceExtensionLogger;
 export const traceExtensionWebviewManager: TraceExtensionWebviewManager = new TraceExtensionWebviewManager();
+export const traceServerManager: TraceServerManager = new TraceServerManager();
 const tspClientProvider = new TspClientProvider(getTspClientUrl(), undefined, new TraceServerUrlProvider());
 
 export function activate(context: vscode.ExtensionContext): ExternalAPI {
@@ -70,8 +72,8 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
     // TODO: For now, a different command opens traces from file explorer. Remove when we have a proper trace finder
     const fileOpenHandler = fileHandler(analysisProvider);
     context.subscriptions.push(
-        vscode.commands.registerCommand('traces.openTraceFile', async file => {
-            await startTraceServerIfAvailable();
+        vscode.commands.registerCommand('traces.openTraceFile', async (file: vscode.Uri) => {
+            await startTraceServerIfAvailable(file.fsPath);
             if (await isUp()) {
                 fileOpenHandler(context, file);
             }
@@ -187,15 +189,23 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
     return traceExtensionAPI;
 }
 
-export function deactivate(): void {
+export async function deactivate(): Promise<void> {
+    await traceServerManager.stopServer();
+    traceServerManager.dispose();
     traceLogger.disposeChannel();
     traceExtensionWebviewManager.dispose();
 }
 
-async function startTraceServerIfAvailable(): Promise<void> {
+async function startTraceServerIfAvailable(pathToTrace?: string): Promise<void> {
     const extensionId = 'vscode-trace-server';
+    if (await isUp()) {
+        return;
+    }
+    if (pathToTrace) {
+        await traceServerManager.startServer(pathToTrace);
+    }
     const traceServerExtension = vscode.extensions.getExtension('tracecompass-community.' + extensionId);
-    if (!traceServerExtension || (await isUp())) {
+    if (!traceServerExtension) {
         return;
     }
     await vscode.commands.executeCommand(extensionId + '.start-if-stopped');
