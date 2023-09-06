@@ -6,7 +6,8 @@
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { TraceViewerPanel } from '../trace-viewer-panel/trace-viewer-webview-panel';
 import * as vscode from 'vscode';
-import { traceExtensionWebviewManager } from '../extension';
+import { traceExtensionWebviewManager, traceServerManager } from '../extension';
+import { TraceServerContributor } from '../utils/trace-server-manager';
 
 export interface ExternalAPI {
     getActiveExperiment(): Experiment | undefined;
@@ -14,6 +15,7 @@ export interface ExternalAPI {
     getActiveWebviews(): vscode.WebviewView[];
     onWebviewCreated(listener: (data: vscode.WebviewView) => void): void;
     onWebviewPanelCreated(listener: (data: vscode.WebviewPanel) => void): void;
+    addTraceServerContributor(contributor: TraceServerContributor): void;
 }
 
 export const traceExtensionAPI: ExternalAPI = {
@@ -60,5 +62,14 @@ export const traceExtensionAPI: ExternalAPI = {
      */
     onWebviewPanelCreated(listener: (data: vscode.WebviewPanel) => void): void {
         traceExtensionWebviewManager.onWebviewPanelCreated(listener);
+    },
+
+    /**
+     * Registers a server contributor
+     *
+     * @param contributor Contributor object that contains startServer, stopServer handlers and a traceValidator
+     */
+    addTraceServerContributor(contributor: TraceServerContributor): void {
+        traceServerManager.addTraceServerContributor(contributor);
     }
 };
