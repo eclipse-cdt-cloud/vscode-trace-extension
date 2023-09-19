@@ -258,7 +258,7 @@
     "terser": "4.8.1",
     "traceviewer-base": "next",
     "traceviewer-react-components": "next",
-    "vsce": "^1.85.1",
+    "@vscode/vsce": "^2.21.0",
     "vscode-trace-common": "0.0.0"
   },
   "devDependencies": {
