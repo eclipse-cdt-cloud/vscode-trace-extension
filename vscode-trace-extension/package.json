@@ -113,8 +113,15 @@
       "trace-explorer": [
         {
           "type": "webview",
+          "id": "traceExplorer.welcomeView",
+          "name": "Welcome",
+          "when": "trace-explorer.noExperiments || !traceViewer.serverOn"
+        },
+        {
+          "type": "webview",
           "id": "traceExplorer.openedTracesView",
-          "name": "Opened Traces"
+          "name": "Opened Traces",
+          "when": "!trace-explorer.noExperiments && traceViewer.serverOn"
         },
         {
           "type": "webview",

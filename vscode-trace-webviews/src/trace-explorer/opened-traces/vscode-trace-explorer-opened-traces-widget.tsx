@@ -186,8 +186,7 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
         console.dir(RequestManager);
         console.dir(this.state);
 
-        return !this.state.serverOnline ? <StartServerComponent onClick={() => this.startServer()}/> : 
-            this.state.experimentsOpened ? (
+        return this.state.experimentsOpened ? (
             <>
                 <div>
                     {this.state.tspClientProvider && (
@@ -219,9 +218,12 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
             </>
         ) : (
             <ReactExplorerPlaceholderWidget
+                serverOn={this.state.serverOnline}
+                tracesOpen={this.state.experimentsOpened}
                 loading={this.loading}
                 handleOpenTrace={this.handleOpenTrace}
-            ></ReactExplorerPlaceholderWidget>
+                handleStartServer={this.startServer}
+            />
         );
     }
 
@@ -265,19 +267,5 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
     };
 }
 
-const StartServerComponent: React.FC<{ onClick: () => void }> = ({ onClick }): JSX.Element => (
-    <div className="placeholder-container" tabIndex={0}>
-            <div className="center">{'The Trace Server is offline.'}</div>
-            <div className="placeholder-open-workspace-button-container">
-                <button
-                    className="plcaeholder-open-workspace-button"
-                    title="Start Trace Server"
-                    onClick={() => onClick()}
-                >
-                    <span>Start Trace Server</span>
-                </button>
-            </div>
-        </div>
-)
 
 export default TraceExplorerOpenedTraces;

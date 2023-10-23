@@ -8,7 +8,8 @@ module.exports = {
     analysisPanel: "./src/trace-explorer/available-views/index.tsx",
     propertiesPanel: "./src/trace-explorer/properties/index.tsx",
     shortcutsPanel: "./src/trace-explorer/shortcuts/index.tsx",
-    timeRangePanel: "./src/trace-explorer/time-range/index.tsx"
+    timeRangePanel: "./src/trace-explorer/time-range/index.tsx",
+    welcomePanel: "./src/trace-explorer/welcome-view/index.tsx"
   },
   output: {
     path: path.resolve(__dirname, "../vscode-trace-extension/pack"),

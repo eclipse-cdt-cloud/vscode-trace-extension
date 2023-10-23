@@ -5,6 +5,8 @@ import { TraceExplorerItemPropertiesProvider } from './trace-explorer/properties
 import { TraceExplorerTimeRangeDataProvider } from './trace-explorer/time-range/trace-explorer-time-range-data-webview-provider';
 import { TraceExplorerAvailableViewsProvider } from './trace-explorer/available-views/trace-explorer-available-views-webview-provider';
 import { TraceExplorerOpenedTracesViewProvider } from './trace-explorer/opened-traces/trace-explorer-opened-traces-webview-provider';
+import { TraceExplorerWelcomeViewProvider } from './trace-explorer/welcome-view/trace-explorer-welcome-webview-provider';
+
 import {
     fileHandler,
     openOverviewHandler,
@@ -56,6 +58,11 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
     const timeRangeDataProvider = new TraceExplorerTimeRangeDataProvider(context.extensionUri);
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(TraceExplorerTimeRangeDataProvider.viewType, timeRangeDataProvider)
+    );
+
+    const welcomeViewProvider = new TraceExplorerWelcomeViewProvider(context.extensionUri, serverStatusService)
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider(TraceExplorerWelcomeViewProvider.viewType, welcomeViewProvider)
     );
 
     context.subscriptions.push(
