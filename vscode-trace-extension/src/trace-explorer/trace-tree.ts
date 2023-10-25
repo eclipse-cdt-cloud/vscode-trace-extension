@@ -166,8 +166,8 @@ export const fileHandler =
                     return;
                 }
 
-                const uri: string = resolvedTraceURI.path;
-                if (!uri) {
+                const filePath: string = resolvedTraceURI.fsPath;
+                if (!filePath) {
                     traceLogger.addLogMessage(
                         'Cannot open trace: could not retrieve path from URI for trace ' + resolvedTraceURI,
                         fileHandler.name
@@ -175,7 +175,7 @@ export const fileHandler =
                     return;
                 }
 
-                const name = uri.substring(uri.lastIndexOf('/') + 1);
+                const name = path.basename(filePath);
                 const panel = TraceViewerPanel.createOrShow(context.extensionUri, name, undefined);
 
                 progress.report({ message: ProgressMessages.FINDING_TRACES, increment: 10 });
@@ -187,11 +187,11 @@ export const fileHandler =
                 if (fileStat) {
                     if (fileStat.type === vscode.FileType.Directory) {
                         // Find recursively CTF traces
-                        const foundTraces = await findTraces(uri);
+                        const foundTraces = await findTraces(filePath);
                         foundTraces.forEach(trace => tracesArray.push(trace));
                     } else {
                         // Open single trace file
-                        tracesArray.push(uri);
+                        tracesArray.push(filePath);
                     }
                 }
 
@@ -208,7 +208,7 @@ export const fileHandler =
                 progress.report({ message: ProgressMessages.OPENING_TRACES, increment: 20 });
                 const traces = new Array<TspTrace>();
                 for (let i = 0; i < tracesArray.length; i++) {
-                    const traceName = tracesArray[i].substring(tracesArray[i].lastIndexOf('/') + 1);
+                    const traceName = path.basename(tracesArray[i]);
                     const trace = await traceManager.openTrace(tracesArray[i], traceName);
                     if (trace) {
                         traces.push(trace);
@@ -291,7 +291,7 @@ const findTraces = async (directory: string): Promise<string[]> => {
         const childrenArr = await vscode.workspace.fs.readDirectory(uri);
         for (const child of childrenArr) {
             if (child[1] === vscode.FileType.Directory) {
-                const subTraces = await findTraces(directory + '/' + child[0]);
+                const subTraces = await findTraces(path.join(directory, child[0]));
                 subTraces.forEach(trace => traces.push(trace));
             }
         }
@@ -311,8 +311,8 @@ const isCtf = async (directory: string): Promise<boolean> => {
 };
 
 function getProgressBarTitle(traceUri: vscode.Uri | undefined): string {
-    if (!traceUri || !traceUri.path) {
+    if (!traceUri || !traceUri.fsPath) {
         return 'undefined';
     }
-    return traceUri.path.substring(traceUri.path.lastIndexOf('/') + 1);
+    return path.basename(traceUri.fsPath);
 }
