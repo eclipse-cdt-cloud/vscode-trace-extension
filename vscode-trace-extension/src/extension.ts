@@ -6,6 +6,7 @@ import { TraceExplorerTimeRangeDataProvider } from './trace-explorer/time-range/
 import { TraceExplorerAvailableViewsProvider } from './trace-explorer/available-views/trace-explorer-available-views-webview-provider';
 import { TraceExplorerOpenedTracesViewProvider } from './trace-explorer/opened-traces/trace-explorer-opened-traces-webview-provider';
 import {
+    openDialog,
     fileHandler,
     openOverviewHandler,
     resetZoomHandler,
@@ -156,9 +157,13 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
 
     context.subscriptions.push(
         vscode.commands.registerCommand('openedTraces.openTraceFolder', async () => {
-            await startTraceServerIfAvailable();
+            const traceUri = await openDialog();
+            if (!traceUri) {
+                return;
+            }
+            await startTraceServerIfAvailable(traceUri.fsPath);
             if (await isUp()) {
-                fileOpenHandler(context, undefined);
+                fileOpenHandler(context, traceUri);
             }
         })
     );
@@ -196,23 +201,11 @@ export async function deactivate(): Promise<void> {
     traceExtensionWebviewManager.dispose();
 }
 
-async function startTraceServerIfAvailable(pathToTrace?: string): Promise<void> {
-    const extensionId = 'vscode-trace-server';
+async function startTraceServerIfAvailable(pathToTrace: string): Promise<void> {
     if (await isUp()) {
         return;
     }
-    if (pathToTrace) {
-        await traceServerManager.startServer(pathToTrace);
-    }
-    // Momentarily, two versions of "vscode-trace-server" may co-exist in the wild, under
-    // two "publisher" names. In order to be backward-compatible during the transition, use
-    // whichever one may be installed, if any
-    const traceServerExtension = vscode.extensions.getExtension('eclipse-cdt.' + extensionId);
-    const traceServerExtensionOld = vscode.extensions.getExtension('tracecompass-community.' + extensionId);
-    if (!traceServerExtension && !traceServerExtensionOld) {
-        return;
-    }
-    await vscode.commands.executeCommand(extensionId + '.start-if-stopped');
+    await traceServerManager.startServer(pathToTrace);
 }
 
 async function isUp() {
