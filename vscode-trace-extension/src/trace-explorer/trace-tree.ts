@@ -127,7 +127,7 @@ export const zoomHandler = (hasZoomedIn: boolean): void => {
     TraceViewerPanel.zoomOnCurrent(hasZoomedIn);
 };
 
-const openDialog = async (): Promise<vscode.Uri | undefined> => {
+export const openDialog = async (): Promise<vscode.Uri | undefined> => {
     const props: vscode.OpenDialogOptions = {
         title: 'Open Trace',
         canSelectFolders: true,
@@ -144,15 +144,7 @@ const openDialog = async (): Promise<vscode.Uri | undefined> => {
 
 export const fileHandler =
     (analysisTree: AnalysisProvider) =>
-    async (context: vscode.ExtensionContext, traceUri: vscode.Uri | undefined): Promise<void> => {
-        // We need to resolve trace URI before starting the progress dialog because we rely on trace URI for dialog title
-        if (!traceUri) {
-            traceUri = await openDialog();
-            if (!traceUri) {
-                return;
-            }
-        }
-
+    async (context: vscode.ExtensionContext, traceUri: vscode.Uri): Promise<void> => {
         const resolvedTraceURI: vscode.Uri = traceUri;
         vscode.window.withProgress(
             {
