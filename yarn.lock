@@ -7496,17 +7496,17 @@ tr46@~0.0.3:
   resolved "https://registry.npmjs.org/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
   integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
 
-traceviewer-base@0.2.0-next.20231206220005.ff0943f.0+ff0943f, traceviewer-base@next:
-  version "0.2.0-next.20231206220005.ff0943f.0"
-  resolved "https://registry.npmjs.org/traceviewer-base/-/traceviewer-base-0.2.0-next.20231206220005.ff0943f.0.tgz#95b0ad12da57fda617ab1ce0587312305d651f3a"
-  integrity sha512-HQl8lou2JWLlhByy54VSzWd8y81IW6pdGuVqw6CW4cCofNQDKx5oRtWScgVHlV0CRFU9SvVCrNCsGTmXPIS4Ug==
+traceviewer-base@0.2.0-next.20240315125637.d88ea47.0+d88ea47, traceviewer-base@next:
+  version "0.2.0-next.20240315125637.d88ea47.0"
+  resolved "https://registry.npmjs.org/traceviewer-base/-/traceviewer-base-0.2.0-next.20240315125637.d88ea47.0.tgz#22c465dd8178136e332fae28b03bfa852fe89344"
+  integrity sha512-iXD1c9CsoH5WzKei+rsawlIZzii4DTs03Qbc7h3e+t3TM2gCENga0D3XDh36LDWgeK/005xwW4K5t3TBi84Y7g==
   dependencies:
     tsp-typescript-client next
 
 traceviewer-react-components@next:
-  version "0.2.0-next.20231206220005.ff0943f.0"
-  resolved "https://registry.npmjs.org/traceviewer-react-components/-/traceviewer-react-components-0.2.0-next.20231206220005.ff0943f.0.tgz#710ae5b5f729cb51750ec601a5a35ac70b54d7b3"
-  integrity sha512-lbdqfVJyP70CRVZa0SQoxVCsP3BgqslCNqFcXsWkYF34SMRlVses8h5zQqbydAc54ayf8HQu+6VMWyWYMW8uTA==
+  version "0.2.0-next.20240315125637.d88ea47.0"
+  resolved "https://registry.npmjs.org/traceviewer-react-components/-/traceviewer-react-components-0.2.0-next.20240315125637.d88ea47.0.tgz#3b86fe7dfcb8ee3300cfaa8b06eba8940cd2514d"
+  integrity sha512-AOax07qqrvq3mcD8dl6C8UIrCYNNl1lDFWuQX8nIa6t6shSaBrskq9u4AUwmSfHMPHC+JpcLy7XH9Kumf9BI6g==
   dependencies:
     "@fortawesome/fontawesome-svg-core" "^1.2.17 <1.3.0"
     "@fortawesome/free-solid-svg-icons" "^5.8.1"
@@ -7527,7 +7527,7 @@ traceviewer-react-components@next:
     semantic-ui-css "^2.4.1"
     semantic-ui-react "^0.86.0"
     timeline-chart next
-    traceviewer-base "0.2.0-next.20231206220005.ff0943f.0+ff0943f"
+    traceviewer-base "0.2.0-next.20240315125637.d88ea47.0+d88ea47"
     tsp-typescript-client next
 
 trim-newlines@^3.0.0:
