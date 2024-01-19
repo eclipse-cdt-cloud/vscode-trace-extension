@@ -13,9 +13,12 @@
     "download:sample-traces": "curl -o TraceCompassTutorialTraces.tgz https://raw.githubusercontent.com/dorsal-lab/tracevizlab/master/labs/TraceCompassTutorialTraces.tgz; tar -xf TraceCompassTutorialTraces.tgz",
     "download:openvscode-server": "mkdir -p test-resources; cd test-resources; curl -L -o openvscode-server-v1.77.3-linux-x64.tar.gz https://github.com/gitpod-io/openvscode-server/releases/download/openvscode-server-v1.77.3/openvscode-server-v1.77.3-linux-x64.tar.gz; tar -xf openvscode-server-v1.77.3-linux-x64.tar.gz",
     "configure:openvscode-server": "cd test-resources/openvscode-server-v1.77.3-linux-x64/bin/; sed -i 's;\"$@\".*$;\"$@\" --without-connection-token --install-extension $ROOT/../../vscode-trace-extension/vscode-trace-extension-0.1.0.vsix --default-folder=$ROOT/../../TraceCompassTutorialTraces --start-server;g' openvscode-server",
-    "start:openvscode-server": "cd test-resources/openvscode-server-v1.77.3-linux-x64/bin/; ./openvscode-server ${0}"
+    "start:openvscode-server": "cd test-resources/openvscode-server-v1.77.3-linux-x64/bin/; ./openvscode-server ${0}",
+    "license:check": "npx dash-licenses-wrapper  --configFile=./configs/license-check-config.json",
+    "license:check:review": "npx dash-licenses-wrapper  --configFile=./configs/license-check-config.json --review"
   },
   "devDependencies": {
+    "@eclipse-dash/nodejs-wrapper": "^0.0.1",
     "copy-webpack-plugin": "^11.0.0",
     "eslint-config-prettier": "^9.0.0",
     "lerna": "^7.0.0",

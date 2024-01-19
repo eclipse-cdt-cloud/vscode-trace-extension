@@ -69,6 +69,11 @@
   resolved "https://registry.npmjs.org/@discoveryjs/json-ext/-/json-ext-0.5.7.tgz#1d572bfbbe14b7704e0ba0f39b74815b84870d70"
   integrity sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==
 
+"@eclipse-dash/nodejs-wrapper@^0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@eclipse-dash/nodejs-wrapper/-/nodejs-wrapper-0.0.1.tgz#f2629671cf090a84c4d69a8fec42f198e583d103"
+  integrity sha512-Rkk8O8hEVi/+LC/co7ly1zGLVwCNJG3yPbalsz1FHAqk6WZyEaWNf29EX6jz4vTfR5wpv2xAfF2yokKuStiOdA==
+
 "@emotion/babel-plugin@^11.11.0":
   version "11.11.0"
   resolved "https://registry.npmjs.org/@emotion/babel-plugin/-/babel-plugin-11.11.0.tgz#c2d872b6a7767a9d176d007f5b31f7d504bb5d6c"
@@ -4967,7 +4972,6 @@ js-yaml@^3.10.0, js-yaml@^3.13.1, js-yaml@^3.9.1:
 
 json-bigint@sidorares/json-bigint#2c0a5f896d7888e68e5f4ae3c7ea5cd42fd54473:
   version "1.0.0"
-  uid "2c0a5f896d7888e68e5f4ae3c7ea5cd42fd54473"
   resolved "https://codeload.github.com/sidorares/json-bigint/tar.gz/2c0a5f896d7888e68e5f4ae3c7ea5cd42fd54473"
   dependencies:
     bignumber.js "^9.0.0"
