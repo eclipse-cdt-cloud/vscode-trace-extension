@@ -116,14 +116,18 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
                     break;
                 case VSCODE_MESSAGES.TRACE_SERVER_STATUS:
                     const serverOnline = message.data === 'true';
-                    this.setState({ serverOnline });
-                    if (this.state.tspClientProvider instanceof TspClientProvider) {
-                        const RequestManager = this.state.tspClientProvider.getRequestManager();
+                    const setServerStatus = () => {
+                        const RequestManager = this.state.tspClientProvider?.getRequestManager();
                         if (RequestManager) {
                             console.log('Opend Traces server status is: ' + serverOnline.toString(), typeof serverOnline);
                             RequestManager.serverStatus = serverOnline;
+                        } else {
+                            setTimeout(() => { setServerStatus() }, 100);
+                            setServerStatus()
                         }
                     }
+                    this.setState({ serverOnline });
+                    setServerStatus();
                     break;
             }
         });

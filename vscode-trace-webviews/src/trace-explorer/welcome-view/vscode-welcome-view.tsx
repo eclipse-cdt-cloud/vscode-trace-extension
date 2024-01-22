@@ -13,7 +13,8 @@ import { ItemParams } from 'react-contexify';
 import { TspClientProvider } from 'vscode-trace-common/lib/client/tsp-client-provider-impl';
 import { TraceServerUrlProvider } from 'vscode-trace-common/lib/server/trace-server-url-provider';
 import { ExperimentManager } from 'traceviewer-base/lib/experiment-manager';
-import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
+import { OpenedTracesUpdatedSignalPayload } from 'traceviewer-base/lib/signals/opened-traces-updated-signal-payload';
+import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true
@@ -29,6 +30,8 @@ class WelcomeView extends React.Component<{}, WelcomeViewState> {
     private _signalHandler: VsCodeMessageManager;
     private _experimentManager: ExperimentManager;
     private _urlProvider: TraceServerUrlProvider;
+    protected onUpdateSignal = (payload: OpenedTracesUpdatedSignalPayload): void =>
+        this.doHandleOpenedTracesChanged(payload);
 
     static ID = 'trace-explorer-welcome-view';
     static LABEL = 'WelcomeView';
@@ -106,6 +109,26 @@ class WelcomeView extends React.Component<{}, WelcomeViewState> {
             }
         });
         // this.onOutputRemoved = this.onOutputRemoved.bind(this);
+    }
+
+    componentDidMount(): void {
+        this._signalHandler.notifyReady();
+        // ExperimentSelected handler is registered in the constructor (upstream code), but it's
+        // better to register it here when the react component gets mounted.
+        signalManager().on(Signals.OPENED_TRACES_UPDATED, this.onUpdateSignal);
+    }
+
+    componentWillUnmount(): void {
+        signalManager().off(Signals.OPENED_TRACES_UPDATED, this.onUpdateSignal);
+    }
+
+    protected doHandleOpenedTracesChanged(payload: OpenedTracesUpdatedSignalPayload): void {
+        this._signalHandler.updateOpenedTraces(payload.getNumberOfOpenedTraces());
+        if (payload.getNumberOfOpenedTraces() > 0) {
+            this.setState({ experimentsOpened: true });
+        } else if (payload.getNumberOfOpenedTraces() === 0) {
+            this.setState({ experimentsOpened: false });
+        }
     }
 
     protected handleOpenTrace = async (): Promise<void> => this.doHandleOpenTrace();
