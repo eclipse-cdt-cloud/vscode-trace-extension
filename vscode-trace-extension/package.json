@@ -1,16 +1,29 @@
 {
   "name": "vscode-trace-extension",
-  "displayName": "VsCode Trace Extension",
-  "description": "VsCode trace extension for visualizing traces analyzed by a trace server and data provide over the Trace Server Protocol (TSP)",
+  "displayName": "Trace Viewer for VSCode",
+  "description": "Viewer that permits visualizing traces and contained data, analyzed by a trace server, and provided over the Trace Server Protocol (TSP)",
   "version": "0.1.0",
+  "license": "EPL-2.0",
   "engines": {
     "vscode": "^1.52.0"
   },
-  "publisher": "tracecompass-community",
+  "publisher": "eclipse-cdt",
+  "icon": "images/extension-icon.png",
   "categories": [
+    "Visualization",
+    "Data Science",
     "Other"
   ],
+  "keywords": [
+    "Trace Compass",
+    "trace",
+    "visualization",
+    "Eclipse Foundation"
+  ],
   "repository": "https://github.com/eclipse-cdt-cloud/vscode-trace-extension/",
+  "bugs": {
+    "url": "https://github.com/eclipse-cdt-cloud/vscode-trace-extension/issues"
+  },
   "activationEvents": [
     "onStartupFinished"
   ],

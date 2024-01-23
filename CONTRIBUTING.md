@@ -82,10 +82,7 @@ file. Adding the SHA-1 of a commit to this file will make `git-blame` ignore tha
 
 * For GitHub, this file is automatically detected and will ignore all the commits that are included in the file.
 * With Git CLI, run `git blame --ignore-revs-file=.git-blame-ignore-revs <pathToSomeFile>` to ignore the commits.
-<<<<<<< HEAD
 * `git config --global blame.ignoreRevsFile .git-blame-ignore-revs` will automatically detect these files for every repository.
-=======
->>>>>>> d126837 (Repository formatted with prettier)
 
 ## Contact
 

@@ -1,10 +1,12 @@
 # VSCode Trace Extension
 
-This project started from the [vscode webview react project][vscode-webview-react]. It works this way, with the extension itself being in the `vscode-trace-extension` directory and the react application being in the `vscode-trace-webapps` directory.
+This document contains information that may be useful for developers that want to build, modify, enhance and/or debug this extension. If you only intend to consume the extension, it might be easier to get it from the [public OpenVSX registry](https://www.open-vsx.org/extension/eclipse-cdt/vscode-trace-extension),
+
+This project started from the [VSCode webview react project][vscode-webview-react]. It works this way, with the extension itself being in the `vscode-trace-extension` directory and the react application being in the `vscode-trace-webapps` directory.
 
 **👋 Want to help?** Read our [contributor guide](CONTRIBUTING.md) and follow the instructions to contribute code.
 
-## Installation instructions
+## Installation Instructions
 
 The code was migrated from the [PR in theia-trace-extension][init-contrib].
 
@@ -15,7 +17,7 @@ It depends on the trace viewer plugins from the [theia trace extension package][
 - traceviewer-react-components
 - tsp-typescript-client
 
-To build the vscode extension, run the `yarn` command:
+To build the VSCode extension, run the `yarn` command:
 
 ``` bash
 yarn
@@ -23,7 +25,7 @@ yarn
 
 ## Running the extension
 
-Then from vscode, press `f5` to run the extension. The trace server needs to be started separately as described [here](#run-the-trace-server).
+Then from VSCode, press `f5` to run the extension. The trace server needs to be started separately as described [here](#run-the-trace-server).
 
 To open a trace use the VSCode file explorer to navigate to the trace directory. Then right mouse click on the trace and select menu option `Open with Trace Viewer`. See [here](#get-sample-traces) to get some sample traces.
 
@@ -31,21 +33,21 @@ Open the `Trace Viewer` view (`View` -> `Open view...`).
 
 ![open-trace][open-trace]
 
-2 tabs will be visible: `Traces` and `Views`. The `Traces` tab will show all available traces on the trace server.
+Two tabs will be visible: `Traces` and `Views`. The `Traces` tab will show all available traces on the trace server.
 
 The `Views` tab shows all the available views for the selected trace. Click on a view to open the view under the timeline.
 
 ![open-output][open-output]
 
-## Package as VsCode extension
+## Package as a VSCode extension (.vsix)
 
-To package it as VsCode extension, run the command `yarn vsce:package`. If you get errors about case-sensitive files, just delete the node_modules folder and run `yarn` again.
+To package it as VSCode extension, run the command `yarn vsce:package`. If you get errors about case-sensitive files, just delete the node_modules folder and run `yarn` again.
 
 The packaging will produce a `vscode-trace-extension-x.x.x.vsix` file in the subdirectory `vscode-trace-extension` of the repository.
 
-## Running the extension in VsCode, VsCodium or Theia application
+## Running the extension in VSCode, VsCodium or Theia application
 
-The packaged VSIX file can be installed in an existing `VsCode`, `VsCodium` or `Theia` application by using [Install from a vsix][install].
+The packaged VSIX file can be installed in an existing `VSCode`, `VSCodium` or `Theia` application by using [Install from a vsix][install].
 
 The trace server needs to be started separately as described [here](#run-the-trace-server).
 
@@ -62,15 +64,15 @@ ln -s <vscode-trace-extension root>/vscode-trace-extension-x.x.x.vsix ./
 
 From the root directory execute `yarn run watch`.  This will watch and bundle `vscode-trace-common`, `vscode-trace-extension`, and `vscode-trace-webviews`.  All outputs will be in one terminal.  Changes can be observed and tested in the `Extension Development Host` by pressing `F5`.
 
-For more information about `VsCode WebView API` see [here][vscode-webview].
+For more information about `VSCode WebView API` see [here][vscode-webview].
 
 ### Communication between components
 
-To communicate between VsCode extension and webviews use the [VsCode message API][vscode-messages]. When using `vscode.postMessage(data)` data structure `data` will be serialized to JSON before being propagated. Be aware that it cannot include data structures like `BigInt`. Proper handling of such data structures need to be implemented when sending and receiving messages.
+To communicate between VSCode extension and webviews use the [VSCode message API][vscode-messages]. When using `vscode.postMessage(data)` data structure `data` will be serialized to JSON before being propagated. Be aware that it cannot include data structures like `BigInt`. Proper handling of such data structures need to be implemented when sending and receiving messages.
 
 Inside a webview or inside the extension signals can be used where data structures can be passed on.
 
-The following sequence diagram shows how the `experiment-selected` signal (with payload `Experiment`) is propagated inside the application. The webview `Opened Traces WebView App` is sending the signal to the`VsCode extension` which is forwarding the signal to the `Available Views WebView App`.
+The following sequence diagram shows how the `experiment-selected` signal (with payload `Experiment`) is propagated inside the application. The webview `Opened Traces WebView App` is sending the signal to the`VSCode extension` which is forwarding the signal to the `Available Views WebView App`.
 
 ```mermaid
 sequenceDiagram
@@ -98,9 +100,9 @@ sequenceDiagram
 
 ### Debugging the extension
 
-It is straightforward to debug the code of the vscode extension itself (the code in `vscode-trace-extension`) by just putting breakpoints in vscode and running the extension with `f5`.
+It is straightforward to debug the code of the VSCode extension itself (the code in `vscode-trace-extension`) by just putting breakpoints in VSCode and running the extension with `f5`.
 
-The react-app is another matter. The panel is a webview that is running in its own context, so current vscode does not have access to it. _(Patches welcome!)_
+The react-app is another matter. The panel is a webview that is running in its own context, so current VSCode does not have access to it. _(Patches welcome!)_
 
 Each panel is its own small web application, so to debug, while in the context of the webview, press `ctrl-shift-p` and enter the command `Developer: Open Webview Developer Tools`. This will open the developer tools. The code is in the `Sources` tab of the developer tools window that opens.
 
@@ -230,7 +232,7 @@ onWebviewPanelCreated(listener: (data: vscode.WebviewPanel) => void): void
 
 ```javascript
 //The following retrieves the API object from the vscode-trace-extension
-const ext = vscode.extensions.getExtension("tracecompass-community.vscode-trace-extension");
+const ext = vscode.extensions.getExtension("eclipse-cdt.vscode-trace-extension");
 const importedApi = ext.exports;
 ```
 

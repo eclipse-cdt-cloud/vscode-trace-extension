@@ -204,8 +204,12 @@ async function startTraceServerIfAvailable(pathToTrace?: string): Promise<void> 
     if (pathToTrace) {
         await traceServerManager.startServer(pathToTrace);
     }
-    const traceServerExtension = vscode.extensions.getExtension('tracecompass-community.' + extensionId);
-    if (!traceServerExtension) {
+    // Momentarily, two versions of "vscode-trace-server" may co-exist in the wild, under
+    // two "publisher" names. In order to be backward-compatible during the transition, use
+    // whichever one may be installed, if any
+    const traceServerExtension = vscode.extensions.getExtension('eclipse-cdt.' + extensionId);
+    const traceServerExtensionOld = vscode.extensions.getExtension('tracecompass-community.' + extensionId);
+    if (!traceServerExtension && !traceServerExtensionOld) {
         return;
     }
     await vscode.commands.executeCommand(extensionId + '.start-if-stopped');
