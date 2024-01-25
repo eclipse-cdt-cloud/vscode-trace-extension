@@ -300,7 +300,8 @@
     "vscode:prepublish": "yarn prepare && yarn run webpack:production",
     "vsce:package": "vsce package --yarn",
     "vsce:ls": "vsce ls --yarn",
-    "watch": "tsc -w -p tsconfig.json",
+    "tswatch": "tsc -w -p tsconfig.json",
+    "watch": "yarn run webpack-dev",
     "lint": "eslint .",
     "format:write": "prettier --write ./src",
     "format:check": "prettier --check ./src"
