@@ -60,9 +60,7 @@ ln -s <vscode-trace-extension root>/vscode-trace-extension-x.x.x.vsix ./
 
 ## Developing the extension
 
-When having to modify the code of the extension (in the `vscode-trace-extension` folder), one can simply run the `yarn` command. It is also possible to watch for changes to have no manual steps to do before re-running the extension: `yarn watch` or `ctrl-shift-b` and select the task `npm: watch - vscode-trace-extension`.
-
-For changes in the webview part (in the `vscode-trace-webviews` folder), you can run the `yarn` command, simply re-opening a trace should show the changes. It is also possible to watch for changes with `yarn watch` or `ctrl-shift-b` and selecting the task `npm: watch - vscode-trace-webviews`.
+From the root directory execute `yarn run watch`.  This will watch and bundle `vscode-trace-common`, `vscode-trace-extension`, and `vscode-trace-webviews`.  All outputs will be in one terminal.  Changes can be observed and tested in the `Extension Development Host` by pressing `F5`.
 
 For more information about `VsCode WebView API` see [here][vscode-webview].
 
