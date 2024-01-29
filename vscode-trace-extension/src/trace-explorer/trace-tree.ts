@@ -15,6 +15,7 @@ const rootPath = path.resolve(__dirname, '../../..');
 const traceManager = new TraceManager(getTspClient());
 const experimentManager = new ExperimentManager(getTspClient(), traceManager);
 
+// eslint-disable-next-line no-shadow
 export enum ProgressMessages {
     COMPLETE = 'Complete',
     MERGING_TRACES = 'Merging trace(s)',
