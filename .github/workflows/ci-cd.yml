@@ -1,0 +1,116 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ master ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build-test:
+    name: Build and run UI Tests
+    timeout-minutes: 60
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [16]
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    - name: Install npm dependencies and build
+      run: yarn --frozen-lockfile
+    - name: Package as VSCode Extension
+      run: yarn vsce:package
+    - name: Download sample traces
+      run: yarn download:sample-traces
+    - name: Download trace server
+      run: yarn download:server
+    - name: Start trace server
+      run: yarn start:server &
+    - name: Download openvscode-server
+      run: yarn download:openvscode-server
+    - name: Configure openvscode-server
+      run: yarn configure:openvscode-server
+    - name: Start openvscode-server
+      run: yarn start:openvscode-server &
+    - name: Install Playwright Browsers
+      run: yarn playwright install --with-deps
+    - name: Run Playwright tests
+      run: yarn playwright test
+    - uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30
+     # Save the extension .vsix file for potential publishing
+     #  in later step (if appropriate)
+    - uses: actions/upload-artifact@v4
+      with:
+        name: extension
+        path: vscode-trace-extension/*.vsix
+
+  code-lint:
+    name: Run linter
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [16]
+
+    steps:
+    - name: Check out Git repository
+      uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    # ESLint and Prettier must be in `package.json`
+    - name: Install dependencies
+      run: yarn --frozen-lockfile --ignore-scripts
+    - name: Run lint
+      run: yarn lint
+    - name: Run format check
+      run: yarn format:check
+
+  publish:
+    name: Publish extension to openvsx.org
+    runs-on: ${{ matrix.os }}
+    needs:
+      - build-test
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [16]
+    # Only execute when the trigger was a tag (new release)
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v4
+        with:
+          name: extension
+          path: vscode-trace-extension
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install dependencies
+        run: yarn --frozen-lockfile --ignore-scripts
+      - name: Publish extension
+        run: |
+          ls -al  vscode-trace-extension/*.vsix
+          npx ovsx publish vscode-trace-extension/*.vsix
+        env:
+          # have ovsx consume the PAT from environment - if it's not handled explicitly 
+          # in the workflow, less risk to leak it
+          OVSX_PAT: ${{ secrets.OPEN_VSX_TOKEN }}

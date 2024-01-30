@@ -2,7 +2,6 @@
     "name": "vscode-trace-common",
     "private": "true",
     "version": "0.0.0",
-    "publisher": "tracecompass-community",
     "categories": [
       "Other"
     ],
