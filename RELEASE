@@ -1,1 +1,8 @@
-tag: v0.0.0
+tag: v0.2.0
+
+commitInclude:
+  parentOfMergeCommit: true
+
+releaseNoteGenerator:
+  showAbbrevHash: true
+  showCommitter: false
