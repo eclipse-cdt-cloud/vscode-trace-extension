@@ -3,10 +3,10 @@ name: CI/CD
 on:
   push:
     branches: [ master ]
-    tags:
-      - 'v*'
   pull_request:
     branches: [ master ]
+  # branch or tag created  
+  create:
 
 jobs:
 
