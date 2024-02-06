@@ -82,6 +82,13 @@ export class TraceExplorerTimeRangeDataProvider implements vscode.WebviewViewPro
         );
     }
 
+    public updateTraceServerUrl(newUrl: string): void {
+        if (this._view) {
+            this._view.webview.postMessage({ command: VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED, data: newUrl });
+            this._view.webview.html = this._getHtmlForWebview(this._view.webview);
+        }
+    }
+
     private onViewRangeUpdated = (update: TimeRangeUpdatePayload) => {
         this._view.webview.postMessage({
             command: VSCODE_MESSAGES.VIEW_RANGE_UPDATED,

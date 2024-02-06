@@ -136,13 +136,15 @@ export class TraceViewerPanel {
     }
 
     public static updateTraceServerUrl(newUrl: string): void {
-        Object.values(TraceViewerPanel.activePanels).forEach(
-            trace =>
-                trace?._panel.webview.postMessage({
+        Object.values(TraceViewerPanel.activePanels).forEach(trace => {
+            if (trace) {
+                trace._panel.webview.postMessage({
                     command: VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED,
                     data: newUrl
-                })
-        );
+                });
+                trace._panel.webview.html = trace._getHtmlForWebview(trace._panel.webview);
+            }
+        });
     }
 
     private constructor(
@@ -171,7 +173,7 @@ export class TraceViewerPanel {
         });
 
         // Set the webview's initial html content
-        this._panel.webview.html = this._getHtmlForWebview();
+        this._panel.webview.html = this._getHtmlForWebview(this._panel.webview);
         traceExtensionWebviewManager.fireWebviewPanelCreated(this._panel);
 
         // Listen for when the panel is disposed
@@ -467,8 +469,7 @@ export class TraceViewerPanel {
         this._panel.webview.postMessage({ command: VSCODE_MESSAGES.SET_THEME, data: wrapper });
     }
 
-    private _getHtmlForWebview() {
-        const webview = this._panel.webview;
+    private _getHtmlForWebview(webview: vscode.Webview) {
         const codiconsUri = webview.asWebviewUri(
             vscode.Uri.joinPath(this._extensionUri, 'lib', 'codicons', 'codicon.css')
         );
@@ -476,7 +477,7 @@ export class TraceViewerPanel {
         const nonce = getNonce();
 
         try {
-            return this._getReactHtmlForWebview();
+            return this._getReactHtmlForWebview(webview);
         } catch (e) {
             return `<!DOCTYPE html>
 			<html lang="en">
@@ -505,9 +506,8 @@ export class TraceViewerPanel {
     }
 
     /* eslint-disable max-len */
-    private _getReactHtmlForWebview(): string {
+    private _getReactHtmlForWebview(webview: vscode.Webview): string {
         // Fetching codicons styles
-        const webview = this._panel.webview;
         const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'pack', 'trace_panel.js'));
         const codiconsUri = webview.asWebviewUri(
             vscode.Uri.joinPath(this._extensionUri, 'lib', 'codicons', 'codicon.css')

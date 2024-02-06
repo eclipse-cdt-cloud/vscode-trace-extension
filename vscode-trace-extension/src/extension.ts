@@ -12,10 +12,11 @@ import {
     resetZoomHandler,
     undoRedoHandler,
     zoomHandler,
-    keyboardShortcutsHandler
+    keyboardShortcutsHandler,
+    reInitializeTraceManager
 } from './trace-explorer/trace-tree';
 import { TraceServerConnectionStatusService } from './utils/trace-server-status';
-import { getTraceServerUrl, getTspClientUrl, updateTspClient } from './utils/tspClient';
+import { getTspClientUrl, updateTspClient } from './utils/tspClient';
 import { TraceExtensionLogger } from './utils/trace-extension-logger';
 import { ExternalAPI, traceExtensionAPI } from './external-api/external-api';
 import { TraceExtensionWebviewManager } from './utils/trace-extension-webview-manager';
@@ -28,7 +29,8 @@ import { TraceServerManager } from './utils/trace-server-manager';
 export let traceLogger: TraceExtensionLogger;
 export const traceExtensionWebviewManager: TraceExtensionWebviewManager = new TraceExtensionWebviewManager();
 export const traceServerManager: TraceServerManager = new TraceServerManager();
-const tspClientProvider = new TspClientProvider(getTspClientUrl(), undefined, new TraceServerUrlProvider());
+const traceServerURLProvider = new TraceServerUrlProvider();
+const tspClientProvider = new TspClientProvider(getTspClientUrl(), undefined, traceServerURLProvider);
 
 export function activate(context: vscode.ExtensionContext): ExternalAPI {
     traceLogger = new TraceExtensionLogger('Trace Extension');
@@ -92,14 +94,18 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
             }
 
             if (e.affectsConfiguration('trace-compass.traceserver.url')) {
-                const newUrl = getTraceServerUrl();
+                const newTspClientURL = getTspClientUrl();
 
                 // Signal the change to the `Opened traces` and `Available views` webview
-                tracesProvider.updateTraceServerUrl(newUrl);
-                myAnalysisProvider.updateTraceServerUrl(newUrl);
+                tracesProvider.updateTraceServerUrl(newTspClientURL);
+                myAnalysisProvider.updateTraceServerUrl(newTspClientURL);
+                propertiesProvider.updateTraceServerUrl(newTspClientURL);
+                timeRangeDataProvider.updateTraceServerUrl(newTspClientURL);
+                traceServerURLProvider.updateTraceServerUrl(newTspClientURL);
+                reInitializeTraceManager();
 
                 // Signal the change to all trace panels
-                TraceViewerPanel.updateTraceServerUrl(newUrl);
+                TraceViewerPanel.updateTraceServerUrl(newTspClientURL);
             }
         })
     );

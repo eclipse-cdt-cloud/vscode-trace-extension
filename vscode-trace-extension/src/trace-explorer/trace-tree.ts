@@ -12,8 +12,13 @@ import { KeyboardShortcutsPanel } from '../trace-viewer-panel/keyboard-shortcuts
 
 const rootPath = path.resolve(__dirname, '../../..');
 
-const traceManager = new TraceManager(getTspClient());
-const experimentManager = new ExperimentManager(getTspClient(), traceManager);
+let traceManager = new TraceManager(getTspClient());
+let experimentManager = new ExperimentManager(getTspClient(), traceManager);
+
+export const reInitializeTraceManager = (): void => {
+    traceManager = new TraceManager(getTspClient());
+    experimentManager = new ExperimentManager(getTspClient(), traceManager);
+};
 
 // eslint-disable-next-line no-shadow
 export enum ProgressMessages {
