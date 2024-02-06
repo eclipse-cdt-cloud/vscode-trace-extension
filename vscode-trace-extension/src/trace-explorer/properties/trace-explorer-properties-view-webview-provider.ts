@@ -4,6 +4,7 @@
  * Licensed under the MIT license. See LICENSE file in the project root for details.
  ***************************************************************************************/
 import * as vscode from 'vscode';
+import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import { traceExtensionWebviewManager } from 'vscode-trace-extension/src/extension';
 import { getTraceServerUrl } from 'vscode-trace-extension/src/utils/tspClient';
 
@@ -33,6 +34,13 @@ export class TraceExplorerItemPropertiesProvider implements vscode.WebviewViewPr
     postMessagetoWebview(_command: string, _data: unknown): void {
         if (this._view && _command && _data) {
             this._view.webview.postMessage({ command: _command, data: _data });
+        }
+    }
+
+    public updateTraceServerUrl(newUrl: string): void {
+        if (this._view) {
+            this._view.webview.postMessage({ command: VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED, data: newUrl });
+            this._view.webview.html = this._getHtmlForWebview(this._view.webview);
         }
     }
 
