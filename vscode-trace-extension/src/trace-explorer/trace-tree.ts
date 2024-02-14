@@ -10,7 +10,6 @@ import { KeyboardShortcutsPanel } from '../trace-viewer-panel/keyboard-shortcuts
 
 const rootPath = path.resolve(__dirname, '../../..');
 
-
 // eslint-disable-next-line no-shadow
 export enum ProgressMessages {
     COMPLETE = 'Complete',
