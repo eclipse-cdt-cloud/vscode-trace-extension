@@ -6,7 +6,7 @@ import { TraceManager } from 'traceviewer-base/lib/trace-manager';
 import { ExperimentManager } from 'traceviewer-base/lib/experiment-manager';
 import { AnalysisProvider } from './analysis-tree';
 import { TraceViewerPanel } from '../trace-viewer-panel/trace-viewer-webview-panel';
-import { getTspClient } from '../utils/tspClient';
+import { getTspClient } from '../utils/backend-tsp-client-provider';
 import { traceLogger } from '../extension';
 import { KeyboardShortcutsPanel } from '../trace-viewer-panel/keyboard-shortcuts-panel';
 

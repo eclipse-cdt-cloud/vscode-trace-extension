@@ -16,21 +16,17 @@ import {
     reInitializeTraceManager
 } from './trace-explorer/trace-tree';
 import { TraceServerConnectionStatusService } from './utils/trace-server-status';
-import { getTspClientUrl, updateTspClient } from './utils/tspClient';
+import { getTspClientUrl, updateTspClientUrl, isUp } from './utils/backend-tsp-client-provider';
 import { TraceExtensionLogger } from './utils/trace-extension-logger';
 import { ExternalAPI, traceExtensionAPI } from './external-api/external-api';
 import { TraceExtensionWebviewManager } from './utils/trace-extension-webview-manager';
 import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import { TraceViewerPanel } from './trace-viewer-panel/trace-viewer-webview-panel';
-import { TspClientProvider } from 'vscode-trace-common/lib/client/tsp-client-provider-impl';
-import { TraceServerUrlProvider } from 'vscode-trace-common/lib/server/trace-server-url-provider';
 import { TraceServerManager } from './utils/trace-server-manager';
 
 export let traceLogger: TraceExtensionLogger;
 export const traceExtensionWebviewManager: TraceExtensionWebviewManager = new TraceExtensionWebviewManager();
 export const traceServerManager: TraceServerManager = new TraceServerManager();
-const traceServerURLProvider = new TraceServerUrlProvider();
-const tspClientProvider = new TspClientProvider(getTspClientUrl(), undefined, traceServerURLProvider);
 
 export function activate(context: vscode.ExtensionContext): ExternalAPI {
     traceLogger = new TraceExtensionLogger('Trace Extension');
@@ -90,7 +86,7 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
                 e.affectsConfiguration('trace-compass.traceserver.url') ||
                 e.affectsConfiguration('trace-compass.traceserver.apiPath')
             ) {
-                updateTspClient();
+                updateTspClientUrl();
             }
 
             if (e.affectsConfiguration('trace-compass.traceserver.url')) {
@@ -101,7 +97,6 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
                 myAnalysisProvider.updateTraceServerUrl(newTspClientURL);
                 propertiesProvider.updateTraceServerUrl(newTspClientURL);
                 timeRangeDataProvider.updateTraceServerUrl(newTspClientURL);
-                traceServerURLProvider.updateTraceServerUrl(newTspClientURL);
                 reInitializeTraceManager();
 
                 // Signal the change to all trace panels
@@ -212,10 +207,4 @@ async function startTraceServerIfAvailable(pathToTrace: string): Promise<void> {
         return;
     }
     await traceServerManager.startServer(pathToTrace);
-}
-
-async function isUp() {
-    const health = await tspClientProvider.getTspClient().checkHealth();
-    const status = health.getModel()?.status;
-    return health.isOk() && status === 'UP';
 }

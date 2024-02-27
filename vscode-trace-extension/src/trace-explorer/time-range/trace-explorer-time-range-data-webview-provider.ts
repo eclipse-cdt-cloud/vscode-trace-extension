@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { getTraceServerUrl } from 'vscode-trace-extension/src/utils/tspClient';
+import { getTraceServerUrl } from 'vscode-trace-extension/src/utils/backend-tsp-client-provider';
 import JSONBigConfig from 'json-bigint';
 import { Signals, signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
