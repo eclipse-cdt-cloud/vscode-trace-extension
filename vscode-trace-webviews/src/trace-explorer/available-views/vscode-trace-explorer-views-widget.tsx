@@ -2,7 +2,6 @@
 import * as React from 'react';
 import { OutputAddedSignalPayload } from 'traceviewer-base/lib/signals/output-added-signal-payload';
 import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
-import { ITspClientProvider } from 'traceviewer-base/lib/tsp-client-provider';
 import { ReactAvailableViewsWidget } from 'traceviewer-react-components/lib/trace-explorer/trace-explorer-views-widget';
 import 'traceviewer-react-components/style/trace-explorer.css';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
@@ -12,19 +11,17 @@ import '../../style/react-contextify.css';
 import '../../style/trace-viewer.css';
 import JSONBigConfig from 'json-bigint';
 import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
-import { TraceServerUrlProvider } from 'vscode-trace-common/lib/server/trace-server-url-provider';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true
 });
 
 interface AvailableViewsAppState {
-    tspClientProvider: ITspClientProvider | undefined;
+    tspClientProvider: TspClientProvider | undefined;
 }
 
 class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppState> {
     private _signalHandler: VsCodeMessageManager;
-    private _urlProvider: TraceServerUrlProvider;
 
     static ID = 'trace-explorer-analysis-widget';
     static LABEL = 'Available Analyses';
@@ -43,9 +40,8 @@ class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppStat
             const message = event.data; // The JSON data our extension sent
             switch (message.command) {
                 case VSCODE_MESSAGES.SET_TSP_CLIENT:
-                    this._urlProvider = new TraceServerUrlProvider();
                     this.setState({
-                        tspClientProvider: new TspClientProvider(message.data, this._signalHandler, this._urlProvider)
+                        tspClientProvider: new TspClientProvider(message.data, this._signalHandler)
                     });
                     break;
                 case VSCODE_MESSAGES.EXPERIMENT_SELECTED:
@@ -56,8 +52,8 @@ class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppStat
                     signalManager().fireExperimentSelectedSignal(experiment);
                     break;
                 case VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED:
-                    if (message.data && this.state.tspClientProvider && this._urlProvider) {
-                        this._urlProvider.updateTraceServerUrl(message.data);
+                    if (message.data && this.state.tspClientProvider) {
+                        this.state.tspClientProvider.updateTspClientUrl(message.data);
                     }
                     break;
             }
