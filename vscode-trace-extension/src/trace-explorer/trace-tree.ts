@@ -2,23 +2,13 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Trace as TspTrace } from 'tsp-typescript-client/lib/models/trace';
-import { TraceManager } from 'traceviewer-base/lib/trace-manager';
-import { ExperimentManager } from 'traceviewer-base/lib/experiment-manager';
 import { AnalysisProvider } from './analysis-tree';
 import { TraceViewerPanel } from '../trace-viewer-panel/trace-viewer-webview-panel';
-import { getTspClient } from '../utils/backend-tsp-client-provider';
+import { getExperimentManager, getTraceManager } from '../utils/backend-tsp-client-provider';
 import { traceLogger } from '../extension';
 import { KeyboardShortcutsPanel } from '../trace-viewer-panel/keyboard-shortcuts-panel';
 
 const rootPath = path.resolve(__dirname, '../../..');
-
-let traceManager = new TraceManager(getTspClient());
-let experimentManager = new ExperimentManager(getTspClient(), traceManager);
-
-export const reInitializeTraceManager = (): void => {
-    traceManager = new TraceManager(getTspClient());
-    experimentManager = new ExperimentManager(getTspClient(), traceManager);
-};
 
 // eslint-disable-next-line no-shadow
 export enum ProgressMessages {
@@ -96,6 +86,7 @@ export const traceHandler =
     (analysisTree: AnalysisProvider) =>
     (context: vscode.ExtensionContext, trace: Trace): void => {
         const panel = TraceViewerPanel.createOrShow(context.extensionUri, trace.name, undefined);
+        const { traceManager, experimentManager } = getManagers();
         (async () => {
             const traces = new Array<TspTrace>();
             const t = await traceManager.openTrace(trace.uri, trace.name);
@@ -152,6 +143,7 @@ export const fileHandler =
     (analysisTree: AnalysisProvider) =>
     async (context: vscode.ExtensionContext, traceUri: vscode.Uri): Promise<void> => {
         const resolvedTraceURI: vscode.Uri = traceUri;
+        const { traceManager, experimentManager } = getManagers();
         vscode.window.withProgress(
             {
                 location: vscode.ProgressLocation.Notification,
@@ -264,6 +256,7 @@ const rollbackTraces = async (
         increment: number | undefined;
     }>
 ) => {
+    const { traceManager } = getManagers();
     progress.report({ message: ProgressMessages.ROLLING_BACK_TRACES, increment: progressIncrement });
     for (let i = 0; i < traces.length; i++) {
         await traceManager.deleteTrace(traces[i].UUID);
@@ -313,4 +306,11 @@ function getProgressBarTitle(traceUri: vscode.Uri | undefined): string {
         return 'undefined';
     }
     return path.basename(traceUri.fsPath);
+}
+
+function getManagers() {
+    return {
+        traceManager: getTraceManager(),
+        experimentManager: getExperimentManager()
+    };
 }

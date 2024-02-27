@@ -10,7 +10,6 @@ import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-mana
 import '../../style/trace-viewer.css';
 import 'traceviewer-react-components/style/trace-explorer.css';
 import '../../style/react-contextify.css';
-import { ExperimentManager } from 'traceviewer-base/lib/experiment-manager';
 import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import JSONBigConfig from 'json-bigint';
 import { OpenedTracesUpdatedSignalPayload } from 'traceviewer-base/lib/signals/opened-traces-updated-signal-payload';
@@ -30,7 +29,7 @@ const MENU_ID = 'traceExplorer.openedTraces.menuId';
 
 class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState> {
     private _signalHandler: VsCodeMessageManager;
-    private _experimentManager: ExperimentManager;
+
     private _urlProvider: TraceServerUrlProvider;
 
     static ID = 'trace-explorer-opened-traces-widget';
@@ -44,7 +43,8 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
     private loading = false;
 
     private doHandleRemoveTraceSignal(traceUUID: string) {
-        this._experimentManager
+        this.state.tspClientProvider
+            ?.getExperimentManager()
             .getExperiment(traceUUID)
             .then(experimentOpen => {
                 if (experimentOpen) {
@@ -73,13 +73,6 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
                         this._signalHandler,
                         this._urlProvider
                     );
-                    this._experimentManager = tspClientProvider.getExperimentManager();
-
-                    tspClientProvider.addTspClientChangeListener(() => {
-                        if (this.state.tspClientProvider) {
-                            this._experimentManager = this.state.tspClientProvider.getExperimentManager();
-                        }
-                    });
 
                     this.setState({ tspClientProvider: tspClientProvider });
                     break;
@@ -223,9 +216,9 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
                 return;
             case 'remove-id':
                 this._signalHandler.deleteTrace(args.props.experiment as Experiment);
-                if (this._experimentManager) {
-                    this._experimentManager.deleteExperiment((args.props.experiment as Experiment).UUID);
-                }
+                this.state.tspClientProvider
+                    ?.getExperimentManager()
+                    .deleteExperiment((args.props.experiment as Experiment).UUID);
 
                 return;
             default:
