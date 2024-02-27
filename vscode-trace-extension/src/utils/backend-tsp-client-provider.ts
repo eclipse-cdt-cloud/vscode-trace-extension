@@ -3,7 +3,6 @@ import { TraceManager } from 'traceviewer-base/lib/trace-manager';
 import { TspClient } from 'tsp-typescript-client/lib/protocol/tsp-client';
 import * as vscode from 'vscode';
 import { TspClientProvider } from 'vscode-trace-common/lib/client/tsp-client-provider-impl';
-import { TraceServerUrlProvider } from 'vscode-trace-common/lib/server/trace-server-url-provider';
 
 /**
  * Functional paradigm approach for a singleton TspClientProvider
@@ -14,8 +13,7 @@ let _root = getUriRootFromUserSettings();
 let _path = getApiPathFromUserSettings();
 let _url = _root + _path;
 
-const _urlProvider = new TraceServerUrlProvider();
-const _provider = new TspClientProvider(_url, undefined, _urlProvider);
+const _provider = new TspClientProvider(_url, undefined);
 
 export const getTraceServerUrl = (): string => _root;
 export const getTspApiEndpoint = (): string => _path;
@@ -29,7 +27,7 @@ export const updateTspClientUrl = (): void => {
     _root = getUriRootFromUserSettings();
     _path = getApiPathFromUserSettings();
     _url = _root + _path;
-    _urlProvider.updateTraceServerUrl(_url);
+    _provider.updateTspClientUrl(_url);
 };
 
 export const addTspClientChangeListener = (listenerFunction: (tspClient: TspClient) => void): void => {
