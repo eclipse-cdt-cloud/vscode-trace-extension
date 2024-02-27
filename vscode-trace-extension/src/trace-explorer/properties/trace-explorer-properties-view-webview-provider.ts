@@ -6,7 +6,7 @@
 import * as vscode from 'vscode';
 import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import { traceExtensionWebviewManager } from 'vscode-trace-extension/src/extension';
-import { getTraceServerUrl } from 'vscode-trace-extension/src/utils/tspClient';
+import { getTraceServerUrl } from 'vscode-trace-extension/src/utils/backend-tsp-client-provider';
 
 export class TraceExplorerItemPropertiesProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'traceExplorer.itemPropertiesView';

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { getTraceServerUrl } from '../utils/tspClient';
+import { getTraceServerUrl } from '../utils/backend-tsp-client-provider';
 
 /**
  * Manages the keyboard and mouse shortcuts panel

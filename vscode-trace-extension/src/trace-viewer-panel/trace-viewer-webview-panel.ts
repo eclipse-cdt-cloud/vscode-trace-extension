@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
-import { getTspClientUrl, getTraceServerUrl } from '../utils/tspClient';
+import { getTspClientUrl, getTraceServerUrl } from '../utils/backend-tsp-client-provider';
 import { TraceServerConnectionStatusService } from '../utils/trace-server-status';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
 import { handleStatusMessage, handleRemoveMessage, setStatusFromPanel } from '../common/trace-message';

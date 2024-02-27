@@ -5,7 +5,7 @@ import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descri
 import * as vscode from 'vscode';
 import { TraceViewerPanel } from '../../trace-viewer-panel/trace-viewer-webview-panel';
 import { TraceServerConnectionStatusService } from '../../utils/trace-server-status';
-import { getTraceServerUrl, getTspClientUrl } from '../../utils/tspClient';
+import { getTraceServerUrl, getTspClientUrl } from '../../utils/backend-tsp-client-provider';
 import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import { traceExtensionWebviewManager } from 'vscode-trace-extension/src/extension';
