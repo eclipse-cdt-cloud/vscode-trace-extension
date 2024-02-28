@@ -6,6 +6,26 @@ This project started from the [VSCode webview react project][vscode-webview-reac
 
 **👋 Want to help?** Read our [contributor guide](CONTRIBUTING.md) and follow the instructions to contribute code.
 
+## Prerequisites
+
+First, you need Node.js and yarn:
+
+It's suggested to install [nvm](https://github.com/nvm-sh/nvm#installing-and-updating) to manage node on your machine. Once that's done, install the required version:
+
+```bash
+   nvm install 18
+   # optional: make it the default version
+   nvm alias default
+   # or set it every time like so
+   nvm use 18
+```
+
+Then install `yarn`:
+
+```bash
+npm i -g yarn  # the default version should be ok
+```
+
 ## Installation Instructions
 
 The code was migrated from the [PR in theia-trace-extension][init-contrib].
