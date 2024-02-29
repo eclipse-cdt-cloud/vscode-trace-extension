@@ -1,4 +1,4 @@
-# VSCode Trace Extension
+# VSCode Trace Viewer Extension
 
 This document contains information that may be useful for developers that want to build, modify, enhance and/or debug this extension. If you only intend to consume the extension, it might be easier to get it from the [public OpenVSX registry](https://www.open-vsx.org/extension/eclipse-cdt/vscode-trace-extension),
 
@@ -232,7 +232,7 @@ onWebviewPanelCreated(listener: (data: vscode.WebviewPanel) => void): void
 
 ```javascript
 //The following retrieves the API object from the vscode-trace-extension
-const ext = vscode.extensions.getExtension("eclipse-cdt.vscode-trace-extension");
+const ext = vscode.extensions.getExtension("eclipse-cdt.vscode-trace-viewer");
 const importedApi = ext.exports;
 ```
 
