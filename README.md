@@ -226,6 +226,9 @@ getActiveWebviewPanels(): { [key: string]: TraceViewerPanel | undefined; }
 getActiveWebviews(): vscode.WebviewView[]
 onWebviewCreated(listener: (data: vscode.WebviewView) => void): void
 onWebviewPanelCreated(listener: (data: vscode.WebviewPanel) => void): void
+onSignalManagerSignal(event: string | symbol, listener: (...args: unknown[]) => void): void;
+offSignalManagerSignal(event: string | symbol, listener: (...args: unknown[]) => void): void;
+addTraceServerContributor(contributor: TraceServerContributor): void;
 ```
 
 ### Using the API from Adopter Extensions
@@ -279,3 +282,38 @@ importedApi.onWebviewPanelCreated(_panel => {
 ```
 
 As a general rule, adopter extensions should retrieve and handle the webviews and webview panels once during their activation by calling `getActiveWebviews` and `getActiveWebviewPanels`. This ensures that the webviews and panels created before the activation of the adopter extension are handled. To handle any new webviews and panels created afterwards, listeners can be registered by calling `onWebviewCreated` and `onWebviewPanelCreated`.
+
+The adopter extensions can also add and remove listeners to signals propagated within the base extension.
+
+```javascript
+const _onExperimentOpened = (experiment: Experiment): void => {
+    console.log(experiment.UUID);
+};
+//Add a listener
+importedApi.onSignalManagerSignal('experiment opened', _onExperimentOpened);
+//Remove a listener
+importedApi.offSignalManagerSignal('experiment opened', _onExperimentOpened);
+```
+
+If the adopter extensions needs to add a custom hook to the trace server's start/stop API, a contribution can be made by calling `addTraceServerContributor`.
+
+```javascript
+const contributor: TraceServerContributor = {
+    startServer: async () => { 
+        //Perform pre-startup actions
+        //Start the server
+        console.log("server started"); 
+        },
+    stopServer: async () => {
+        //Perform cleanup actions
+        //Stop the server
+        console.log("server stopped"); 
+    },
+    isApplicable: (pathToTrace: string) => {
+        //Check whether this contributor applies for the trace at 'pathToTrace'
+        return true; 
+    }
+  };
+
+importedApi.addTraceServerContributor(contributor);
+```

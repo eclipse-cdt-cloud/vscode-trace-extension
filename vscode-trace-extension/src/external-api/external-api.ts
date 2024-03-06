@@ -8,6 +8,7 @@ import { TraceViewerPanel } from '../trace-viewer-panel/trace-viewer-webview-pan
 import * as vscode from 'vscode';
 import { traceExtensionWebviewManager, traceServerManager } from '../extension';
 import { TraceServerContributor } from '../utils/trace-server-manager';
+import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 
 export interface ExternalAPI {
     getActiveExperiment(): Experiment | undefined;
@@ -15,6 +16,8 @@ export interface ExternalAPI {
     getActiveWebviews(): vscode.WebviewView[];
     onWebviewCreated(listener: (data: vscode.WebviewView) => void): void;
     onWebviewPanelCreated(listener: (data: vscode.WebviewPanel) => void): void;
+    onSignalManagerSignal(event: string | symbol, listener: (...args: unknown[]) => void): void;
+    offSignalManagerSignal(event: string | symbol, listener: (...args: unknown[]) => void): void;
     addTraceServerContributor(contributor: TraceServerContributor): void;
 }
 
@@ -62,6 +65,26 @@ export const traceExtensionAPI: ExternalAPI = {
      */
     onWebviewPanelCreated(listener: (data: vscode.WebviewPanel) => void): void {
         traceExtensionWebviewManager.onWebviewPanelCreated(listener);
+    },
+
+    /**
+     * Attach a listener to signal propagated by signalManager within the trace extension
+     *
+     * @param event event for which a listener should be attached
+     * @param listener event listener
+     */
+    onSignalManagerSignal(event: string | symbol, listener: (...args: unknown[]) => void): void {
+        signalManager().on(event, listener);
+    },
+
+    /**
+     * Remove a listener for a signal managed by signalManager within the trace extension
+     *
+     * @param event event for which a listener should be removed
+     * @param listener event listener to remove
+     */
+    offSignalManagerSignal(event: string | symbol, listener: (...args: unknown[]) => void): void {
+        signalManager().off(event, listener);
     },
 
     /**
