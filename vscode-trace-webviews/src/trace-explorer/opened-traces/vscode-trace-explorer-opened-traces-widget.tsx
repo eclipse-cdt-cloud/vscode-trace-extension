@@ -12,7 +12,6 @@ import '../../style/react-contextify.css';
 import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import JSONBigConfig from 'json-bigint';
 import { OpenedTracesUpdatedSignalPayload } from 'traceviewer-base/lib/signals/opened-traces-updated-signal-payload';
-import { ReactExplorerPlaceholderWidget } from 'traceviewer-react-components/lib/trace-explorer/trace-explorer-placeholder-widget';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true
@@ -20,7 +19,6 @@ const JSONBig = JSONBigConfig({
 
 interface OpenedTracesAppState {
     tspClientProvider: TspClientProvider | undefined;
-    experimentsOpened: boolean;
 }
 
 const MENU_ID = 'traceExplorer.openedTraces.menuId';
@@ -36,7 +34,6 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
     private _onRemoveTraceButton = (traceUUID: string): void => this.doHandleRemoveTraceSignal(traceUUID);
     protected onUpdateSignal = (payload: OpenedTracesUpdatedSignalPayload): void =>
         this.doHandleOpenedTracesChanged(payload);
-    private loading = false;
 
     private doHandleRemoveTraceSignal(traceUUID: string) {
         this.state.tspClientProvider
@@ -55,8 +52,7 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
     constructor(props: {}) {
         super(props);
         this.state = {
-            tspClientProvider: undefined,
-            experimentsOpened: true
+            tspClientProvider: undefined
         };
         this._signalHandler = new VsCodeMessageManager();
         window.addEventListener('message', event => {
@@ -77,14 +73,10 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
                     if (message.data) {
                         const experiment = convertSignalExperiment(JSONBig.parse(message.data));
                         signalManager().fireExperimentOpenedSignal(experiment);
-                        if (!this.state.experimentsOpened) {
-                            this.setState({ experimentsOpened: true });
-                        }
                     }
                     break;
                 case VSCODE_MESSAGES.TRACE_SERVER_STARTED:
                     signalManager().fireTraceServerStartedSignal();
-                    this.setState({ experimentsOpened: true });
                 case VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED:
                     if (message.data && this.state.tspClientProvider) {
                         this.state.tspClientProvider.updateTspClientUrl(message.data);
@@ -112,11 +104,6 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
 
     protected doHandleOpenedTracesChanged(payload: OpenedTracesUpdatedSignalPayload): void {
         this._signalHandler.updateOpenedTraces(payload.getNumberOfOpenedTraces());
-        if (payload.getNumberOfOpenedTraces() > 0) {
-            this.setState({ experimentsOpened: true });
-        } else if (payload.getNumberOfOpenedTraces() === 0) {
-            this.setState({ experimentsOpened: false });
-        }
     }
 
     protected doHandleContextMenuEvent(event: React.MouseEvent<HTMLDivElement>, experiment: Experiment): void {
@@ -140,7 +127,7 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
     }
 
     public render(): React.ReactNode {
-        return this.state.experimentsOpened ? (
+        return (
             <>
                 <div>
                     {this.state.tspClientProvider && (
@@ -170,20 +157,7 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
                     </Item>
                 </Menu>
             </>
-        ) : (
-            <ReactExplorerPlaceholderWidget
-                loading={this.loading}
-                handleOpenTrace={this.handleOpenTrace}
-            ></ReactExplorerPlaceholderWidget>
         );
-    }
-
-    protected handleOpenTrace = async (): Promise<void> => this.doHandleOpenTrace();
-
-    private async doHandleOpenTrace() {
-        this.loading = true;
-        this._signalHandler.openTrace();
-        this.loading = false;
     }
 
     protected async doHandleReOpenTrace(experiment: Experiment): Promise<void> {

@@ -125,42 +125,49 @@
     "views": {
       "trace-explorer": [
         {
+          "type": "tree",
+          "name": "Welcome",
+          "id": "welcome",
+          "when": "trace-explorer.noExperiments || !traceViewer.serverUp"
+        },
+        {
           "type": "webview",
           "id": "traceExplorer.openedTracesView",
-          "name": "Opened Traces"
+          "name": "Opened Traces",
+          "when": "!trace-explorer.noExperiments && traceViewer.serverUp"
         },
         {
           "type": "webview",
           "id": "traceExplorer.availableViews",
           "name": "Views",
-          "when": "!trace-explorer.noExperiments"
+          "when": "!trace-explorer.noExperiments && traceViewer.serverUp"
         },
         {
           "type": "webview",
           "id": "traceExplorer.timeRangeDataView",
           "name": "Time Range Data",
-          "when": "!trace-explorer.noExperiments"
+          "when": "!trace-explorer.noExperiments && traceViewer.serverUp"
         },
         {
           "type": "webview",
           "id": "traceExplorer.itemPropertiesView",
           "name": "Item Properties",
-          "when": "!trace-explorer.noExperiments"
+          "when": "!trace-explorer.noExperiments && traceViewer.serverUp"
         }
       ]
     },
     "viewsWelcome": [
       {
-        "view": "traces",
-        "contents": "No traces found [learn more](https://www.eclipse.org/tracecompass/).\n[Add traces](command:nodeDependencies.addEntry)"
+        "view": "welcome",
+        "name": "Open Trace",
+        "contents": "There are currently no opened traces. \n[Open Trace](command:openedTraces.openTraceFolder)",
+        "when": "trace-explorer.noExperiments || !traceViewer.serverUp"
       },
       {
-        "view": "views",
-        "contents": "No trace selected [learn more](https://www.eclipse.org/tracecompass/)"
-      },
-      {
-        "view": "item properties",
-        "contents": "No properties to show"
+        "view": "welcome",
+        "name": "Documentation",
+        "contents": "To learn more about how to use the Trace Viewer [read our documentation](https://github.com/eclipse-cdt-cloud/vscode-trace-extension/blob/master/vscode-trace-extension/README.md).",
+        "when": "trace-explorer.noExperiments || !traceViewer.serverUp"
       }
     ],
     "menus": {
