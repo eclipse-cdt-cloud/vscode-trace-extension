@@ -63,8 +63,7 @@ export class TraceExplorerAvailableViewsProvider implements vscode.WebviewViewPr
                 switch (message.command) {
                     case VSCODE_MESSAGES.CONNECTION_STATUS:
                         if (message.data && message.data.status) {
-                            const status: boolean = JSON.parse(message.data.status);
-                            this._statusService.render(status);
+                            this._statusService.checkAndUpdateServerStatus();
                         }
                         return;
                     case VSCODE_MESSAGES.WEBVIEW_READY:
