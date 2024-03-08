@@ -5,7 +5,11 @@ import * as vscode from 'vscode';
 import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import { TraceViewerPanel } from '../../trace-viewer-panel/trace-viewer-webview-panel';
 import { TraceServerConnectionStatusService } from '../../utils/trace-server-status';
-import { getTraceServerUrl, getTspClientUrl } from '../../utils/backend-tsp-client-provider';
+import {
+    getTraceServerUrl,
+    getTspClientUrl,
+    updateNoExperimentsContext
+} from '../../utils/backend-tsp-client-provider';
 import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import { traceExtensionWebviewManager } from 'vscode-trace-extension/src/extension';
 
@@ -123,11 +127,7 @@ export class TraceExplorerOpenedTracesViewProvider implements vscode.WebviewView
                         }
                         return;
                     case VSCODE_MESSAGES.OPENED_TRACES_UPDATED:
-                        if (message.numberOfOpenedTraces > 0) {
-                            vscode.commands.executeCommand('setContext', 'trace-explorer.noExperiments', false);
-                        } else if (message.numberOfOpenedTraces === 0) {
-                            vscode.commands.executeCommand('setContext', 'trace-explorer.noExperiments', true);
-                        }
+                        updateNoExperimentsContext();
                         return;
                     case VSCODE_MESSAGES.OPEN_TRACE:
                         vscode.commands.executeCommand('openedTraces.openTraceFolder');

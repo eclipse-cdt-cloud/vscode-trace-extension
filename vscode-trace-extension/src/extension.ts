@@ -74,6 +74,7 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
             await startTraceServerIfAvailable(file.fsPath);
             if (await isTraceServerUp()) {
                 fileOpenHandler(context, file);
+                vscode.commands.executeCommand('setContext', 'trace-explorer.noExperiments', false);
             }
         })
     );
@@ -163,6 +164,7 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
             await startTraceServerIfAvailable(traceUri.fsPath);
             if (await isTraceServerUp()) {
                 fileOpenHandler(context, traceUri);
+                vscode.commands.executeCommand('setContext', 'trace-explorer.noExperiments', false);
             }
         })
     );
@@ -190,6 +192,7 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
 
     vscode.commands.executeCommand('setContext', 'traceViewer.markerSetsPresent', false);
     vscode.commands.executeCommand('setContext', 'traceViewer.markerCategoriesPresent', false);
+    vscode.commands.executeCommand('setContext', 'trace-explorer.noExperiments', true);
     serverStatusService.checkAndUpdateServerStatus();
     return traceExtensionAPI;
 }
