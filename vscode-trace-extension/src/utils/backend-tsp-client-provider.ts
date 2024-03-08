@@ -47,6 +47,19 @@ export async function isTraceServerUp(): Promise<boolean> {
     return serverIsUp;
 }
 
+/**
+ * Checks for opened traces and updates the vscode context `trace-explorer.noExperiments`
+ */
+export async function updateNoExperimentsContext(): Promise<void> {
+    const response = await getTspClient().fetchExperiments();
+    if (!response.isOk()) {
+        return;
+    }
+    const noExperiments = !response.getModel()?.length;
+    vscode.commands.executeCommand('setContext', 'trace-explorer.noExperiments', noExperiments);
+    return;
+}
+
 function getUriRootFromUserSettings(): string {
     const tsConfig = vscode.workspace.getConfiguration('trace-compass.traceserver');
     const traceServerUrl: string = tsConfig.get<string>('url') || 'http://localhost:8080';

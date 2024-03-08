@@ -10,7 +10,8 @@ export class TraceServerConnectionStatusService {
     }
 
     public checkAndUpdateServerStatus = async (): Promise<void> => {
-        this.render(await isTraceServerUp());
+        const isUp = await isTraceServerUp();
+        this.render(isUp);
     };
 
     private render = (status: boolean): void => {
