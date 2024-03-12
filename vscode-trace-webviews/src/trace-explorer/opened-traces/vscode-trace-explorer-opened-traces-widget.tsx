@@ -102,7 +102,12 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
         signalManager().off(Signals.OPENED_TRACES_UPDATED, this.onUpdateSignal);
     }
 
+    private initialized = false;
     protected doHandleOpenedTracesChanged(payload: OpenedTracesUpdatedSignalPayload): void {
+        if (!this.initialized) {
+            this.initialized = true;
+            return;
+        }
         this._signalHandler.updateOpenedTraces(payload.getNumberOfOpenedTraces());
     }
 
