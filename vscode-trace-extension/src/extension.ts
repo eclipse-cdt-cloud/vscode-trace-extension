@@ -15,7 +15,12 @@ import {
     keyboardShortcutsHandler
 } from './trace-explorer/trace-tree';
 import { TraceServerConnectionStatusService } from './utils/trace-server-status';
-import { getTspClientUrl, updateTspClientUrl, isTraceServerUp } from './utils/backend-tsp-client-provider';
+import {
+    getTspClientUrl,
+    updateTspClientUrl,
+    isTraceServerUp,
+    updateNoExperimentsContext
+} from './utils/backend-tsp-client-provider';
 import { TraceExtensionLogger } from './utils/trace-extension-logger';
 import { ExternalAPI, traceExtensionAPI } from './external-api/external-api';
 import { TraceExtensionWebviewManager } from './utils/trace-extension-webview-manager';
@@ -190,9 +195,20 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
         })
     );
 
+    context.subscriptions.push(
+        vscode.commands.registerCommand('trace-explorer.refreshContext', async () => {
+            const isUp = await isTraceServerUp();
+            vscode.commands.executeCommand('setContext', 'traceViewer.serverUp', isUp);
+            if (isUp) {
+                await updateNoExperimentsContext();
+            }
+        })
+    );
+
     vscode.commands.executeCommand('setContext', 'traceViewer.markerSetsPresent', false);
     vscode.commands.executeCommand('setContext', 'traceViewer.markerCategoriesPresent', false);
     vscode.commands.executeCommand('setContext', 'trace-explorer.noExperiments', true);
+    vscode.commands.executeCommand('trace-explorer.refreshContext');
     serverStatusService.checkAndUpdateServerStatus();
     return traceExtensionAPI;
 }

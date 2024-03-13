@@ -90,6 +90,11 @@
         "icon": "$(new-folder)"
       },
       {
+        "command": "trace-explorer.refreshContext",
+        "title": "Refresh Trace Explorer",
+        "icon": "$(refresh)"
+      },
+      {
         "command": "traceViewer.shortcuts",
         "title": "Trace Viewer Keyboard and Mouse Shortcuts",
         "icon": "$(info)"
@@ -175,6 +180,11 @@
         {
           "command": "openedTraces.openTraceFolder",
           "when": "view == traceExplorer.openedTracesView && !trace-explorer.noExperiments",
+          "group": "navigation"
+        },
+        {
+          "command": "trace-explorer.refreshContext",
+          "when": "view == welcome || view == traceExplorer.openedTracesView",
           "group": "navigation"
         }
       ],
