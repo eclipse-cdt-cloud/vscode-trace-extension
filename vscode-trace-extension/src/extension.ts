@@ -14,12 +14,7 @@ import {
     keyboardShortcutsHandler
 } from './trace-explorer/trace-utils';
 import { TraceServerConnectionStatusService } from './utils/trace-server-status';
-import {
-    getTspClientUrl,
-    updateTspClientUrl,
-    isTraceServerUp,
-    updateNoExperimentsContext
-} from './utils/backend-tsp-client-provider';
+import { updateTspClientUrl, isTraceServerUp, updateNoExperimentsContext } from './utils/backend-tsp-client-provider';
 import { TraceExtensionLogger } from './utils/trace-extension-logger';
 import { ExternalAPI, traceExtensionAPI } from './external-api/external-api';
 import { TraceExtensionWebviewManager } from './utils/trace-extension-webview-manager';
@@ -32,11 +27,12 @@ export let traceLogger: TraceExtensionLogger;
 export const traceExtensionWebviewManager: TraceExtensionWebviewManager = new TraceExtensionWebviewManager();
 export const traceServerManager: TraceServerManager = new TraceServerManager();
 
-export function activate(context: vscode.ExtensionContext): ExternalAPI {
+export async function activate(context: vscode.ExtensionContext): Promise<ExternalAPI> {
     traceLogger = new TraceExtensionLogger('Trace Extension');
 
     const resourceTypeHandler: TraceExplorerResourceTypeHandler = TraceExplorerResourceTypeHandler.getInstance();
 
+    await updateTspClientUrl();
     const serverStatusBarItemPriority = 1;
     const serverStatusBarItem = vscode.window.createStatusBarItem(
         vscode.StatusBarAlignment.Right,
@@ -87,16 +83,12 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
 
     // Listening to configuration change for the trace server URL
     context.subscriptions.push(
-        vscode.workspace.onDidChangeConfiguration(e => {
+        vscode.workspace.onDidChangeConfiguration(async e => {
             if (
                 e.affectsConfiguration('trace-compass.traceserver.url') ||
                 e.affectsConfiguration('trace-compass.traceserver.apiPath')
             ) {
-                updateTspClientUrl();
-            }
-
-            if (e.affectsConfiguration('trace-compass.traceserver.url')) {
-                const newTspClientURL = getTspClientUrl();
+                const newTspClientURL = await updateTspClientUrl();
 
                 // Signal the change to the `Opened traces` and `Available views` webview
                 tracesProvider.updateTraceServerUrl(newTspClientURL);
