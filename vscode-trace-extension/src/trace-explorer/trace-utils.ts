@@ -1,14 +1,10 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import * as path from 'path';
 import { Trace as TspTrace } from 'tsp-typescript-client/lib/models/trace';
-import { AnalysisProvider } from './analysis-tree';
 import { TraceViewerPanel } from '../trace-viewer-panel/trace-viewer-webview-panel';
 import { getExperimentManager, getTraceManager } from '../utils/backend-tsp-client-provider';
 import { traceLogger } from '../extension';
 import { KeyboardShortcutsPanel } from '../trace-viewer-panel/keyboard-shortcuts-panel';
-
-const rootPath = path.resolve(__dirname, '../../..');
 
 // eslint-disable-next-line no-shadow
 export enum ProgressMessages {
@@ -18,91 +14,6 @@ export enum ProgressMessages {
     OPENING_TRACES = 'Opening trace(s)',
     ROLLING_BACK_TRACES = 'Rolling back trace(s)'
 }
-
-export class TracesProvider implements vscode.TreeDataProvider<Trace> {
-    constructor(private workspaceRoot: string) {}
-
-    getTreeItem(element: Trace): vscode.TreeItem {
-        return element;
-    }
-
-    getChildren(element?: Trace): Thenable<Trace[]> {
-        if (!this.workspaceRoot) {
-            vscode.window.showInformationMessage('No traces. Empty workspace');
-            return Promise.resolve([]);
-        }
-
-        if (element) {
-            // if (element.children.length > 0) {
-            //   return Promise.resolve(element.children.map(child => this.getTrace(element.uri, child)));
-            // } else {
-            //   return Promise.resolve([]);
-            // }
-            return Promise.resolve([]);
-        } else {
-            return Promise.resolve(
-                fs
-                    .readdirSync(this.workspaceRoot, { withFileTypes: true })
-                    .filter(dirent => dirent.isDirectory())
-                    .map(dirent => dirent.name)
-                    .map(dir => this.getTrace(this.workspaceRoot, dir))
-            );
-        }
-    }
-
-    private getTrace(source: string, trace: string) {
-        const uri = path.resolve(source, trace);
-        const children = fs
-            .readdirSync(uri, { withFileTypes: true })
-            .filter(dirent => dirent.isDirectory())
-            .map(dirent => dirent.name);
-        if (children.length > 0) {
-            // return new Experiment(trace, vscode.TreeItemCollapsibleState.Collapsed, uri, children);
-            return new Trace(trace, vscode.TreeItemCollapsibleState.None, uri, children);
-        } else {
-            return new Trace(trace, vscode.TreeItemCollapsibleState.None, uri, []);
-        }
-    }
-}
-
-export class Trace extends vscode.TreeItem {
-    constructor(
-        public readonly name: string,
-        public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-        public readonly uri: string,
-        public readonly children: string[]
-    ) {
-        super(name, collapsibleState);
-        this.tooltip = `${this.name} ${this.uri}`;
-    }
-
-    iconPath = {
-        light: path.resolve(rootPath, 'assets', 'resources', 'light', 'dependency.svg'),
-        dark: path.resolve(rootPath, 'assets', 'resources', 'dark', 'dependency.svg')
-    };
-}
-
-export const traceHandler =
-    (analysisTree: AnalysisProvider) =>
-    (context: vscode.ExtensionContext, trace: Trace): void => {
-        const panel = TraceViewerPanel.createOrShow(context.extensionUri, trace.name, undefined);
-        const { traceManager, experimentManager } = getManagers();
-        (async () => {
-            const traces = new Array<TspTrace>();
-            const t = await traceManager.openTrace(trace.uri, trace.name);
-            if (t) {
-                traces.push(t);
-            }
-            const experiment = await experimentManager.openExperiment(trace.name, traces);
-            if (experiment) {
-                panel.setExperiment(experiment);
-                const descriptors = await experimentManager.getAvailableOutputs(experiment.UUID);
-                if (descriptors && descriptors.length) {
-                    analysisTree.refresh(descriptors);
-                }
-            }
-        })();
-    };
 
 export const openOverviewHandler = () => (): void => {
     TraceViewerPanel.showOverviewToCurrent();
@@ -140,7 +51,7 @@ export const openDialog = async (): Promise<vscode.Uri | undefined> => {
 };
 
 export const fileHandler =
-    (analysisTree: AnalysisProvider) =>
+    () =>
     async (context: vscode.ExtensionContext, traceUri: vscode.Uri): Promise<void> => {
         const resolvedTraceURI: vscode.Uri = traceUri;
         const { traceManager, experimentManager } = getManagers();
@@ -228,10 +139,6 @@ export const fileHandler =
                 const experiment = await experimentManager.openExperiment(name, traces);
                 if (experiment) {
                     panel.setExperiment(experiment);
-                    const descriptors = await experimentManager.getAvailableOutputs(experiment.UUID);
-                    if (descriptors && descriptors.length) {
-                        analysisTree.refresh(descriptors);
-                    }
                 }
 
                 if (token.isCancellationRequested) {

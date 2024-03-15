@@ -16,6 +16,7 @@ test('Open Trace from Explorer', async ({ page }) => {
 
 test('Open Trace from Trace Viewer', async ({ page }) => {
     await page.getByRole('tab', { name: 'Trace Viewer' }).locator('a').click();
+    await page.getByLabel('Opened Traces Section').hover();
     await page.getByRole('button', { name: 'Open Trace' }).hover();
     await page.getByRole('button', { name: 'Open Trace' }).click();
     await page.getByRole('option', { name: '202-bug-hunt' }).locator('a').click();
