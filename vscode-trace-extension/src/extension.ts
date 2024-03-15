@@ -1,6 +1,5 @@
 'use strict';
 import * as vscode from 'vscode';
-import { AnalysisProvider } from './trace-explorer/analysis-tree';
 import { TraceExplorerItemPropertiesProvider } from './trace-explorer/properties/trace-explorer-properties-view-webview-provider';
 import { TraceExplorerTimeRangeDataProvider } from './trace-explorer/time-range/trace-explorer-time-range-data-webview-provider';
 import { TraceExplorerAvailableViewsProvider } from './trace-explorer/available-views/trace-explorer-available-views-webview-provider';
@@ -13,7 +12,7 @@ import {
     undoRedoHandler,
     zoomHandler,
     keyboardShortcutsHandler
-} from './trace-explorer/trace-tree';
+} from './trace-explorer/trace-utils';
 import { TraceServerConnectionStatusService } from './utils/trace-server-status';
 import {
     getTspClientUrl,
@@ -71,9 +70,8 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
         })
     );
 
-    const analysisProvider = new AnalysisProvider();
     // TODO: For now, a different command opens traces from file explorer. Remove when we have a proper trace finder
-    const fileOpenHandler = fileHandler(analysisProvider);
+    const fileOpenHandler = fileHandler();
     context.subscriptions.push(
         vscode.commands.registerCommand('traces.openTraceFile', async (file: vscode.Uri) => {
             await startTraceServerIfAvailable(file.fsPath);
