@@ -8,6 +8,12 @@ import * as React from 'react';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
+import {
+    ContextMenuItems,
+    ContextMenuContributedSignalPayload
+} from 'traceviewer-base/lib/signals/context-menu-contributed-signal-payload';
+import { RowSelectionsChangedSignalPayload } from 'traceviewer-base/lib/signals/row-selections-changed-signal-payload';
+import { ContextMenuItemClickedSignalPayload } from 'traceviewer-base/lib/signals/context-menu-item-clicked-signal-payload';
 import { TraceContextComponent } from 'traceviewer-react-components/lib/components/trace-context-component';
 import 'traceviewer-react-components/style/trace-context-style.css';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
@@ -46,6 +52,11 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
 
     private _onProperties = (properties: { [key: string]: string }): void => this.doHandlePropertiesSignal(properties);
     private _onSaveAsCSV = (payload: { traceId: string; data: string }): void => this.doHandleSaveAsCSVSignal(payload);
+    private _onRowSelectionChanged = (payload: RowSelectionsChangedSignalPayload): void =>
+        this.doHandleRowSelectSignal(payload);
+    private _onContextMenuItemClicked = (payload: ContextMenuItemClickedSignalPayload): void =>
+        this.doHandleContextMenuItemClicked(payload);
+
     /** Signal Handlers */
     private doHandlePropertiesSignal(properties: { [key: string]: string }) {
         this._signalHandler.propertiesUpdated(properties);
@@ -53,6 +64,14 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
 
     private doHandleSaveAsCSVSignal(payload: { traceId: string; data: string }) {
         this._signalHandler.saveAsCSV(payload);
+    }
+
+    private doHandleRowSelectSignal(payload: RowSelectionsChangedSignalPayload) {
+        this._signalHandler.rowSelectChanged(payload);
+    }
+
+    private doHandleContextMenuItemClicked(payload: ContextMenuItemClickedSignalPayload) {
+        this._signalHandler.contextMenuItemClicked(payload);
     }
 
     private _onOverviewSelected = (payload: { traceId: string; outputDescriptor: OutputDescriptor }): void =>
@@ -179,6 +198,15 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
                         this.state.tspClientProvider.updateTspClientUrl(message.data);
                     }
                     break;
+                case VSCODE_MESSAGES.CONTRIBUTE_CONTEXT_MENU:
+                    if (message.data) {
+                        const ctxMenuPayload: ContextMenuContributedSignalPayload =
+                            new ContextMenuContributedSignalPayload(
+                                message.data.outputDescriptorId,
+                                message.data.menuItems as ContextMenuItems
+                            );
+                        this.contributeContextMenu(ctxMenuPayload);
+                    }
             }
         });
         window.addEventListener('resize', this.onResize);
@@ -189,6 +217,8 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
 
     componentDidMount(): void {
         this._signalHandler.notifyReady();
+        signalManager().on(Signals.CONTEXT_MENU_ITEM_CLICKED, this._onContextMenuItemClicked);
+        signalManager().on(Signals.ROW_SELECTIONS_CHANGED, this._onRowSelectionChanged);
         signalManager().on(Signals.ITEM_PROPERTIES_UPDATED, this._onProperties);
         signalManager().on(Signals.SAVE_AS_CSV, this._onSaveAsCSV);
         signalManager().on(Signals.MARKER_CATEGORY_CLOSED, this.onMarkerCategoryClosedSignal);
@@ -198,6 +228,8 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
     }
 
     componentWillUnmount(): void {
+        signalManager().off(Signals.CONTEXT_MENU_ITEM_CLICKED, this._onContextMenuItemClicked);
+        signalManager().off(Signals.ROW_SELECTIONS_CHANGED, this._onRowSelectionChanged);
         signalManager().off(Signals.ITEM_PROPERTIES_UPDATED, this._onProperties);
         signalManager().off(Signals.OVERVIEW_OUTPUT_SELECTED, this._onOverviewSelected);
         signalManager().off(Signals.SAVE_AS_CSV, this._onSaveAsCSV);
@@ -232,6 +264,10 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
 
     protected redo(): void {
         signalManager().fireRedoSignal();
+    }
+
+    protected contributeContextMenu(payload: ContextMenuContributedSignalPayload): void {
+        signalManager().fireContributeContextMenu(payload);
     }
 
     protected doHandleOutputDataChanged(descriptors: OutputDescriptor[]): void {

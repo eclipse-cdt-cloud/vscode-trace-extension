@@ -4,6 +4,8 @@ import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { MarkerSet } from 'tsp-typescript-client/lib/models/markerset';
 import JSONBigConfig from 'json-bigint';
 import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
+import { ContextMenuItemClickedSignalPayload } from 'traceviewer-base/lib/signals/context-menu-item-clicked-signal-payload';
+import { RowSelectionsChangedSignalPayload } from 'traceviewer-base/lib/signals/row-selections-changed-signal-payload';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true
@@ -64,10 +66,13 @@ export const VSCODE_MESSAGES = {
     TRACE_SERVER_URL_CHANGED: 'traceServerUrlChanged',
     VIEW_RANGE_UPDATED: 'viewRangeUpdated',
     SELECTION_RANGE_UPDATED: 'selectionRangeUpdated',
+    ROW_SELECTION_CHANGED: 'rowSelectionsChanged',
     REQUEST_SELECTION_RANGE_CHANGE: 'requestSelectionRangeChange',
     RESTORE_VIEW: 'restoreView',
     RESTORE_COMPLETE: 'restoreComplete',
-    OUTPUT_DATA_CHANGED: 'outputDataChanged'
+    OUTPUT_DATA_CHANGED: 'outputDataChanged',
+    CONTRIBUTE_CONTEXT_MENU: 'contributeContextMenu',
+    CONTEXT_MENU_ITEM_CLICKED: 'contextMenuItemClicked'
 };
 
 export class VsCodeMessageManager extends Messages.MessageManager {
@@ -192,5 +197,15 @@ export class VsCodeMessageManager extends Messages.MessageManager {
     setMarkerCategoriesContext(context: boolean): void {
         const status: string = JSON.stringify(context);
         vscode.postMessage({ command: VSCODE_MESSAGES.MARKER_CATEGORIES_CONTEXT, data: { status } });
+    }
+
+    rowSelectChanged(payload: RowSelectionsChangedSignalPayload): void {
+        const data = JSON.stringify(payload);
+        vscode.postMessage({ command: VSCODE_MESSAGES.ROW_SELECTION_CHANGED, data: data });
+    }
+
+    contextMenuItemClicked(payload: ContextMenuItemClickedSignalPayload): void {
+        const data = JSON.stringify(payload);
+        vscode.postMessage({ command: VSCODE_MESSAGES.CONTEXT_MENU_ITEM_CLICKED, data: data });
     }
 }
