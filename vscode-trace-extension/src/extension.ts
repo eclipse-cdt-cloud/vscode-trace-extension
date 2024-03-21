@@ -53,12 +53,12 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
         vscode.window.registerWebviewViewProvider(TraceExplorerAvailableViewsProvider.viewType, myAnalysisProvider)
     );
 
-    const propertiesProvider = new TraceExplorerItemPropertiesProvider(context.extensionUri);
+    const propertiesProvider = new TraceExplorerItemPropertiesProvider(context.extensionUri, serverStatusService);
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(TraceExplorerItemPropertiesProvider.viewType, propertiesProvider)
     );
 
-    const timeRangeDataProvider = new TraceExplorerTimeRangeDataProvider(context.extensionUri);
+    const timeRangeDataProvider = new TraceExplorerTimeRangeDataProvider(context.extensionUri, serverStatusService);
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(TraceExplorerTimeRangeDataProvider.viewType, timeRangeDataProvider)
     );
