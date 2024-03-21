@@ -35,11 +35,11 @@ export const zoomHandler = (hasZoomedIn: boolean): void => {
     TraceViewerPanel.zoomOnCurrent(hasZoomedIn);
 };
 
-export const openDialog = async (): Promise<vscode.Uri | undefined> => {
+export const openDialog = async (selectFiles = false): Promise<vscode.Uri | undefined> => {
     const props: vscode.OpenDialogOptions = {
-        title: 'Open Trace',
-        canSelectFolders: true,
-        canSelectFiles: false,
+        title: selectFiles ? 'Open Trace File' : 'Open Trace Folder',
+        canSelectFolders: !selectFiles,
+        canSelectFiles: selectFiles,
         canSelectMany: false
     };
     let traceURI = undefined;

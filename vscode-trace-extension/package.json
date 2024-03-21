@@ -85,7 +85,7 @@
         "icon": "assets/media/dep.svg"
       },
       {
-        "command": "openedTraces.openTraceFolder",
+        "command": "openedTraces.openTrace",
         "title": "Open Trace",
         "icon": "$(new-folder)"
       },
@@ -165,7 +165,7 @@
       {
         "view": "welcome",
         "name": "Open Trace",
-        "contents": "There are currently no opened traces. \n[Open Trace](command:openedTraces.openTraceFolder)",
+        "contents": "There are currently no opened traces.\n[Open Trace](command:openedTraces.openTrace)",
         "when": "trace-explorer.noExperiments || !traceViewer.serverUp"
       },
       {
@@ -178,7 +178,7 @@
     "menus": {
       "view/title": [
         {
-          "command": "openedTraces.openTraceFolder",
+          "command": "openedTraces.openTrace",
           "when": "view == traceExplorer.openedTracesView && !trace-explorer.noExperiments",
           "group": "navigation"
         },
@@ -304,7 +304,6 @@
     "eslint-plugin-import": "^2.21.2",
     "eslint-plugin-no-null": "^1.0.2",
     "eslint-plugin-react": "^7.20.0",
-    
     "rimraf": "^2.6.3",
     "source-map-loader": "^1.0.2",
     "style-loader": "^2.0.0",

@@ -106,7 +106,7 @@ export class TraceExplorerOpenedTracesViewProvider extends AbstractTraceExplorer
                         updateNoExperimentsContext();
                         return;
                     case VSCODE_MESSAGES.OPEN_TRACE:
-                        vscode.commands.executeCommand('openedTraces.openTraceFolder');
+                        vscode.commands.executeCommand('openedTraces.openTrace');
                         return;
                     case VSCODE_MESSAGES.EXPERIMENT_SELECTED: {
                         let experiment: Experiment | undefined;

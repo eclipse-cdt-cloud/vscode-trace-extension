@@ -249,6 +249,7 @@ onWebviewPanelCreated(listener: (data: vscode.WebviewPanel) => void): void
 onSignalManagerSignal(event: string | symbol, listener: (...args: unknown[]) => void): void;
 offSignalManagerSignal(event: string | symbol, listener: (...args: unknown[]) => void): void;
 addTraceServerContributor(contributor: TraceServerContributor): void;
+setHandleTraceResourceType(handleFiles: boolean, handleFolders: boolean): void;
 ```
 
 ### Using the API from Adopter Extensions
@@ -336,4 +337,14 @@ const contributor: TraceServerContributor = {
   };
 
 importedApi.addTraceServerContributor(contributor);
+```
+
+If adopter extensions want to customize the type of trace resources (File and/or Folder) that the base extension should handle, it can be set by calling `setHandleTraceResourceType`.
+
+```javascript
+const handleTraceFiles = true;
+const handleTraceFolders = false;
+
+//The base extension will only provide support for trace files, and not for trace folders
+importedApi.setHandleTraceResourceType(handleTraceFiles, handleTraceFolders);
 ```
