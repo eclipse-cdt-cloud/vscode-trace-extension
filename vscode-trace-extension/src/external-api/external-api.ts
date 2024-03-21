@@ -9,6 +9,7 @@ import * as vscode from 'vscode';
 import { traceExtensionWebviewManager, traceServerManager } from '../extension';
 import { TraceServerContributor } from '../utils/trace-server-manager';
 import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
+import { TraceExplorerResourceTypeHandler } from '../utils/trace-explorer-resource-type-handler';
 
 export interface ExternalAPI {
     getActiveExperiment(): Experiment | undefined;
@@ -19,6 +20,7 @@ export interface ExternalAPI {
     onSignalManagerSignal(event: string | symbol, listener: (...args: unknown[]) => void): void;
     offSignalManagerSignal(event: string | symbol, listener: (...args: unknown[]) => void): void;
     addTraceServerContributor(contributor: TraceServerContributor): void;
+    setHandleTraceResourceType(handleFiles: boolean, handleFolders: boolean): void;
 }
 
 export const traceExtensionAPI: ExternalAPI = {
@@ -94,5 +96,16 @@ export const traceExtensionAPI: ExternalAPI = {
      */
     addTraceServerContributor(contributor: TraceServerContributor): void {
         traceServerManager.addTraceServerContributor(contributor);
+    },
+
+    /**
+     * Sets the trace resouce types that the extension can handle. Extending can set if the extension handles
+     * trace files, trace folders or both.
+     *
+     * @param handleFiles sets handling of trace files
+     * @param handleFolders sets handling of trace folders
+     */
+    setHandleTraceResourceType(handleFiles: boolean, handleFolders: boolean): void {
+        TraceExplorerResourceTypeHandler.getInstance().setHandleResourceTypes(handleFiles, handleFolders);
     }
 };

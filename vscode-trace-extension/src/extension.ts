@@ -26,6 +26,7 @@ import { TraceExtensionWebviewManager } from './utils/trace-extension-webview-ma
 import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import { TraceViewerPanel } from './trace-viewer-panel/trace-viewer-webview-panel';
 import { TraceServerManager } from './utils/trace-server-manager';
+import { ResourceType, TraceExplorerResourceTypeHandler } from './utils/trace-explorer-resource-type-handler';
 
 export let traceLogger: TraceExtensionLogger;
 export const traceExtensionWebviewManager: TraceExtensionWebviewManager = new TraceExtensionWebviewManager();
@@ -33,6 +34,8 @@ export const traceServerManager: TraceServerManager = new TraceServerManager();
 
 export function activate(context: vscode.ExtensionContext): ExternalAPI {
     traceLogger = new TraceExtensionLogger('Trace Extension');
+
+    const resourceTypeHandler: TraceExplorerResourceTypeHandler = TraceExplorerResourceTypeHandler.getInstance();
 
     const serverStatusBarItemPriority = 1;
     const serverStatusBarItem = vscode.window.createStatusBarItem(
@@ -159,8 +162,19 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('openedTraces.openTraceFolder', async () => {
-            const traceUri = await openDialog();
+        vscode.commands.registerCommand('openedTraces.openTrace', async (resourceType?: ResourceType) => {
+            let traceUri = undefined;
+            if (resourceType && resourceType === 'File') {
+                traceUri = await openDialog(true);
+            } else if (resourceType && resourceType === 'Folder') {
+                traceUri = await openDialog(false);
+            } else {
+                const type: ResourceType | undefined = await resourceTypeHandler.detectOrPromptForTraceResouceType();
+                if (!type) return;
+                const selectFiles = type === 'File' ? true : false;
+                traceUri = await openDialog(selectFiles);
+            }
+
             if (!traceUri) {
                 return;
             }
