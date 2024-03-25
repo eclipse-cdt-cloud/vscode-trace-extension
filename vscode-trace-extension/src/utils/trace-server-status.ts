@@ -3,9 +3,8 @@ import { isTraceServerUp } from './backend-tsp-client-provider';
 import { traceExtensionWebviewManager } from '../extension';
 import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 
-
 export class TraceServerConnectionStatusService {
-    private _status: boolean;
+    private _status = false;
 
     public constructor(private _statusBarItem: StatusBarItem) {
         _statusBarItem.hide();
@@ -18,17 +17,21 @@ export class TraceServerConnectionStatusService {
             return;
         }
         this._status = isUp;
-        this.emitServerStatusChangeToWebviews();
+        this.emitServerStatusChangeToViews();
         this.render(isUp);
     };
 
-    private emitServerStatusChangeToWebviews = () => {
-        const webviews = traceExtensionWebviewManager.getAllActiveWebviews();
-        webviews.forEach(_view => {
-            _view.webview.postMessage({ command: VSCODE_MESSAGES.CONNECTION_STATUS, data: this._status });
-        });
-    }
+    private emitServerStatusChangeToViews = () => {
+        // TODO - this is like kinda weird idk maybe make method in class.
+        const webviews = [
+            ...traceExtensionWebviewManager.getAllActiveWebviews().map(_view => _view.webview),
+            ...traceExtensionWebviewManager.getAllActiveWebviewPanels().map(_view => _view.webview)
+        ];
 
+        webviews.forEach(webview => {
+            webview.postMessage({ command: VSCODE_MESSAGES.CONNECTION_STATUS, data: this._status });
+        });
+    };
 
     private render = (status: boolean): void => {
         if (status) {

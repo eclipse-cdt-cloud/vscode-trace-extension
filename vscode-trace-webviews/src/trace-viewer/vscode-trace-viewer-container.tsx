@@ -36,6 +36,7 @@ interface VscodeAppState {
     outputs: OutputDescriptor[];
     overviewOutputDescriptor: OutputDescriptor | undefined;
     theme: string;
+    serverStatus: boolean;
 }
 
 class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
@@ -103,7 +104,9 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
             tspClientProvider: undefined,
             outputs: [],
             overviewOutputDescriptor: undefined,
-            theme: 'light'
+            theme: 'light',
+            // TODO - ensure we have correct initial state.
+            serverStatus: true
         };
         this._signalHandler = new VsCodeMessageManager();
 
@@ -207,6 +210,11 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
                             );
                         this.contributeContextMenu(ctxMenuPayload);
                     }
+                case VSCODE_MESSAGES.CONNECTION_STATUS:
+                    const serverStatus: boolean = JSONBig.parse(message.data);
+                    console.log('CONNECTION STATUS:', serverStatus);
+                    this.setState({ serverStatus });
+                    break;
             }
         });
         window.addEventListener('resize', this.onResize);
@@ -488,12 +496,14 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
     }
 
     public render(): React.ReactNode {
+        const { experiment, tspClientProvider, serverStatus } = this.state;
+
         return (
             <div className="trace-viewer-container">
-                {this.state.experiment && this.state.tspClientProvider && (
+                {experiment && tspClientProvider && (
                     <TraceContextComponent
-                        experiment={this.state.experiment}
-                        tspClient={this.state.tspClientProvider.getTspClient()}
+                        experiment={experiment}
+                        tspClient={tspClientProvider.getTspClient()}
                         outputs={this.state.outputs}
                         overviewDescriptor={this.state.overviewOutputDescriptor}
                         markerCategoriesMap={this.selectedMarkerCategoriesMap}
@@ -506,6 +516,13 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
                         removeResizeHandler={this.removeResizeHandler}
                         backgroundTheme={this.state.theme}
                     ></TraceContextComponent>
+                )}
+                {serverStatus === false && (
+                    <div className="overlay">
+                        <div className="overlay-message">
+                            Please start a trace server to resume using the Trace Viewer.
+                        </div>
+                    </div>
                 )}
             </div>
         );
