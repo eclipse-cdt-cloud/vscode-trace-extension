@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
 
-test.beforeEach(async ({ page }) => {
+const timeout = 10000;
+
+test.beforeEach(async ({ page }, testInfo) => {
+    testInfo.timeout = timeout;
     await page.goto('http://localhost:3000');
     await page.getByRole('tab', { name: 'Welcome, preview' }).getByRole('button', { name: /Close/ }).click();
     await page.getByRole('button', { name: 'Never' }).click();
