@@ -6,7 +6,7 @@ import { traceExtensionWebviewManager } from 'vscode-trace-extension/src/extensi
 import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 
 export abstract class AbstractTraceExplorerProvider implements vscode.WebviewViewProvider {
-    protected _view: vscode.WebviewView;
+    protected _view: vscode.WebviewView | undefined;
     protected _disposables: vscode.Disposable[] = [];
 
     /**
@@ -62,6 +62,11 @@ export abstract class AbstractTraceExplorerProvider implements vscode.WebviewVie
         traceExtensionWebviewManager.fireWebviewCreated(webviewView);
 
         this.init(webviewView, _context, _token);
+        webviewView.onDidDispose(_event => this.dispose(), undefined, this._disposables);
+    }
+
+    protected dispose() {
+        this._view = undefined;
     }
 
     /* eslint-disable max-len */
