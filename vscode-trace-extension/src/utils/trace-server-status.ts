@@ -1,5 +1,6 @@
 import { ThemeColor, StatusBarItem } from 'vscode';
 import { isTraceServerUp } from './backend-tsp-client-provider';
+import * as vscode from 'vscode';
 
 export class TraceServerConnectionStatusService {
     private statusBarItem: StatusBarItem;
@@ -11,8 +12,13 @@ export class TraceServerConnectionStatusService {
 
     public checkAndUpdateServerStatus = async (): Promise<void> => {
         const isUp = await isTraceServerUp();
-        this.render(isUp);
+        await this.updateServerStatus(isUp);
     };
+
+    public async updateServerStatus(status: boolean): Promise<void> {
+        await vscode.commands.executeCommand('setContext', 'traceViewer.serverUp', status);
+        this.render(status);
+    }
 
     private render = (status: boolean): void => {
         if (status) {
