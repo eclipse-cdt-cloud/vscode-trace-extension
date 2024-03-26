@@ -20,11 +20,12 @@ export class TspClientProvider implements ITspClientProvider {
 
         RestClient.addConnectionStatusListener(status => {
             // Ignore the first update that is sent when calling addConnectionStatusListener
-            if (this._initialized) {
-                this._signalHandler?.notifyConnection(status);
+            if (!this._initialized) {
+                this._initialized = true;
+                return;
             }
+            this._signalHandler?.notifyConnection(status);
         });
-        this._initialized = true;
         this._tspClient.checkHealth(); // When this is called in the remote use-case, it will block the port-forwarding service-worker.
     }
 

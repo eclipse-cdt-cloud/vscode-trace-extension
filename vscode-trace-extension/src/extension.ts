@@ -106,6 +106,9 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
 
                 // Signal the change to all trace panels
                 TraceViewerPanel.updateTraceServerUrl(newTspClientURL);
+
+                // Refresh so that either trace explorer or welcome page is rendered
+                vscode.commands.executeCommand('trace-explorer.refreshContext');
             }
         })
     );
