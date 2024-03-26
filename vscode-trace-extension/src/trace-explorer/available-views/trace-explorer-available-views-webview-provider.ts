@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import JSONBigConfig from 'json-bigint';
-import * as vscode from 'vscode';
 import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
+import * as vscode from 'vscode';
+import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
+import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import { TraceViewerPanel } from '../../trace-viewer-panel/trace-viewer-webview-panel';
 import { getTspClientUrl } from '../../utils/backend-tsp-client-provider';
-import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
-import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import { AbstractTraceExplorerProvider } from '../abstract-trace-explorer-provider';
 
 const JSONBig = JSONBigConfig({
@@ -40,12 +40,13 @@ export class TraceExplorerAvailableViewsProvider extends AbstractTraceExplorerPr
                 switch (command) {
                     case VSCODE_MESSAGES.CONNECTION_STATUS:
                         if (data && data.status) {
-                            this._statusService.checkAndUpdateServerStatus();
+                            const status: boolean = JSON.parse(message.data.status);
+                            this._statusService.updateServerStatus(status);
                         }
                         return;
                     case VSCODE_MESSAGES.WEBVIEW_READY:
                         // Post the tspTypescriptClient
-                        this._view.webview.postMessage({
+                        this._view?.webview.postMessage({
                             command: VSCODE_MESSAGES.SET_TSP_CLIENT,
                             data: getTspClientUrl()
                         });
@@ -86,13 +87,11 @@ export class TraceExplorerAvailableViewsProvider extends AbstractTraceExplorerPr
         );
 
         signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
-        webviewView.onDidDispose(
-            _event => {
-                signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
-            },
-            undefined,
-            this._disposables
-        );
+    }
+
+    protected dispose() {
+        signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
+        super.dispose();
     }
 
     private _onExperimentSelected = (experiment: Experiment | undefined): void =>
