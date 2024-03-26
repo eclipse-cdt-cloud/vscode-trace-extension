@@ -80,7 +80,7 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
             await startTraceServerIfAvailable(file.fsPath);
             if (await isTraceServerUp()) {
                 fileOpenHandler(context, file);
-                vscode.commands.executeCommand('setContext', 'trace-explorer.noExperiments', false);
+                vscode.commands.executeCommand('trace-explorer.refreshContext');
             }
         })
     );
@@ -181,6 +181,7 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
             await startTraceServerIfAvailable(traceUri.fsPath);
             if (await isTraceServerUp()) {
                 fileOpenHandler(context, traceUri);
+                serverStatusService.updateServerStatus(true);
                 vscode.commands.executeCommand('setContext', 'trace-explorer.noExperiments', false);
             }
         })
@@ -193,24 +194,28 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('serverStatus.started', () => {
-            serverStatusService.checkAndUpdateServerStatus();
+        vscode.commands.registerCommand('serverStatus.started', async () => {
+            await serverStatusService.updateServerStatus(true);
             if (tracesProvider) {
+                // Trigger webview refresh
                 tracesProvider.postMessagetoWebview(VSCODE_MESSAGES.TRACE_SERVER_STARTED, undefined);
             }
+            // Refresh so that either trace explorer or welcome page is rendered
+            updateNoExperimentsContext();
         })
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('serverStatus.stopped', () => {
-            serverStatusService.checkAndUpdateServerStatus();
+        vscode.commands.registerCommand('serverStatus.stopped', async () => {
+            await serverStatusService.updateServerStatus(false);
         })
     );
 
     context.subscriptions.push(
         vscode.commands.registerCommand('trace-explorer.refreshContext', async () => {
+            // Refresh so that either trace explorer or welcome page is rendered
             const isUp = await isTraceServerUp();
-            vscode.commands.executeCommand('setContext', 'traceViewer.serverUp', isUp);
+            await serverStatusService.updateServerStatus(isUp);
             if (isUp) {
                 await updateNoExperimentsContext();
             }
@@ -219,9 +224,13 @@ export function activate(context: vscode.ExtensionContext): ExternalAPI {
 
     vscode.commands.executeCommand('setContext', 'traceViewer.markerSetsPresent', false);
     vscode.commands.executeCommand('setContext', 'traceViewer.markerCategoriesPresent', false);
-    vscode.commands.executeCommand('setContext', 'trace-explorer.noExperiments', true);
+
+    // Initialize noExperiments/serverUp in a way so that trace explorer webviews are initialized
+    vscode.commands.executeCommand('setContext', 'trace-explorer.noExperiments', false);
+    vscode.commands.executeCommand('setContext', 'traceViewer.serverUp', true);
+
+    // Refresh to trigger rendering trace explorer or welcome page
     vscode.commands.executeCommand('trace-explorer.refreshContext');
-    serverStatusService.checkAndUpdateServerStatus();
     return traceExtensionAPI;
 }
 

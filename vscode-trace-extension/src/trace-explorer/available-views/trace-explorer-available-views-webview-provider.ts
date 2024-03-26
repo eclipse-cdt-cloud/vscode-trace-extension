@@ -39,7 +39,7 @@ export class TraceExplorerAvailableViewsProvider extends AbstractTraceExplorerPr
                 const data: any = message.data;
                 switch (command) {
                     case VSCODE_MESSAGES.CONNECTION_STATUS:
-                        if (data && data.status) {
+                        if (data?.status) {
                             const status: boolean = JSON.parse(message.data.status);
                             this._statusService.updateServerStatus(status);
                         }
