@@ -36,6 +36,7 @@ interface VscodeAppState {
     outputs: OutputDescriptor[];
     overviewOutputDescriptor: OutputDescriptor | undefined;
     theme: string;
+    serverStatus: boolean;
 }
 
 class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
@@ -103,7 +104,8 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
             tspClientProvider: undefined,
             outputs: [],
             overviewOutputDescriptor: undefined,
-            theme: 'light'
+            theme: 'light',
+            serverStatus: true
         };
         this._signalHandler = new VsCodeMessageManager();
 
@@ -207,6 +209,12 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
                             );
                         this.contributeContextMenu(ctxMenuPayload);
                     }
+                    break;
+                case VSCODE_MESSAGES.CONNECTION_STATUS:
+                    const serverStatus: boolean = JSONBig.parse(message.data);
+                    console.log('CONNECTION STATUS:', serverStatus);
+                    this.setState({ serverStatus });
+                    break;
             }
         });
         window.addEventListener('resize', this.onResize);
@@ -506,6 +514,13 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
                         removeResizeHandler={this.removeResizeHandler}
                         backgroundTheme={this.state.theme}
                     ></TraceContextComponent>
+                )}
+                {this.state.serverStatus === false && (
+                    <div className="overlay">
+                        <div className="overlay-message">
+                            Please start a trace server to resume using the Trace Viewer.
+                        </div>
+                    </div>
                 )}
             </div>
         );
