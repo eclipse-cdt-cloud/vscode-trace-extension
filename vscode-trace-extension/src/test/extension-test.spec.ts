@@ -12,10 +12,13 @@ test('Open Trace from Explorer', async ({ page }) => {
     await page.getByRole('menuitem', { name: 'Open with Trace Viewer' }).hover();
     await page.getByRole('menuitem', { name: 'Open with Trace Viewer' }).click();
     await expect(page.getByRole('tab', { name: 'cat-kernel' })).toBeVisible();
+    await page.getByRole('tab', { name: 'Trace Viewer' }).locator('a').click();
+    await expect(page.getByLabel('Opened Traces Section')).toBeVisible();
 });
 
 test('Open Trace from Trace Viewer', async ({ page }) => {
     await page.getByRole('tab', { name: 'Trace Viewer' }).locator('a').click();
+    await expect(page.getByLabel('Opened Traces Section')).toBeVisible();
     await page.getByLabel('Opened Traces Section').hover();
     await page.getByRole('button', { name: 'Open Trace' }).hover();
     await page.getByRole('button', { name: 'Open Trace' }).click();
