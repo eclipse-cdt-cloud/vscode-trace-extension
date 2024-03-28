@@ -39,3 +39,7 @@ and start it. e.g.:
 > ./trace-compass-server-latest-linux.gtk.x86_64/tracecompass-server"
 
 Note: a single trace server can serve multiple traces / clients
+
+## Remote SSH Support
+
+For information about using the extension with `remote-ssh`, please see [Remote SSH Support](https://github.com/eclipse-cdt-cloud/vscode-trace-extension/blob/master/README.md#remote-ssh-support) for the `Trace Viewer for VSCode` extension.
