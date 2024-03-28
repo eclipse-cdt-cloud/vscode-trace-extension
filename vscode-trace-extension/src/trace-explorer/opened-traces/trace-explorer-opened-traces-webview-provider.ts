@@ -65,13 +65,14 @@ export class TraceExplorerOpenedTracesViewProvider extends AbstractTraceExplorer
                 const data: any = message.data;
                 switch (command) {
                     case VSCODE_MESSAGES.CONNECTION_STATUS:
-                        if (data && data.status) {
-                            this._statusService.checkAndUpdateServerStatus();
+                        if (data?.status) {
+                            const status: boolean = JSON.parse(message.data.status);
+                            this._statusService.updateServerStatus(status);
                         }
                         return;
                     case VSCODE_MESSAGES.WEBVIEW_READY:
                         // Post the tspTypescriptClient
-                        this._view.webview.postMessage({
+                        this._view?.webview.postMessage({
                             command: VSCODE_MESSAGES.SET_TSP_CLIENT,
                             data: getTspClientUrl()
                         });
@@ -136,5 +137,11 @@ export class TraceExplorerOpenedTracesViewProvider extends AbstractTraceExplorer
             undefined,
             this._disposables
         );
+    }
+    protected dispose() {
+        signalManager().off(Signals.TRACEVIEWERTAB_ACTIVATED, this._onOpenedTracesWidgetActivated);
+        signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
+        signalManager().off(Signals.EXPERIMENT_OPENED, this._onExperimentOpened);
+        super.dispose();
     }
 }

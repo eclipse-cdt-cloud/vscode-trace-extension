@@ -10,13 +10,21 @@ export class TspClientProvider implements ITspClientProvider {
     private _traceManager: TraceManager;
     private _experimentManager: ExperimentManager;
     private _listeners: ((tspClient: TspClient) => void)[] = [];
+    private _initialized = false;
 
     constructor(
         private _url: string,
         private _signalHandler: VsCodeMessageManager | undefined
     ) {
         this.updateClients();
-        RestClient.addConnectionStatusListener(status => this._signalHandler?.notifyConnection(status));
+
+        RestClient.addConnectionStatusListener(status => {
+            // Ignore the first update that is sent when calling addConnectionStatusListener
+            if (this._initialized) {
+                this._signalHandler?.notifyConnection(status);
+            }
+        });
+        this._initialized = true;
         this._tspClient.checkHealth(); // When this is called in the remote use-case, it will block the port-forwarding service-worker.
     }
 

@@ -41,12 +41,12 @@ export class TraceExplorerTimeRangeDataProvider extends AbstractTraceExplorerPro
         );
 
         webviewView.onDidChangeVisibility(() => {
-            if (this._view.visible) {
+            if (this._view?.visible) {
                 const data = {
                     mapArray: Array.from(this._experimentDataMap.experimentDataMap.values()),
                     activeData: this._experimentDataMap.activeData
                 };
-                this._view.webview.postMessage({
+                this._view?.webview.postMessage({
                     command: VSCODE_MESSAGES.RESTORE_VIEW,
                     data: JSONBig.stringify(data)
                 });
@@ -59,23 +59,20 @@ export class TraceExplorerTimeRangeDataProvider extends AbstractTraceExplorerPro
         signalManager().on(Signals.EXPERIMENT_UPDATED, this.onExperimentUpdated);
         signalManager().on(Signals.EXPERIMENT_CLOSED, this.onExperimentClosed);
         signalManager().on(Signals.CLOSE_TRACEVIEWERTAB, this.onExperimentTabClosed);
+    }
 
-        webviewView.onDidDispose(
-            _event => {
-                signalManager().off(Signals.VIEW_RANGE_UPDATED, this.onViewRangeUpdated);
-                signalManager().off(Signals.SELECTION_RANGE_UPDATED, this.onSelectionRangeUpdated);
-                signalManager().off(Signals.EXPERIMENT_SELECTED, this.onExperimentSelected);
-                signalManager().off(Signals.EXPERIMENT_UPDATED, this.onExperimentUpdated);
-                signalManager().off(Signals.EXPERIMENT_CLOSED, this.onExperimentClosed);
-                signalManager().off(Signals.CLOSE_TRACEVIEWERTAB, this.onExperimentTabClosed);
-            },
-            undefined,
-            this._disposables
-        );
+    protected dispose() {
+        signalManager().off(Signals.VIEW_RANGE_UPDATED, this.onViewRangeUpdated);
+        signalManager().off(Signals.SELECTION_RANGE_UPDATED, this.onSelectionRangeUpdated);
+        signalManager().off(Signals.EXPERIMENT_SELECTED, this.onExperimentSelected);
+        signalManager().off(Signals.EXPERIMENT_UPDATED, this.onExperimentUpdated);
+        signalManager().off(Signals.EXPERIMENT_CLOSED, this.onExperimentClosed);
+        signalManager().off(Signals.CLOSE_TRACEVIEWERTAB, this.onExperimentTabClosed);
+        super.dispose();
     }
 
     private onViewRangeUpdated = (update: TimeRangeUpdatePayload) => {
-        this._view.webview.postMessage({
+        this._view?.webview.postMessage({
             command: VSCODE_MESSAGES.VIEW_RANGE_UPDATED,
             data: JSONBig.stringify(update)
         });
@@ -83,7 +80,7 @@ export class TraceExplorerTimeRangeDataProvider extends AbstractTraceExplorerPro
     };
 
     private onSelectionRangeUpdated = (update: TimeRangeUpdatePayload) => {
-        this._view.webview.postMessage({
+        this._view?.webview.postMessage({
             command: VSCODE_MESSAGES.SELECTION_RANGE_UPDATED,
             data: JSONBig.stringify(update)
         });
@@ -92,7 +89,7 @@ export class TraceExplorerTimeRangeDataProvider extends AbstractTraceExplorerPro
 
     private onExperimentSelected = (experiment: Experiment | undefined) => {
         const data = { wrapper: experiment ? JSONBig.stringify(experiment) : undefined };
-        this._view.webview.postMessage({ command: VSCODE_MESSAGES.EXPERIMENT_SELECTED, data });
+        this._view?.webview.postMessage({ command: VSCODE_MESSAGES.EXPERIMENT_SELECTED, data });
         if (experiment) {
             this._experimentDataMap.updateAbsoluteRange(experiment);
         }
@@ -101,18 +98,18 @@ export class TraceExplorerTimeRangeDataProvider extends AbstractTraceExplorerPro
 
     private onExperimentUpdated = (experiment: Experiment) => {
         const data = { wrapper: JSONBig.stringify(experiment) };
-        this._view.webview.postMessage({ command: VSCODE_MESSAGES.EXPERIMENT_UPDATED, data });
+        this._view?.webview.postMessage({ command: VSCODE_MESSAGES.EXPERIMENT_UPDATED, data });
         this._experimentDataMap.updateAbsoluteRange(experiment);
     };
 
     private onExperimentClosed = (experiment: Experiment) => {
         const data = { wrapper: JSONBig.stringify(experiment) };
-        this._view.webview.postMessage({ command: VSCODE_MESSAGES.EXPERIMENT_CLOSED, data });
+        this._view?.webview.postMessage({ command: VSCODE_MESSAGES.EXPERIMENT_CLOSED, data });
         this._experimentDataMap.delete(experiment);
     };
 
     private onExperimentTabClosed = (experimentUUID: string) => {
-        this._view.webview.postMessage({ command: VSCODE_MESSAGES.TRACE_VIEWER_TAB_CLOSED, data: experimentUUID });
+        this._view?.webview.postMessage({ command: VSCODE_MESSAGES.TRACE_VIEWER_TAB_CLOSED, data: experimentUUID });
         this._experimentDataMap.delete(experimentUUID);
     };
 }

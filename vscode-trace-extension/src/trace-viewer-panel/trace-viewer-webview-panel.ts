@@ -255,7 +255,8 @@ export class TraceViewerPanel {
                         return;
                     case VSCODE_MESSAGES.CONNECTION_STATUS:
                         if (message.data?.status && this._statusService) {
-                            this._statusService.checkAndUpdateServerStatus();
+                            const status: boolean = JSON.parse(message.data.status);
+                            this._statusService.updateServerStatus(status);
                         }
                         return;
                     case VSCODE_MESSAGES.SHOW_MARKER_CATEGORIES:
