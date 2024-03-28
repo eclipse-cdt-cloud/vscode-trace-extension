@@ -235,6 +235,7 @@ yarn playwright test --retries <retries>
 [vscode-messages]: https://code.visualstudio.com/api/extension-guides/webview#passing-messages-from-an-extension-to-a-webview
 [vscode-webview]: https://github.com/rebornix/vscode-webview-react
 [vscode-webview-react]: https://github.com/rebornix/vscode-webview-react
+[vscode-ports-tab]: https://raw.githubusercontent.com/eclipse-cdt-cloud/vscode-trace-extension/master/doc/images/vscode-ports-tab-001.png
 
 ## Using the External API
 
@@ -348,3 +349,17 @@ const handleTraceFolders = false;
 //The base extension will only provide support for trace files, and not for trace folders
 importedApi.setHandleTraceResourceType(handleTraceFiles, handleTraceFolders);
 ```
+
+### Remote SSH Support
+
+The `Trace Viewer for VSCode` extension is compatible with the use of [remote-ssh](https://code.visualstudio.com/docs/remote/ssh).  If you are using `remote-ssh`, you can simply install `Trace Viewer for VSCode` extension on your remote machine and begin using the extension.
+
+The remote support works by forwarding the Trace Server's operating port from the client machine to the remote machine. The port is automatically forwarded on Trace Server startup.
+
+Forwarded ports can be seen in the 'Ports' view of the remote VsCode.  To open the `Ports` view use menu `View -> Open view... -> Ports`.  You should see the forwarded Trace Server port in the `Ports` view, as shown below:
+
+![ports-tab](vscode-ports-tab)
+
+Make sure that there is no Trace Server running on your local host. If the `Trace Viewer for VSCode` is unresponsive, stop the port forwarding by pressing the 'Stop Port Fowarding (Delete)' of the trace server port and restart remote VSCode.
+
+If you are a developers of the `Trace Viewer for VsCode` and want to modify and test the extension, you can [package it as a VSCode extension (.vsix)](#package-as-a-vscode-extension-vsix), upload the `VSIX` to the remote host and install the extension using the `Install from VSIX...` view menu of the `Extensions` view.
