@@ -44,7 +44,7 @@ export abstract class AbstractTraceExplorerProvider implements vscode.WebviewVie
      * @param {unknown} data - payload
      */
     public postMessagetoWebview(command: string, data: unknown): void {
-        if (!this._view || command) {
+        if (!this._view || !command) {
             return;
         }
         this._view.webview.postMessage({ command, data });
