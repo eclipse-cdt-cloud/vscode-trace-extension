@@ -3966,7 +3966,7 @@ glob@7.1.4:
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
-glob@^10.2.2, glob@^10.3.7:
+glob@^10.2.2:
   version "10.3.10"
   resolved "https://registry.npmjs.org/glob/-/glob-10.3.10.tgz#0351ebb809fd187fe421ab96af83d3a70715df4b"
   integrity sha512-fa46+tv1Ak0UPK1TOy/pZrIybNNt4HCv7SDzwyfiOZkvZLEbjsZkJBPtDHVshZjbecAoAGSC20MjLDG/qr679g==
@@ -6781,13 +6781,6 @@ rimraf@^4.4.1:
   dependencies:
     glob "^9.2.0"
 
-rimraf@latest:
-  version "5.0.5"
-  resolved "https://registry.npmjs.org/rimraf/-/rimraf-5.0.5.tgz#9be65d2d6e683447d2e9013da2bf451139a61ccf"
-  integrity sha512-CqDakW+hMe/Bz202FPEymy68P+G50RfMQK+Qo5YUqc9SPipvbGjCGKd0RSKEelbsfQuw3g5NZDSrlZZAJurH1A==
-  dependencies:
-    glob "^10.3.7"
-
 robust-predicates@^3.0.0:
   version "3.0.2"
   resolved "https://registry.npmjs.org/robust-predicates/-/robust-predicates-3.0.2.tgz#d5b28528c4824d20fc48df1928d41d9efa1ad771"
@@ -7448,17 +7441,16 @@ through@2, "through@>=2.2.7 <3", through@^2.3.4, through@^2.3.6:
   resolved "https://registry.npmjs.org/through/-/through-2.3.8.tgz#0dd4c9ffaabc357960b1b724115d7e0e86a2e1f5"
   integrity sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==
 
-timeline-chart@next:
-  version "0.3.0-next.20231117181926.6e20cc9.0"
-  resolved "https://registry.npmjs.org/timeline-chart/-/timeline-chart-0.3.0-next.20231117181926.6e20cc9.0.tgz#99ec0914065da2d30fcbacce9675d63f856cea3d"
-  integrity sha512-4koJSoy4bGfVDr3/eEZVD+aqoT/giqJ6Xq6Zk4Vk6bpZl8vlk00XdxBh27cnGrWEGfZ34RoEbS58y4MAlk9B/g==
+timeline-chart@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.npmjs.org/timeline-chart/-/timeline-chart-0.3.1.tgz#2f53b3af20e2dffba7917775db6b1ef5b40303d2"
+  integrity sha512-qDP9se79LtX+SlA6Y8dZDvcgL0z+9yEjdMiObAf3AWjUW+IsR3aQrNUTDER5pCXRMsvLQy5l2WWWQX0DrflKuQ==
   dependencies:
     "@types/lodash.throttle" "^4.1.4"
     glob "^7.1.6"
     keyboard-key "1.1.0"
     lodash.throttle "^4.1.1"
     pixi.js-legacy "^5.3.3"
-    rimraf latest
 
 tmp@^0.0.33:
   version "0.0.33"
@@ -7491,17 +7483,17 @@ tr46@~0.0.3:
   resolved "https://registry.npmjs.org/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
   integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
 
-traceviewer-base@0.2.0-next.20240315125637.d88ea47.0+d88ea47, traceviewer-base@next:
-  version "0.2.0-next.20240315125637.d88ea47.0"
-  resolved "https://registry.npmjs.org/traceviewer-base/-/traceviewer-base-0.2.0-next.20240315125637.d88ea47.0.tgz#22c465dd8178136e332fae28b03bfa852fe89344"
-  integrity sha512-iXD1c9CsoH5WzKei+rsawlIZzii4DTs03Qbc7h3e+t3TM2gCENga0D3XDh36LDWgeK/005xwW4K5t3TBi84Y7g==
+traceviewer-base@0.2.1, traceviewer-base@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.npmjs.org/traceviewer-base/-/traceviewer-base-0.2.1.tgz#22e9fe7260f9541caf84aabadada7eb9d51321ce"
+  integrity sha512-sCUpb5qJVODzJO8oYXfrEZZRvHXzaUvEWVkHmiCz/b8/66Ug2dbEXwo0T/eez7wuT3XV0h8VavaUTcM2pDzjFw==
   dependencies:
-    tsp-typescript-client next
+    tsp-typescript-client "^0.4.1"
 
-traceviewer-react-components@next:
-  version "0.2.0-next.20240315125637.d88ea47.0"
-  resolved "https://registry.npmjs.org/traceviewer-react-components/-/traceviewer-react-components-0.2.0-next.20240315125637.d88ea47.0.tgz#3b86fe7dfcb8ee3300cfaa8b06eba8940cd2514d"
-  integrity sha512-AOax07qqrvq3mcD8dl6C8UIrCYNNl1lDFWuQX8nIa6t6shSaBrskq9u4AUwmSfHMPHC+JpcLy7XH9Kumf9BI6g==
+traceviewer-react-components@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.npmjs.org/traceviewer-react-components/-/traceviewer-react-components-0.2.1.tgz#7e4109cb73ae0b2f5f8ad73351fe0a249339110c"
+  integrity sha512-jkIRCn3WUx1cGHcT9SVc+At0Nns6DxZISNhJtPA5urtbhBtLwn0yyCZT47IwxKDYDSXciSwuaZ0Yh5nwInW75A==
   dependencies:
     "@fortawesome/fontawesome-svg-core" "^1.2.17 <1.3.0"
     "@fortawesome/free-solid-svg-icons" "^5.8.1"
@@ -7521,9 +7513,9 @@ traceviewer-react-components@next:
     react-virtualized "^9.21.0"
     semantic-ui-css "^2.4.1"
     semantic-ui-react "^0.86.0"
-    timeline-chart next
-    traceviewer-base "0.2.0-next.20240315125637.d88ea47.0+d88ea47"
-    tsp-typescript-client next
+    timeline-chart "^0.3.1"
+    traceviewer-base "0.2.1"
+    tsp-typescript-client "^0.4.1"
 
 trim-newlines@^3.0.0:
   version "3.0.1"
@@ -7570,14 +7562,13 @@ tslib@^2.1.0, tslib@^2.3.0, tslib@^2.4.0:
   resolved "https://registry.npmjs.org/tslib/-/tslib-2.6.2.tgz#703ac29425e7b37cd6fd456e92404d46d1f3e4ae"
   integrity sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==
 
-tsp-typescript-client@next:
-  version "0.4.0-next.20231117181831.54d71ef.0"
-  resolved "https://registry.npmjs.org/tsp-typescript-client/-/tsp-typescript-client-0.4.0-next.20231117181831.54d71ef.0.tgz#0b33b6281a2e11e05ca23570bd799cad9b631cd1"
-  integrity sha512-VnemTLYsQjFuIdfsd1H3R66HqBhIXMRGKBx+yghExDBspYZT2HrlTDigyVokLrpaUAuMo7fL43jAWv+JVcUdsA==
+tsp-typescript-client@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.npmjs.org/tsp-typescript-client/-/tsp-typescript-client-0.4.1.tgz#7475cacf1f5f055279dee4bd3614b24d5434d10d"
+  integrity sha512-T0Bi2qwkJdxEJ7NSASFMzHtSNMbZnmuyDyvR5+6uvcc9zxd7X4/axhCHfiRxlwvWddyQfpPGPrDFiLbz3g2izA==
   dependencies:
     json-bigint sidorares/json-bigint#2c0a5f896d7888e68e5f4ae3c7ea5cd42fd54473
     node-fetch "^2.5.0"
-    rimraf latest
 
 tuf-js@^1.1.7:
   version "1.1.7"
