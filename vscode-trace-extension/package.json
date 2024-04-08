@@ -286,8 +286,8 @@
     "json-bigint": "sidorares/json-bigint#2c0a5f896d7888e68e5f4ae3c7ea5cd42fd54473",
     "lodash": "^4.17.15",
     "terser": "4.8.1",
-    "traceviewer-base": "next",
-    "traceviewer-react-components": "next",
+    "traceviewer-base": "^0.2.1",
+    "traceviewer-react-components": "^0.2.1",
     "@vscode/vsce": "^2.21.0",
     "vscode-trace-common": "0.0.0"
   },

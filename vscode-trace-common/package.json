@@ -13,8 +13,8 @@
     ],
     "dependencies": {
       "json-bigint": "sidorares/json-bigint#2c0a5f896d7888e68e5f4ae3c7ea5cd42fd54473",
-      "traceviewer-base": "next",
-      "tsp-typescript-client": "next"
+      "traceviewer-base": "^0.2.1",
+      "tsp-typescript-client": "^0.4.1"
     },
     "devDependencies": {
       "@types/jest": "^23.3.13",
