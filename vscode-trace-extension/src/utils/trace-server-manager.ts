@@ -34,8 +34,8 @@ export class TraceServerManager {
         this.indexOfTraceServerContributor = -1;
         if (!this.isDisposed()) {
             // find an adopting extension that has successfully validated the trace
-            let index = this.traceServersContributors.findIndex(
-                traceServerContributor => traceServerContributor.isApplicable?.(pathToTrace)
+            let index = this.traceServersContributors.findIndex(traceServerContributor =>
+                traceServerContributor.isApplicable?.(pathToTrace)
             );
             if (index === -1) {
                 // find an adopting extension with no validator
