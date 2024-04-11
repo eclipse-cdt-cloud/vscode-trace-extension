@@ -127,16 +127,6 @@ export class TraceExplorerOpenedTracesViewProvider extends AbstractTraceExplorer
         signalManager().on(Signals.TRACEVIEWERTAB_ACTIVATED, this._onOpenedTracesWidgetActivated);
         signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
         signalManager().on(Signals.EXPERIMENT_OPENED, this._onExperimentOpened);
-
-        webviewView.onDidDispose(
-            _event => {
-                signalManager().off(Signals.TRACEVIEWERTAB_ACTIVATED, this._onOpenedTracesWidgetActivated);
-                signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
-                signalManager().off(Signals.EXPERIMENT_OPENED, this._onExperimentOpened);
-            },
-            undefined,
-            this._disposables
-        );
     }
     protected dispose() {
         signalManager().off(Signals.TRACEVIEWERTAB_ACTIVATED, this._onOpenedTracesWidgetActivated);
