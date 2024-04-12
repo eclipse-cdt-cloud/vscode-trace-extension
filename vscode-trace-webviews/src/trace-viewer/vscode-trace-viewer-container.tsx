@@ -306,8 +306,8 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
 
     protected async doHandleOutputAddedMessage(descriptor: OutputDescriptor): Promise<void> {
         if (!this.state.outputs.find(output => output.id === descriptor.id)) {
-            await this.fetchAnnotationCategories(descriptor);
             this.setState({ outputs: [...this.state.outputs, descriptor] });
+            await this.fetchAnnotationCategories(descriptor);
         }
     }
 
