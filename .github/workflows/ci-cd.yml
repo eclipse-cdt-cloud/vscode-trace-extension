@@ -95,7 +95,7 @@ jobs:
         os: [ubuntu-latest]
         node-version: [18]
     # Only execute when the trigger was a tag (new release)
-    if: github.event_name == 'release' && startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'release' && startsWith(github.ref, 'refs/tags/v') && github.repository == 'eclipse-cdt-cloud/vscode-trace-extension'
 
     steps:
       - uses: actions/checkout@v4
@@ -128,7 +128,7 @@ jobs:
         os: [ubuntu-latest]
         node-version: [18]
     # Only execute when the trigger was a tag (new release)
-    if: github.event_name == 'release' && startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'release' && startsWith(github.ref, 'refs/tags/v') && github.repository == 'eclipse-cdt-cloud/vscode-trace-extension'
 
     steps:
       - uses: actions/checkout@v4

@@ -1,344 +1,344 @@
 {
-  "name": "vscode-trace-extension",
-  "displayName": "Trace Viewer for VSCode",
-  "description": "Viewer that permits visualizing traces and contained data, analyzed by a trace server, and provided over the Trace Server Protocol (TSP)",
-  "version": "0.2.5",
-  "license": "MIT",
-  "engines": {
-    "vscode": "^1.52.0"
-  },
-  "publisher": "eclipse-cdt",
-  "icon": "images/extension-icon.png",
-  "categories": [
-    "Visualization",
-    "Data Science",
-    "Other"
-  ],
-  "keywords": [
-    "Trace Compass",
-    "trace",
-    "visualization",
-    "Eclipse Foundation"
-  ],
-  "repository": "https://github.com/eclipse-cdt-cloud/vscode-trace-extension/",
-  "bugs": {
-    "url": "https://github.com/eclipse-cdt-cloud/vscode-trace-extension/issues"
-  },
-  "activationEvents": [
-    "onStartupFinished"
-  ],
-  "main": "lib/extension",
-  "files": [
-    "lib",
-    "pack"
-  ],
-  "contributes": {
-    "commands": [
-      {
-        "command": "outputs.reset",
-        "title": "Reset",
-        "icon": {
-          "light": "assets/media/house-chimney-light.svg",
-          "dark": "assets/media/house-chimney.svg"
-        }
-      },
-      {
-        "command": "outputs.openOverview",
-        "title": "Show trace overview",
-        "icon": "$(graph-line)"
-      },
-      {
-        "command": "outputs.undo",
-        "title": "Undo",
-        "icon": {
-          "light": "assets/media/arrow-rotate-left-light.svg",
-          "dark": "assets/media/arrow-rotate-left.svg"
-        }
-      },
-      {
-        "command": "outputs.redo",
-        "title": "Redo",
-        "icon": {
-          "light": "assets/media/arrow-rotate-right-light.svg",
-          "dark": "assets/media/arrow-rotate-right.svg"
-        }
-      },
-      {
-        "command": "outputs.zoomIn",
-        "title": "Zoom In",
-        "icon": {
-          "light": "assets/media/square-plus-light.svg",
-          "dark": "assets/media/square-plus.svg"
-        }
-      },
-      {
-        "command": "outputs.zoomOut",
-        "title": "Zoom Out",
-        "icon": {
-          "light": "assets/media/square-minus-light.svg",
-          "dark": "assets/media/square-minus.svg"
-        }
-      },
-      {
-        "command": "traces.openTraceFile",
-        "title": "Open with Trace Viewer",
-        "icon": "assets/media/dep.svg"
-      },
-      {
-        "command": "openedTraces.openTrace",
-        "title": "Open Trace",
-        "icon": "$(new-folder)"
-      },
-      {
-        "command": "trace-explorer.refreshContext",
-        "title": "Refresh Trace Explorer",
-        "icon": "$(refresh)"
-      },
-      {
-        "command": "traceViewer.shortcuts",
-        "title": "Trace Viewer Keyboard and Mouse Shortcuts",
-        "icon": "$(info)"
-      },
-      {
-        "command": "serverStatus.started",
-        "title": "Trace Server: started"
-      },
-      {
-        "command": "serverStatus.stopped",
-        "title": "Trace Server: stopped"
-      },
-      {
-        "command": "trace.viewer.toolbar.markersets",
-        "title": "Marker Sets",
-        "icon": "$(three-bars)"
-      },
-      {
-        "command": "trace.viewer.toolbar.filter",
-        "title": "Markers filter",
-        "icon": "$(filter-filled)"
-      }
+    "name": "vscode-trace-extension",
+    "displayName": "Trace Viewer for VSCode",
+    "description": "Viewer that permits visualizing traces and contained data, analyzed by a trace server, and provided over the Trace Server Protocol (TSP)",
+    "version": "0.2.5",
+    "license": "MIT",
+    "engines": {
+        "vscode": "^1.52.0"
+    },
+    "publisher": "eclipse-cdt",
+    "icon": "images/extension-icon.png",
+    "categories": [
+        "Visualization",
+        "Data Science",
+        "Other"
     ],
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "trace-explorer",
-          "title": "Trace Viewer",
-          "icon": "assets/media/chart-line-solid.svg"
-        }
-      ]
-    },
-    "views": {
-      "trace-explorer": [
-        {
-          "type": "tree",
-          "name": "Welcome",
-          "id": "welcome",
-          "when": "trace-explorer.noExperiments || !traceViewer.serverUp"
-        },
-        {
-          "type": "webview",
-          "id": "traceExplorer.openedTracesView",
-          "name": "Opened Traces",
-          "when": "!trace-explorer.noExperiments && traceViewer.serverUp"
-        },
-        {
-          "type": "webview",
-          "id": "traceExplorer.availableViews",
-          "name": "Views",
-          "when": "!trace-explorer.noExperiments && traceViewer.serverUp"
-        },
-        {
-          "type": "webview",
-          "id": "traceExplorer.timeRangeDataView",
-          "name": "Time Range Data",
-          "when": "!trace-explorer.noExperiments && traceViewer.serverUp"
-        },
-        {
-          "type": "webview",
-          "id": "traceExplorer.itemPropertiesView",
-          "name": "Item Properties",
-          "when": "!trace-explorer.noExperiments && traceViewer.serverUp"
-        }
-      ]
-    },
-    "viewsWelcome": [
-      {
-        "view": "welcome",
-        "name": "Open Trace",
-        "contents": "There are currently no opened traces.\n[Open Trace](command:openedTraces.openTrace)",
-        "when": "trace-explorer.noExperiments || !traceViewer.serverUp"
-      },
-      {
-        "view": "welcome",
-        "name": "Documentation",
-        "contents": "To learn more about how to use the Trace Viewer [read our documentation](https://github.com/eclipse-cdt-cloud/vscode-trace-extension/blob/master/vscode-trace-extension/README.md).",
-        "when": "trace-explorer.noExperiments || !traceViewer.serverUp"
-      }
+    "keywords": [
+        "Trace Compass",
+        "trace",
+        "visualization",
+        "Eclipse Foundation"
     ],
-    "menus": {
-      "view/title": [
-        {
-          "command": "openedTraces.openTrace",
-          "when": "view == traceExplorer.openedTracesView && !trace-explorer.noExperiments",
-          "group": "navigation"
-        },
-        {
-          "command": "trace-explorer.refreshContext",
-          "when": "view == welcome || view == traceExplorer.openedTracesView",
-          "group": "navigation"
-        }
-      ],
-      "explorer/context": [
-        {
-          "command": "traces.openTraceFile",
-          "group": "navigation"
-        }
-      ],
-      "editor/title": [
-        {
-          "when": "activeWebviewPanelId == 'react'",
-          "command": "outputs.undo",
-          "group": "navigation@1"
-        },
-        {
-          "when": "activeWebviewPanelId == 'react'",
-          "command": "outputs.redo",
-          "group": "navigation@2"
-        },
-        {
-          "when": "activeWebviewPanelId == 'react'",
-          "command": "outputs.zoomIn",
-          "group": "navigation@3"
-        },
-        {
-          "when": "activeWebviewPanelId == 'react'",
-          "command": "outputs.zoomOut",
-          "group": "navigation@4"
-        },
-        {
-          "when": "activeWebviewPanelId == 'react'",
-          "command": "outputs.reset",
-          "group": "navigation@5"
-        },
-        {
-          "when": "activeWebviewPanelId == 'react' && traceViewer.markerCategoriesPresent",
-          "command": "trace.viewer.toolbar.filter",
-          "group": "navigation@6"
-        },
-        {
-          "when": "activeWebviewPanelId == 'react' && traceViewer.markerSetsPresent",
-          "command": "trace.viewer.toolbar.markersets",
-          "group": "navigation@7"
-        },
-        {
-          "when": "activeWebviewPanelId == 'react'",
-          "command": "outputs.openOverview",
-          "group": "navigation@8"
-        },
-        {
-          "when": "activeWebviewPanelId == 'react'",
-          "command": "traceViewer.shortcuts",
-          "group": "navigation@9"
-        }
-      ],
-      "commandPalette": [
-        {
-          "command": "serverStatus.started",
-          "when": "false"
-        },
-        {
-          "command": "serverStatus.stopped",
-          "when": "false"
-        }
-      ]
+    "repository": "https://github.com/eclipse-cdt-cloud/vscode-trace-extension/",
+    "bugs": {
+        "url": "https://github.com/eclipse-cdt-cloud/vscode-trace-extension/issues"
     },
-    "configuration": {
-      "title": "Trace Compass",
-      "properties": {
-        "trace-compass.traceserver.url": {
-          "type": "string",
-          "default": "http://localhost:8080",
-          "description": "Enter the trace server's URL, including port. Eg: http://localhost:8080."
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "main": "lib/extension",
+    "files": [
+        "lib",
+        "pack"
+    ],
+    "contributes": {
+        "commands": [
+            {
+                "command": "outputs.reset",
+                "title": "Reset",
+                "icon": {
+                    "light": "assets/media/house-chimney-light.svg",
+                    "dark": "assets/media/house-chimney.svg"
+                }
+            },
+            {
+                "command": "outputs.openOverview",
+                "title": "Show trace overview",
+                "icon": "$(graph-line)"
+            },
+            {
+                "command": "outputs.undo",
+                "title": "Undo",
+                "icon": {
+                    "light": "assets/media/arrow-rotate-left-light.svg",
+                    "dark": "assets/media/arrow-rotate-left.svg"
+                }
+            },
+            {
+                "command": "outputs.redo",
+                "title": "Redo",
+                "icon": {
+                    "light": "assets/media/arrow-rotate-right-light.svg",
+                    "dark": "assets/media/arrow-rotate-right.svg"
+                }
+            },
+            {
+                "command": "outputs.zoomIn",
+                "title": "Zoom In",
+                "icon": {
+                    "light": "assets/media/square-plus-light.svg",
+                    "dark": "assets/media/square-plus.svg"
+                }
+            },
+            {
+                "command": "outputs.zoomOut",
+                "title": "Zoom Out",
+                "icon": {
+                    "light": "assets/media/square-minus-light.svg",
+                    "dark": "assets/media/square-minus.svg"
+                }
+            },
+            {
+                "command": "traces.openTraceFile",
+                "title": "Open with Trace Viewer",
+                "icon": "assets/media/dep.svg"
+            },
+            {
+                "command": "openedTraces.openTrace",
+                "title": "Open Trace",
+                "icon": "$(new-folder)"
+            },
+            {
+                "command": "trace-explorer.refreshContext",
+                "title": "Refresh Trace Explorer",
+                "icon": "$(refresh)"
+            },
+            {
+                "command": "traceViewer.shortcuts",
+                "title": "Trace Viewer Keyboard and Mouse Shortcuts",
+                "icon": "$(info)"
+            },
+            {
+                "command": "serverStatus.started",
+                "title": "Trace Server: started"
+            },
+            {
+                "command": "serverStatus.stopped",
+                "title": "Trace Server: stopped"
+            },
+            {
+                "command": "trace.viewer.toolbar.markersets",
+                "title": "Marker Sets",
+                "icon": "$(three-bars)"
+            },
+            {
+                "command": "trace.viewer.toolbar.filter",
+                "title": "Markers filter",
+                "icon": "$(filter-filled)"
+            }
+        ],
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "trace-explorer",
+                    "title": "Trace Viewer",
+                    "icon": "assets/media/chart-line-solid.svg"
+                }
+            ]
         },
-        "trace-compass.traceserver.apiPath": {
-          "type": "string",
-          "default": "tsp/api",
-          "description": "Enter the trace server's API path, to be appended to the server URL. Eg: 'tsp/api'."
-        }
-      }
+        "views": {
+            "trace-explorer": [
+                {
+                    "type": "tree",
+                    "name": "Welcome",
+                    "id": "welcome",
+                    "when": "trace-explorer.noExperiments || !traceViewer.serverUp"
+                },
+                {
+                    "type": "webview",
+                    "id": "traceExplorer.openedTracesView",
+                    "name": "Opened Traces",
+                    "when": "!trace-explorer.noExperiments && traceViewer.serverUp"
+                },
+                {
+                    "type": "webview",
+                    "id": "traceExplorer.availableViews",
+                    "name": "Views",
+                    "when": "!trace-explorer.noExperiments && traceViewer.serverUp"
+                },
+                {
+                    "type": "webview",
+                    "id": "traceExplorer.timeRangeDataView",
+                    "name": "Time Range Data",
+                    "when": "!trace-explorer.noExperiments && traceViewer.serverUp"
+                },
+                {
+                    "type": "webview",
+                    "id": "traceExplorer.itemPropertiesView",
+                    "name": "Item Properties",
+                    "when": "!trace-explorer.noExperiments && traceViewer.serverUp"
+                }
+            ]
+        },
+        "viewsWelcome": [
+            {
+                "view": "welcome",
+                "name": "Open Trace",
+                "contents": "There are currently no opened traces.\n[Open Trace](command:openedTraces.openTrace)",
+                "when": "trace-explorer.noExperiments || !traceViewer.serverUp"
+            },
+            {
+                "view": "welcome",
+                "name": "Documentation",
+                "contents": "To learn more about how to use the Trace Viewer [read our documentation](https://github.com/eclipse-cdt-cloud/vscode-trace-extension/blob/master/vscode-trace-extension/README.md).",
+                "when": "trace-explorer.noExperiments || !traceViewer.serverUp"
+            }
+        ],
+        "menus": {
+            "view/title": [
+                {
+                    "command": "openedTraces.openTrace",
+                    "when": "view == traceExplorer.openedTracesView && !trace-explorer.noExperiments",
+                    "group": "navigation"
+                },
+                {
+                    "command": "trace-explorer.refreshContext",
+                    "when": "view == welcome || view == traceExplorer.openedTracesView",
+                    "group": "navigation"
+                }
+            ],
+            "explorer/context": [
+                {
+                    "command": "traces.openTraceFile",
+                    "group": "navigation"
+                }
+            ],
+            "editor/title": [
+                {
+                    "when": "activeWebviewPanelId == 'react'",
+                    "command": "outputs.undo",
+                    "group": "navigation@1"
+                },
+                {
+                    "when": "activeWebviewPanelId == 'react'",
+                    "command": "outputs.redo",
+                    "group": "navigation@2"
+                },
+                {
+                    "when": "activeWebviewPanelId == 'react'",
+                    "command": "outputs.zoomIn",
+                    "group": "navigation@3"
+                },
+                {
+                    "when": "activeWebviewPanelId == 'react'",
+                    "command": "outputs.zoomOut",
+                    "group": "navigation@4"
+                },
+                {
+                    "when": "activeWebviewPanelId == 'react'",
+                    "command": "outputs.reset",
+                    "group": "navigation@5"
+                },
+                {
+                    "when": "activeWebviewPanelId == 'react' && traceViewer.markerCategoriesPresent",
+                    "command": "trace.viewer.toolbar.filter",
+                    "group": "navigation@6"
+                },
+                {
+                    "when": "activeWebviewPanelId == 'react' && traceViewer.markerSetsPresent",
+                    "command": "trace.viewer.toolbar.markersets",
+                    "group": "navigation@7"
+                },
+                {
+                    "when": "activeWebviewPanelId == 'react'",
+                    "command": "outputs.openOverview",
+                    "group": "navigation@8"
+                },
+                {
+                    "when": "activeWebviewPanelId == 'react'",
+                    "command": "traceViewer.shortcuts",
+                    "group": "navigation@9"
+                }
+            ],
+            "commandPalette": [
+                {
+                    "command": "serverStatus.started",
+                    "when": "false"
+                },
+                {
+                    "command": "serverStatus.stopped",
+                    "when": "false"
+                }
+            ]
+        },
+        "configuration": {
+            "title": "Trace Compass",
+            "properties": {
+                "trace-compass.traceserver.url": {
+                    "type": "string",
+                    "default": "http://localhost:8080",
+                    "description": "Enter the trace server's URL, including port. Eg: http://localhost:8080."
+                },
+                "trace-compass.traceserver.apiPath": {
+                    "type": "string",
+                    "default": "tsp/api",
+                    "description": "Enter the trace server's API path, to be appended to the server URL. Eg: 'tsp/api'."
+                }
+            }
+        },
+        "keybindings": [
+            {
+                "command": "traceViewer.shortcuts",
+                "key": "ctrl+f1",
+                "mac": "cmd+f1"
+            }
+        ]
     },
-    "keybindings": [
-      {
-        "command": "traceViewer.shortcuts",
-        "key": "ctrl+f1",
-        "mac": "cmd+f1"
-      }
+    "dependencies": {
+        "@fortawesome/fontawesome-svg-core": "^1.2.17 <1.3.0",
+        "@fortawesome/free-solid-svg-icons": "^5.8.1",
+        "@fortawesome/react-fontawesome": "^0.1.4",
+        "@vscode/codicons": "^0.0.33",
+        "@vscode/vsce": "^2.21.0",
+        "ag-grid-community": "^28.2.0",
+        "ag-grid-react": "^28.2.0",
+        "chart.js": "^2.8.0",
+        "json-bigint": "sidorares/json-bigint#2c0a5f896d7888e68e5f4ae3c7ea5cd42fd54473",
+        "lodash": "^4.17.15",
+        "terser": "4.8.1",
+        "traceviewer-base": "^0.2.1",
+        "traceviewer-react-components": "^0.2.1",
+        "vscode-trace-common": "0.2.5"
+    },
+    "devDependencies": {
+        "@playwright/test": "^1.32.3",
+        "@types/jest": "^23.3.13",
+        "@types/json-bigint": "^1.0.1",
+        "@types/node": "^10.1.2",
+        "@types/vscode": "^1.52.0",
+        "@typescript-eslint/eslint-plugin": "^6.0.0",
+        "@typescript-eslint/parser": "^6.0.0",
+        "css-loader": "^5.0.1",
+        "eslint": "^8.43.0",
+        "eslint-plugin-import": "^2.21.2",
+        "eslint-plugin-no-null": "^1.0.2",
+        "eslint-plugin-react": "^7.20.0",
+        "rimraf": "^2.6.3",
+        "source-map-loader": "^1.0.2",
+        "style-loader": "^2.0.0",
+        "svg-url-loader": "^7.1.1",
+        "ts-loader": "^8.0.14",
+        "typescript": "^4.1.3"
+    },
+    "resolutions": {
+        "terser": "3.14.1",
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
+        "@types/react": "^18.0.0",
+        "@types/react-dom": "^18.0.0"
+    },
+    "scripts": {
+        "prepare": "yarn run clean && yarn run build && yarn run webpack",
+        "clean": "rimraf lib",
+        "build": "tsc -p tsconfig.json",
+        "webpack": "webpack --mode development",
+        "webpack-dev": "webpack --mode development --watch",
+        "webpack:production": "webpack --mode production",
+        "test": "react-scripts test --env=jsdom",
+        "vscode:prepublish": "yarn prepare && yarn run webpack:production",
+        "vsce:package": "vsce package --yarn",
+        "vsce:ls": "vsce ls --yarn",
+        "tswatch": "tsc -w -p tsconfig.json",
+        "watch": "yarn run webpack-dev",
+        "lint": "eslint .",
+        "format:write": "prettier --write ./src",
+        "format:check": "prettier --check ./src"
+    },
+    "browserslist": [
+        ">0.2%",
+        "not dead",
+        "not ie <= 11",
+        "not op_mini all"
     ]
-  },
-  "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^1.2.17 <1.3.0",
-    "@fortawesome/free-solid-svg-icons": "^5.8.1",
-    "@fortawesome/react-fontawesome": "^0.1.4",
-    "@vscode/codicons": "^0.0.33",
-    "ag-grid-community": "^28.2.0",
-    "ag-grid-react": "^28.2.0",
-    "chart.js": "^2.8.0",
-    "json-bigint": "sidorares/json-bigint#2c0a5f896d7888e68e5f4ae3c7ea5cd42fd54473",
-    "lodash": "^4.17.15",
-    "terser": "4.8.1",
-    "traceviewer-base": "^0.2.1",
-    "traceviewer-react-components": "^0.2.1",
-    "@vscode/vsce": "^2.21.0",
-    "vscode-trace-common": "0.0.0"
-  },
-  "devDependencies": {
-    "@playwright/test": "^1.32.3",
-    "@types/jest": "^23.3.13",
-    "@types/json-bigint": "^1.0.1",
-    "@types/node": "^10.1.2",
-    "@types/vscode": "^1.52.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "css-loader": "^5.0.1",
-    "eslint": "^8.43.0",
-    "eslint-plugin-import": "^2.21.2",
-    "eslint-plugin-no-null": "^1.0.2",
-    "eslint-plugin-react": "^7.20.0",
-    "rimraf": "^2.6.3",
-    "source-map-loader": "^1.0.2",
-    "style-loader": "^2.0.0",
-    "svg-url-loader": "^7.1.1",
-    "ts-loader": "^8.0.14",
-    "typescript": "^4.1.3"
-  },
-  "resolutions": {
-    "terser": "3.14.1",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0"
-  },
-  "scripts": {
-    "prepare": "yarn run clean && yarn run build && yarn run webpack",
-    "clean": "rimraf lib",
-    "build": "tsc -p tsconfig.json",
-    "webpack": "webpack --mode development",
-    "webpack-dev": "webpack --mode development --watch",
-    "webpack:production": "webpack --mode production",
-    "test": "react-scripts test --env=jsdom",
-    "vscode:prepublish": "yarn prepare && yarn run webpack:production",
-    "vsce:package": "vsce package --yarn",
-    "vsce:ls": "vsce ls --yarn",
-    "tswatch": "tsc -w -p tsconfig.json",
-    "watch": "yarn run webpack-dev",
-    "lint": "eslint .",
-    "format:write": "prettier --write ./src",
-    "format:check": "prettier --check ./src"
-  },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ]
 }

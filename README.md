@@ -363,3 +363,35 @@ Forwarded ports can be seen in the 'Ports' view of the remote VsCode.  To open t
 Make sure that there is no Trace Server running on your local host. If the `Trace Viewer for VSCode` is unresponsive, stop the port forwarding by pressing the 'Stop Port Fowarding (Delete)' of the trace server port and restart remote VSCode.
 
 If you are a developers of the `Trace Viewer for VsCode` and want to modify and test the extension, you can [package it as a VSCode extension (.vsix)](#package-as-a-vscode-extension-vsix), upload the `VSIX` to the remote host and install the extension using the `Install from VSIX...` view menu of the `Extensions` view.
+
+## Release/publish
+
+We use GitHub CI to create a GitHub release and the corresponding git tag, and also to publish this repo's VSCode extension to the `open-vsx.org` and the `Visual Studio Marketplace` registries.
+
+### Triggering a new release
+
+Whenever a new release is desired, it can be triggered through a PR, as per the following:
+
+Create a new branch for your PR, based on the repo's latest state. e.g.
+
+```bash
+git branch new-release && git checkout new-release
+```
+
+Then decide if the release shall be a `Major`, `Minor` or `Patch` release and use the corresponding command below to step the package's versions, according to the release type. A new release commit will be created:
+
+``` bash
+yarn version:major
+# or
+yarn version:minor
+# or
+yarn version:patch
+```
+
+Modify the _version tag_ in file `./RELEASE`, to match the new release. Amend the release commit to include this change:
+
+```bash
+git add RELEASE && git commit --amend
+```
+
+Finally, push the branch to the main repository (not a fork!) and use it to create a PR. When the PR is merged, a GitHub release should be created with auto-generated release notes, as well as a git tag. Then the `publish-*` CI jobs should trigger, and if everything goes well, publish the new version of the extension to both registries.
