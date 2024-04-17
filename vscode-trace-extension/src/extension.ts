@@ -226,7 +226,22 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
 
     // Refresh to trigger rendering trace explorer or welcome page
     vscode.commands.executeCommand('trace-explorer.refreshContext');
+
+    // Workaround for Theia compatibility of welcome screen. See https://github.com/eclipse-theia/theia/issues/9361
+    vscode.window.registerTreeDataProvider('welcome', new EmptyTreeDataProvider());
+
     return traceExtensionAPI;
+}
+
+// Workaround for Theia compatibility of welcome screen. See https://github.com/eclipse-theia/theia/issues/9361
+export class EmptyTreeDataProvider implements vscode.TreeDataProvider<unknown> {
+    getTreeItem(_element: unknown): vscode.TreeItem {
+        return {};
+    }
+
+    getChildren(_element?: unknown): Thenable<unknown[]> {
+        return Promise.resolve([]);
+    }
 }
 
 export async function deactivate(): Promise<void> {
