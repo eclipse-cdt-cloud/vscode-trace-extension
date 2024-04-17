@@ -69,16 +69,13 @@ export const fileHandler =
 
                 const filePath: string = resolvedTraceURI.fsPath;
                 if (!filePath) {
-                    traceLogger.addLogMessage(
-                        'Cannot open trace: could not retrieve path from URI for trace ' + resolvedTraceURI,
-                        fileHandler.name
+                    traceLogger.showError(
+                        'Cannot open trace: could not retrieve path from URI for trace ' + resolvedTraceURI
                     );
                     return;
                 }
 
                 const name = path.basename(filePath);
-                const panel = TraceViewerPanel.createOrShow(context.extensionUri, name, undefined);
-
                 progress.report({ message: ProgressMessages.FINDING_TRACES, increment: 10 });
                 /*
                  * TODO: use backend service to find traces
@@ -98,11 +95,7 @@ export const fileHandler =
 
                 if (tracesArray.length === 0) {
                     progress.report({ message: ProgressMessages.COMPLETE, increment: 100 });
-                    traceLogger.addLogMessage(
-                        'No valid traces found in the selected directory: ' + resolvedTraceURI,
-                        fileHandler.name
-                    );
-                    panel.dispose();
+                    traceLogger.showError('No valid traces found in the selected directory: ' + resolvedTraceURI);
                     return;
                 }
 
@@ -114,10 +107,10 @@ export const fileHandler =
                     if (trace) {
                         traces.push(trace);
                     } else {
-                        traceLogger.addLogMessage('Failed to open trace: ' + traceName, fileHandler.name);
-                        traceLogger.addLogMessage(
-                            'There may be an issue with the server or the trace is invalid.',
-                            fileHandler.name
+                        traceLogger.showError(
+                            'Failed to open trace: ' +
+                                traceName +
+                                '. There may be an issue with the server or the trace is invalid.'
                         );
                     }
                 }
@@ -125,18 +118,17 @@ export const fileHandler =
                 if (token.isCancellationRequested) {
                     rollbackTraces(traces, 20, progress);
                     progress.report({ message: ProgressMessages.COMPLETE, increment: 50 });
-                    panel.dispose();
                     return;
                 }
 
                 progress.report({ message: ProgressMessages.MERGING_TRACES, increment: 40 });
                 if (traces === undefined || traces.length === 0) {
                     progress.report({ message: ProgressMessages.COMPLETE, increment: 30 });
-                    panel.dispose();
                     return;
                 }
 
                 const experiment = await experimentManager.openExperiment(name, traces);
+                const panel = TraceViewerPanel.createOrShow(context.extensionUri, experiment?.name ?? name, undefined);
                 if (experiment) {
                     panel.setExperiment(experiment);
                 }
