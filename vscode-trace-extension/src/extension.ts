@@ -228,7 +228,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
     vscode.commands.executeCommand('trace-explorer.refreshContext');
 
     // Workaround for Theia compatibility of welcome screen. See https://github.com/eclipse-theia/theia/issues/9361
-    vscode.window.registerTreeDataProvider('welcome', new EmptyTreeDataProvider());
+    context.subscriptions.push(vscode.window.registerTreeDataProvider('welcome', new EmptyTreeDataProvider()));
 
     return traceExtensionAPI;
 }
