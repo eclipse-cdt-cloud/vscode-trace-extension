@@ -25,6 +25,7 @@ import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-
 import '../style/trace-viewer.css';
 import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
 import { TimeRange } from 'traceviewer-base/lib/utils/time-range';
+import { ItemPropertiesSignalPayload } from 'traceviewer-base/lib/signals/item-properties-signal-payload';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true
@@ -51,7 +52,8 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
         this._signalHandler.selectionRangeUpdated(payload);
     private onExperimentUpdated = (payload: Experiment): void => this._signalHandler.experimentUpdated(payload);
 
-    private _onProperties = (properties: { [key: string]: string }): void => this.doHandlePropertiesSignal(properties);
+    private _onProperties = (properties: ItemPropertiesSignalPayload): void =>
+        this.doHandlePropertiesSignal(properties);
     private _onSaveAsCSV = (payload: { traceId: string; data: string }): void => this.doHandleSaveAsCSVSignal(payload);
     private _onRowSelectionChanged = (payload: RowSelectionsChangedSignalPayload): void =>
         this.doHandleRowSelectSignal(payload);
@@ -59,7 +61,7 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
         this.doHandleContextMenuItemClicked(payload);
 
     /** Signal Handlers */
-    private doHandlePropertiesSignal(properties: { [key: string]: string }) {
+    private doHandlePropertiesSignal(properties: ItemPropertiesSignalPayload) {
         this._signalHandler.propertiesUpdated(properties);
     }
 

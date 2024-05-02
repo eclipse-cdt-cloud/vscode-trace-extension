@@ -13,6 +13,7 @@ import * as fs from 'fs';
 import { traceExtensionWebviewManager } from '../extension';
 import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
 import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
+import { ItemPropertiesSignalPayload } from 'traceviewer-base/lib/signals/item-properties-signal-payload';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true
@@ -253,11 +254,15 @@ export class TraceViewerPanel {
                         this.loadTheme();
                         return;
                     case VSCODE_MESSAGES.UPDATE_PROPERTIES:
-                        vscode.commands.executeCommand(
-                            'messages.post.propertiespanel',
-                            'receivedProperties',
-                            message.data
-                        );
+                        if (message.data?.properties) {
+                            signalManager().fireItemPropertiesSignalUpdated(
+                                new ItemPropertiesSignalPayload(
+                                    message.data.properties,
+                                    message.data.experimentUUID,
+                                    message.data.outputDescriptorId
+                                )
+                            );
+                        }
                         return;
                     case VSCODE_MESSAGES.SAVE_AS_CSV:
                         if (message.payload.data && typeof message.payload.data === 'string') {
