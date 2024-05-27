@@ -5,9 +5,11 @@
  ***************************************************************************************/
 /* eslint-disable @typescript-eslint/ban-types */
 import React from 'react';
-import { VsCodeMessageManager } from 'vscode-trace-common/lib/messages/vscode-message-manager';
+import '../../style/trace-viewer.css';
+import { VSCODE_MESSAGES, VsCodeMessageManager } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import { ReactItemPropertiesWidget } from 'traceviewer-react-components/lib/trace-explorer/trace-explorer-properties-widget';
 import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
+import { ItemPropertiesSignalPayload } from 'traceviewer-base/lib/signals/item-properties-signal-payload';
 
 interface PropertiesViewState {
     properties: { [key: string]: string };
@@ -28,8 +30,15 @@ class TraceExplorerProperties extends React.Component<{}, PropertiesViewState> {
         window.addEventListener('message', event => {
             const message = event.data; // The JSON data our extension sent
             switch (message.command) {
-                case 'receivedProperties':
-                    signalManager().fireItemPropertiesSignalUpdated(message.data.properties);
+                case VSCODE_MESSAGES.UPDATE_PROPERTIES:
+                    if (message.data?.properties) {
+                        const payload = new ItemPropertiesSignalPayload(
+                            message.data.properties,
+                            message.data.experimentUUID,
+                            message.data.outputDescriptorId
+                        );
+                        signalManager().fireItemPropertiesSignalUpdated(payload);
+                    }
                     break;
             }
         });

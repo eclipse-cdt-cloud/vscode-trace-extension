@@ -6,6 +6,7 @@ import JSONBigConfig from 'json-bigint';
 import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
 import { ContextMenuItemClickedSignalPayload } from 'traceviewer-base/lib/signals/context-menu-item-clicked-signal-payload';
 import { RowSelectionsChangedSignalPayload } from 'traceviewer-base/lib/signals/row-selections-changed-signal-payload';
+import { ItemPropertiesSignalPayload } from 'traceviewer-base/lib/signals/item-properties-signal-payload';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true
@@ -156,8 +157,8 @@ export class VsCodeMessageManager extends Messages.MessageManager {
         });
     }
 
-    propertiesUpdated(properties: { [key: string]: string }): void {
-        vscode.postMessage({ command: VSCODE_MESSAGES.UPDATE_PROPERTIES, data: { properties } });
+    propertiesUpdated(properties: ItemPropertiesSignalPayload): void {
+        vscode.postMessage({ command: VSCODE_MESSAGES.UPDATE_PROPERTIES, data: properties });
     }
 
     viewRangeUpdated(payload: TimeRangeUpdatePayload): void {

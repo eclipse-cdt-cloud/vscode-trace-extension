@@ -61,14 +61,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
         vscode.window.registerWebviewViewProvider(TraceExplorerTimeRangeDataProvider.viewType, timeRangeDataProvider)
     );
 
-    context.subscriptions.push(
-        vscode.commands.registerCommand('messages.post.propertiespanel', (command: string, data) => {
-            if (propertiesProvider) {
-                propertiesProvider.postMessagetoWebview(command, data);
-            }
-        })
-    );
-
     // TODO: For now, a different command opens traces from file explorer. Remove when we have a proper trace finder
     const fileOpenHandler = fileHandler();
     context.subscriptions.push(
