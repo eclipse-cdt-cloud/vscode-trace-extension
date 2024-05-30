@@ -191,7 +191,7 @@
             "explorer/context": [
                 {
                     "command": "traces.openTraceFile",
-                    "group": "navigation"
+                    "group": "navigation@40"
                 }
             ],
             "editor/title": [
