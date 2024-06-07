@@ -50,6 +50,13 @@ export class TraceViewerPanel {
     private _onRequestSelectionRangeChange = (payload: TimeRangeUpdatePayload): void =>
         this.doHandleRequestSelectionRangeChange(payload);
 
+    /**
+     * Creates a new or gets an existing panel by name. Shows existing if not active.
+     * @param extensionUri The extension URI
+     * @param name The name of the experiment / panel
+     * @param statusService  The status service that the panel will use
+     * @returns The new or existing panel
+     */
     public static createOrShow(
         extensionUri: vscode.Uri,
         name: string,
@@ -61,7 +68,10 @@ export class TraceViewerPanel {
         // Otherwise, create a new panel.
         let openedPanel = TraceViewerPanel.activePanels[name];
         if (openedPanel) {
-            openedPanel._panel.reveal(column);
+            // Only call reveal if it's not active
+            if (!openedPanel._panel.active) {
+                openedPanel._panel.reveal(column);
+            }
         } else {
             openedPanel = new TraceViewerPanel(extensionUri, column || vscode.ViewColumn.One, name, statusService);
             TraceViewerPanel.activePanels[name] = openedPanel;
@@ -69,6 +79,16 @@ export class TraceViewerPanel {
         }
         TraceViewerPanel.currentPanel = openedPanel;
         return openedPanel;
+    }
+
+    /**
+     * Gets an existing panel
+     * @param name The name of the experiment / panel
+     * @returns the existing panel or undefined
+     */
+    public static getExistingPanel(name: string): TraceViewerPanel | undefined {
+        // If we already have a panel, return it.
+        return TraceViewerPanel.activePanels[name];
     }
 
     public static disposePanel(extensionUri: vscode.Uri, name: string): void {
@@ -212,8 +232,9 @@ export class TraceViewerPanel {
                 TraceViewerPanel.currentPanel = this;
                 setStatusFromPanel(name);
                 if (this._experiment) {
+                    // tabActivatedSignal will select the experiment in the opened-traces view
+                    // which will then update available-views view
                     signalManager().fireTraceViewerTabActivatedSignal(this._experiment);
-                    signalManager().fireExperimentSelectedSignal(this._experiment);
                 }
             }
         });
@@ -349,7 +370,6 @@ export class TraceViewerPanel {
 
     protected doHandleExperimentSelectedSignal(experiment: Experiment | undefined): void {
         if (this._experiment && experiment && this._experiment.UUID === experiment.UUID) {
-            this._panel.reveal();
             const wrapper: string = JSONBig.stringify(experiment);
             this._panel.webview.postMessage({ command: VSCODE_MESSAGES.EXPERIMENT_SELECTED, data: wrapper });
         }
@@ -370,7 +390,7 @@ export class TraceViewerPanel {
         const wrapper: string = JSONBig.stringify(experiment);
         this._panel.webview.postMessage({ command: VSCODE_MESSAGES.SET_EXPERIMENT, data: wrapper });
         signalManager().fireExperimentOpenedSignal(experiment);
-        signalManager().fireTraceViewerTabActivatedSignal(experiment);
+        // No need to send activatedSignal because it will be triggered when the panal becomes active
     }
 
     addOutput(descriptor: OutputDescriptor): void {
