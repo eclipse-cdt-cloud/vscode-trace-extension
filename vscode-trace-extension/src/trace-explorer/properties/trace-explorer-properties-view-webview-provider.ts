@@ -40,7 +40,7 @@ export class TraceExplorerItemPropertiesProvider extends AbstractTraceExplorerPr
     }
 
     handleExperimentChanged = (exp: Experiment) => {
-        const props = this.propertiesMap.get(exp.UUID);
+        const props = this.propertiesMap.get(exp?.UUID);
         if (props) {
             this.handleUpdatedProperties(props);
         } else {
