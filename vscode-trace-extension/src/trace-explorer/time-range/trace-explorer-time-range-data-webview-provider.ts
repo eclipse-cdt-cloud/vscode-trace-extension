@@ -16,7 +16,10 @@ export class TraceExplorerTimeRangeDataProvider extends AbstractTraceExplorerPro
     protected readonly _webviewScript = 'timeRangePanel.js';
     protected readonly _webviewOptions = {
         enableScripts: true,
-        localResourceRoots: [vscode.Uri.joinPath(this._extensionUri, 'pack')]
+        localResourceRoots: [
+            vscode.Uri.joinPath(this._extensionUri, 'pack'),
+            vscode.Uri.joinPath(this._extensionUri, 'lib', 'codicons')
+        ]
     };
     private _experimentDataMap = new TimeRangeDataMap();
 
