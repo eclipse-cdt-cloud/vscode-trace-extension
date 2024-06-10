@@ -53,7 +53,7 @@ export class KeyboardShortcutsPanel {
 				<title>React App</title>
 				<meta http-equiv="Content-Security-Policy"
 					content="default-src 'none';
-					img-src vscode-resource: https:;
+					img-src ${webview.cspSource};
 					script-src 'nonce-${nonce}' 'unsafe-eval';
 					style-src ${webview.cspSource} vscode-resource: 'unsafe-inline' http: https: data:;
 					connect-src ${getTraceServerUrl()};
