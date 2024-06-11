@@ -55,7 +55,7 @@ export class KeyboardShortcutsPanel {
 					content="default-src 'none';
 					img-src ${webview.cspSource};
 					script-src 'nonce-${nonce}' 'unsafe-eval';
-					style-src ${webview.cspSource} vscode-resource: 'unsafe-inline' http: https: data:;
+					style-src ${webview.cspSource} 'unsafe-inline';
 					connect-src ${getTraceServerUrl()};
                     font-src ${webview.cspSource}">
                 <base href="${packUri}/">
