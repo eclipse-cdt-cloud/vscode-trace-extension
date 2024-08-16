@@ -7580,10 +7580,10 @@ through@2, "through@>=2.2.7 <3", through@^2.3.4, through@^2.3.6:
   resolved "https://registry.npmjs.org/through/-/through-2.3.8.tgz#0dd4c9ffaabc357960b1b724115d7e0e86a2e1f5"
   integrity sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==
 
-timeline-chart@^0.3.1:
-  version "0.3.1"
-  resolved "https://registry.npmjs.org/timeline-chart/-/timeline-chart-0.3.1.tgz#2f53b3af20e2dffba7917775db6b1ef5b40303d2"
-  integrity sha512-qDP9se79LtX+SlA6Y8dZDvcgL0z+9yEjdMiObAf3AWjUW+IsR3aQrNUTDER5pCXRMsvLQy5l2WWWQX0DrflKuQ==
+timeline-chart@^0.3.2:
+  version "0.3.2"
+  resolved "https://registry.npmjs.org/timeline-chart/-/timeline-chart-0.3.2.tgz#a943e613c3d211ee81e7225c8d9c1654ac858555"
+  integrity sha512-DnmD2c+N4IGx5/AOxacUu2r9FanxAtbfratUxiElkYS53vZ65DBjiOTPvarsGeIC+DZNnVjObcq4jyh/tshFbg==
   dependencies:
     "@types/lodash.throttle" "^4.1.4"
     glob "^7.1.6"
@@ -7620,17 +7620,17 @@ tr46@~0.0.3:
   resolved "https://registry.npmjs.org/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
   integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
 
-traceviewer-base@0.2.3, traceviewer-base@^0.2.3:
-  version "0.2.3"
-  resolved "https://registry.npmjs.org/traceviewer-base/-/traceviewer-base-0.2.3.tgz#7b9bdaecf1e8ff4e0f60eb0f28c2e836d11c6f89"
-  integrity sha512-DmfHpWDrIh0t+4gqSDShpSDYo9Qdu7wz2vxVOxZ2WNqTaaUY+hKtsFk9mROFP3UCUTfOKb6FBiLSxtL197EJDQ==
+traceviewer-base@0.2.5, traceviewer-base@^0.2.5:
+  version "0.2.5"
+  resolved "https://registry.npmjs.org/traceviewer-base/-/traceviewer-base-0.2.5.tgz#fce6f7d424c454c86814fa7b75ed25e8cba6c6b4"
+  integrity sha512-KzhZdwyBmv7025riEDsEaKC3hXJF/wYPP3kp8r6L4INLEPSgbR/7v9wVMr+8Oi7ltpIdNR4wcW82PztLsXWzfg==
   dependencies:
-    tsp-typescript-client "^0.4.1"
+    tsp-typescript-client "^0.4.2"
 
-traceviewer-react-components@^0.2.3:
-  version "0.2.3"
-  resolved "https://registry.npmjs.org/traceviewer-react-components/-/traceviewer-react-components-0.2.3.tgz#b67c1f4d547ac9eacc386cb1d86f73e2d6872735"
-  integrity sha512-ec0Nxm0qwDg9jeHMy4QF83Ad3M2HN+I1x/K1xBRGbqtW+r1laXpAmbm4adF6N/zHgrXfsE4W61Bn9zah4mlH0g==
+traceviewer-react-components@^0.2.5:
+  version "0.2.5"
+  resolved "https://registry.npmjs.org/traceviewer-react-components/-/traceviewer-react-components-0.2.5.tgz#af1263cca5d97c7d8e0c59e65c43507c5ccb35fe"
+  integrity sha512-EyAxBhBkIEn0TrhkY9U2J1W0Q/KsPL/wCAP/4CN2efOAtHr5vR52f8/2kcq00HrEHVBh9opySaS6A5uqoRm88Q==
   dependencies:
     "@fortawesome/fontawesome-svg-core" "^1.2.17 <1.3.0"
     "@fortawesome/free-solid-svg-icons" "^5.8.1"
@@ -7650,9 +7650,9 @@ traceviewer-react-components@^0.2.3:
     react-virtualized "^9.21.0"
     semantic-ui-css "^2.4.1"
     semantic-ui-react "^0.86.0"
-    timeline-chart "^0.3.1"
-    traceviewer-base "0.2.3"
-    tsp-typescript-client "^0.4.1"
+    timeline-chart "^0.3.2"
+    traceviewer-base "0.2.5"
+    tsp-typescript-client "^0.4.2"
 
 trim-newlines@^3.0.0:
   version "3.0.1"
@@ -7699,10 +7699,10 @@ tslib@^2.1.0, tslib@^2.3.0, tslib@^2.4.0:
   resolved "https://registry.npmjs.org/tslib/-/tslib-2.6.2.tgz#703ac29425e7b37cd6fd456e92404d46d1f3e4ae"
   integrity sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==
 
-tsp-typescript-client@^0.4.1:
-  version "0.4.1"
-  resolved "https://registry.npmjs.org/tsp-typescript-client/-/tsp-typescript-client-0.4.1.tgz#7475cacf1f5f055279dee4bd3614b24d5434d10d"
-  integrity sha512-T0Bi2qwkJdxEJ7NSASFMzHtSNMbZnmuyDyvR5+6uvcc9zxd7X4/axhCHfiRxlwvWddyQfpPGPrDFiLbz3g2izA==
+tsp-typescript-client@^0.4.2:
+  version "0.4.2"
+  resolved "https://registry.npmjs.org/tsp-typescript-client/-/tsp-typescript-client-0.4.2.tgz#1c4d1328a26a90148f34ddbdf5525f4edd923732"
+  integrity sha512-MPYA9DctzwpMdcEIaZGQUKonHY+zGBB6yKnaTZlheBGlPV16N0nSHvuYTAhZ3K8yWgKilzZ+Bsx6gyFFtjM3EA==
   dependencies:
     json-bigint sidorares/json-bigint#2c0a5f896d7888e68e5f4ae3c7ea5cd42fd54473
     node-fetch "^2.5.0"
