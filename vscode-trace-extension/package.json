@@ -2,7 +2,7 @@
     "name": "vscode-trace-extension",
     "displayName": "Trace Viewer for VSCode",
     "description": "Viewer that permits visualizing traces and contained data, analyzed by a trace server, and provided over the Trace Server Protocol (TSP)",
-    "version": "0.2.7",
+    "version": "0.2.8",
     "license": "MIT",
     "engines": {
         "vscode": "^1.52.0"
@@ -289,7 +289,7 @@
         "terser": "4.8.1",
         "traceviewer-base": "^0.2.5",
         "traceviewer-react-components": "^0.2.5",
-        "vscode-trace-common": "0.2.7"
+        "vscode-trace-common": "0.2.8"
     },
     "devDependencies": {
         "@playwright/test": "^1.32.3",
