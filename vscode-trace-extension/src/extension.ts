@@ -67,7 +67,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
         vscode.commands.registerCommand('traces.openTraceFile', async (file: vscode.Uri) => {
             await startTraceServerIfAvailable(file.fsPath);
             if (await isTraceServerUp()) {
-                fileOpenHandler(context, file);
+                await fileOpenHandler(context, file);
                 vscode.commands.executeCommand('trace-explorer.refreshContext');
             }
         })

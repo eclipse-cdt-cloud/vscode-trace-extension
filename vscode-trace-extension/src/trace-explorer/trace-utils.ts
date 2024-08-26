@@ -55,7 +55,7 @@ export const fileHandler =
     async (context: vscode.ExtensionContext, traceUri: vscode.Uri): Promise<void> => {
         const resolvedTraceURI: vscode.Uri = traceUri;
         const { traceManager, experimentManager } = getManagers();
-        vscode.window.withProgress(
+        return vscode.window.withProgress(
             {
                 location: vscode.ProgressLocation.Notification,
                 title: getProgressBarTitle(resolvedTraceURI),
