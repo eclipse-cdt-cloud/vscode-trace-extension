@@ -32,5 +32,8 @@
         "vscode-trace-common",
         "vscode-trace-webviews",
         "vscode-trace-extension"
-    ]
+    ],
+    "resolutions": {
+        "@vscode/vsce": "2.25.0"
+    }
 }
