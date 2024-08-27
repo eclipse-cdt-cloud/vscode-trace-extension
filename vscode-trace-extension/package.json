@@ -280,7 +280,7 @@
         "@fortawesome/free-solid-svg-icons": "^5.8.1",
         "@fortawesome/react-fontawesome": "^0.1.4",
         "@vscode/codicons": "^0.0.33",
-        "@vscode/vsce": "^2.21.0",
+        "@vscode/vsce": "2.25.0",
         "@ag-grid-community/styles": "^32.0.0",
         "ag-grid-react": "^28.2.0",
         "chart.js": "^2.8.0",
