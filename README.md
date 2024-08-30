@@ -1,6 +1,6 @@
 # VSCode Trace Extension
 
-This document contains information that may be useful for developers that want to build, modify, enhance and/or debug this extension. If you only intend to consume the extension, it might be easier to get it from the [public OpenVSX registry](https://www.open-vsx.org/extension/eclipse-cdt/vscode-trace-extension),
+This document contains information that may be useful for developers that want to build, modify, enhance and/or debug this extension. If you only intend to consume the extension, it might be easier to get it from the [public OpenVSX registry][tc-open-vsx],
 
 This project started from the [VSCode webview react project][vscode-webview-react]. It works this way, with the extension itself being in the `vscode-trace-extension` directory and the react application being in the `vscode-trace-webapps` directory.
 
@@ -337,7 +337,7 @@ importedApi.setHandleTraceResourceType(handleTraceFiles, handleTraceFolders);
 
 ### Remote SSH Support
 
-The `Trace Viewer for VSCode` extension is compatible with the use of [remote-ssh](https://code.visualstudio.com/docs/remote/ssh).  If you are using `remote-ssh`, you can simply install `Trace Viewer for VSCode` extension on your remote machine and begin using the extension.
+The `Trace Viewer for VSCode` extension is compatible with the use of [remote-ssh](https://code.visualstudio.com/docs/remote/ssh).  If you are using `remote-ssh`, you can simply install `Trace Viewer for VSCode` extension on your remote machine and begin using the extension. For VSCode compatible applications you can install the [open-remote-ssh][open-remote-ssh] extension from the [public OpenVSX registry][open-vsx] to get similar functionality.
 
 The remote support works by forwarding the Trace Server's operating port from the client machine to the remote machine. The port is automatically forwarded on Trace Server startup.
 
@@ -384,8 +384,11 @@ Finally, push the branch to the main repository (not a fork!) and use it to crea
 [init-contrib]: https://github.com/eclipse-cdt-cloud/theia-trace-extension/pull/124
 [install]: https://code.visualstudio.com/docs/editor/extension-marketplace#_install-from-a-vsix
 [open-output]: https://raw.githubusercontent.com/eclipse-cdt-cloud/vscode-trace-extension/master/doc/images/vscode-trace-extension-001.png
+[open-remote-ssh]: https://open-vsx.org/extension/jeanp413/open-remote-ssh
 [open-trace]: https://raw.githubusercontent.com/eclipse-cdt-cloud/vscode-trace-extension/master/doc/images/vscode-open-with-trace-viewer-001.png
+[open-vsx]: https://www.open-vsx.org/
 [theia-trace]: https://github.com/eclipse-cdt-cloud/theia-trace-extension/
+[tc-open-vsx]: https://www.open-vsx.org/extension/eclipse-cdt/vscode-trace-extension
 [tc-server]: https://download.eclipse.org/tracecompass.incubator/trace-server/rcp/?d
 [tc-server-build]: https://www.eclipse.org/tracecompass/download.html#trace-server
 [timeline-chart]: https://github.com/eclipse-cdt-cloud/timeline-chart/
