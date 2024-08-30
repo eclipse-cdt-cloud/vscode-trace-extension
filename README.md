@@ -358,7 +358,7 @@ The remote support works by forwarding the Trace Server's operating port from th
 
 Forwarded ports can be seen in the 'Ports' view of the remote VsCode.  To open the `Ports` view use menu `View -> Open view... -> Ports`.  You should see the forwarded Trace Server port in the `Ports` view, as shown below:
 
-![ports-tab](vscode-ports-tab)
+![ports-tab][vscode-ports-tab]
 
 Make sure that there is no Trace Server running on your local host. If the `Trace Viewer for VSCode` is unresponsive, stop the port forwarding by pressing the 'Stop Port Fowarding (Delete)' of the trace server port and restart remote VSCode.
 
