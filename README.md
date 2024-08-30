@@ -222,21 +222,6 @@ yarn playwright test --trace on
 yarn playwright test --retries <retries>
 ```
 
-[init-contrib]: https://github.com/eclipse-cdt-cloud/theia-trace-extension/pull/124
-[install]: https://code.visualstudio.com/docs/editor/extension-marketplace#_install-from-a-vsix
-[open-output]: https://raw.githubusercontent.com/eclipse-cdt-cloud/vscode-trace-extension/master/doc/images/vscode-trace-extension-001.png
-[open-trace]: https://raw.githubusercontent.com/eclipse-cdt-cloud/vscode-trace-extension/master/doc/images/vscode-open-with-trace-viewer-001.png
-[theia-trace]: https://github.com/eclipse-cdt-cloud/theia-trace-extension/
-[tc-server]: https://download.eclipse.org/tracecompass.incubator/trace-server/rcp/?d
-[tc-server-build]: https://www.eclipse.org/tracecompass/download.html#trace-server
-[timeline-chart]: https://github.com/eclipse-cdt-cloud/timeline-chart/
-[trace-explorer-activity-bar]: https://raw.githubusercontent.com/eclipse-cdt-cloud/vscode-trace-extension/master/doc/images/vscode-show-trace-viewer-001.png
-[tsp-client]: https://github.com/eclipse-cdt-cloud/tsp-typescript-client/
-[vscode-messages]: https://code.visualstudio.com/api/extension-guides/webview#passing-messages-from-an-extension-to-a-webview
-[vscode-webview]: https://github.com/rebornix/vscode-webview-react
-[vscode-webview-react]: https://github.com/rebornix/vscode-webview-react
-[vscode-ports-tab]: https://raw.githubusercontent.com/eclipse-cdt-cloud/vscode-trace-extension/master/doc/images/vscode-ports-tab-001.png
-
 ## Using the External API
 
 VSCode Trace Extension provides an external API that adopter extensions can rely on for communication. Currently the API is limited to the following:
@@ -395,3 +380,18 @@ git add RELEASE && git commit --amend
 ```
 
 Finally, push the branch to the main repository (not a fork!) and use it to create a PR. When the PR is merged, a GitHub release should be created with auto-generated release notes, as well as a git tag. Then the `publish-*` CI jobs should trigger, and if everything goes well, publish the new version of the extension to both registries.
+
+[init-contrib]: https://github.com/eclipse-cdt-cloud/theia-trace-extension/pull/124
+[install]: https://code.visualstudio.com/docs/editor/extension-marketplace#_install-from-a-vsix
+[open-output]: https://raw.githubusercontent.com/eclipse-cdt-cloud/vscode-trace-extension/master/doc/images/vscode-trace-extension-001.png
+[open-trace]: https://raw.githubusercontent.com/eclipse-cdt-cloud/vscode-trace-extension/master/doc/images/vscode-open-with-trace-viewer-001.png
+[theia-trace]: https://github.com/eclipse-cdt-cloud/theia-trace-extension/
+[tc-server]: https://download.eclipse.org/tracecompass.incubator/trace-server/rcp/?d
+[tc-server-build]: https://www.eclipse.org/tracecompass/download.html#trace-server
+[timeline-chart]: https://github.com/eclipse-cdt-cloud/timeline-chart/
+[trace-explorer-activity-bar]: https://raw.githubusercontent.com/eclipse-cdt-cloud/vscode-trace-extension/master/doc/images/vscode-show-trace-viewer-001.png
+[tsp-client]: https://github.com/eclipse-cdt-cloud/tsp-typescript-client/
+[vscode-messages]: https://code.visualstudio.com/api/extension-guides/webview#passing-messages-from-an-extension-to-a-webview
+[vscode-webview]: https://github.com/rebornix/vscode-webview-react
+[vscode-webview-react]: https://github.com/rebornix/vscode-webview-react
+[vscode-ports-tab]: https://raw.githubusercontent.com/eclipse-cdt-cloud/vscode-trace-extension/master/doc/images/vscode-ports-tab-001.png
