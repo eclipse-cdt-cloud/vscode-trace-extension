@@ -1,0 +1,52 @@
+{
+  "private": true,
+  "name": "docker-vscode-trace-example",
+  "version": "0.1.0",
+  "theia": {
+    "target": "browser",
+    "frontend": {
+      "config": {
+        "applicationName": "Theia application with vscode-trace-extension",
+        "preferences": {
+          "editor.autoSave": "on",
+          "trace-viewer.port": 8080
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "@emotion/react": "^11.10.5",
+    "@emotion/styled": "^11.10.5",
+    "@mui/material": "^5.10.14",
+    "@theia/core": "1.45.1",
+    "@theia/navigator": "1.45.1",
+    "@theia/preferences": "1.45.1",
+    "@theia/plugin-ext-vscode": "1.45.1"
+  },
+  "devDependencies": {
+    "@theia/cli": "1.45.1"
+  },
+  "scripts": {
+    "download:plugins": "theia download:plugins --rate-limit=15 --parallel=false --ignore-errors"
+  },
+  "engines": {
+    "yarn": ">=1.7.0 <2",
+    "node": ">=16 <19"
+  },
+  "theiaPluginsDir": "plugins",
+  "theiaPlugins": {
+      "vscode-trace-extension": "https://open-vsx.org/api/eclipse-cdt/vscode-trace-extension/0.2.6/file/eclipse-cdt.vscode-trace-extension-0.2.6.vsix"
+  },
+  "resolutions": {
+    "msgpackr": "^1.10.1"
+  },
+  "theiaPluginsExcludeIds": [
+    "ms-vscode.js-debug-companion",
+    "vscode.extension-editing",
+    "vscode.git",
+    "vscode.git-ui",
+    "vscode.github",
+    "vscode.github-authentication",
+    "vscode.microsoft-authentication"
+  ]
+}
