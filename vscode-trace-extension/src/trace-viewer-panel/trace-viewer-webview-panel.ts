@@ -390,7 +390,7 @@ export class TraceViewerPanel {
         const wrapper: string = JSONBig.stringify(experiment);
         this._panel.webview.postMessage({ command: VSCODE_MESSAGES.SET_EXPERIMENT, data: wrapper });
         signalManager().fireExperimentOpenedSignal(experiment);
-        // No need to send activatedSignal because it will be triggered when the panal becomes active
+        signalManager().fireTraceViewerTabActivatedSignal(experiment);
     }
 
     addOutput(descriptor: OutputDescriptor): void {
