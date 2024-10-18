@@ -33,6 +33,24 @@ export class TraceExplorerItemPropertiesProvider extends AbstractTraceExplorerPr
                 }
             }
         });
+
+        this._view?.webview?.onDidReceiveMessage(
+            (message) => {
+                const command = message.command;
+                const data = message.data;
+                switch (command) {
+                    case VSCODE_MESSAGES.GO_TO_SOURCE_FILE:
+                        vscode.workspace.openTextDocument(data.path).then(
+                            (x) => {
+                                const text = x.getText();
+                                console.log(text);
+                            }
+                        );
+                        break;
+                }
+            }
+        );
+
         signalManager().on(Signals.ITEM_PROPERTIES_UPDATED, this.handleUpdatedProperties);
         signalManager().on(Signals.EXPERIMENT_SELECTED, this.handleExperimentChanged);
         signalManager().on(Signals.CLOSE_TRACEVIEWERTAB, this.handleTabClosed);
