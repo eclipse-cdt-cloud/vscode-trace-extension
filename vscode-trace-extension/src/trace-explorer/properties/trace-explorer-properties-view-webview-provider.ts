@@ -40,10 +40,10 @@ export class TraceExplorerItemPropertiesProvider extends AbstractTraceExplorerPr
                 const data = message.data;
                 switch (command) {
                     case VSCODE_MESSAGES.GO_TO_SOURCE_FILE:
-                        vscode.workspace.openTextDocument(data.path).then(
-                            (x) => {
-                                const text = x.getText();
-                                console.log(text);
+                        const path : string = data.path;
+                        vscode.workspace.openTextDocument(path).then(
+                            (doc) => {
+                                vscode.window.showTextDocument(doc);
                             }
                         );
                         break;

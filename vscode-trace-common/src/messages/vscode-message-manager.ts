@@ -212,7 +212,7 @@ export class VsCodeMessageManager extends Messages.MessageManager {
     }
 
     goToSourceFile(path : string, line : number): void {
-        const data = JSON.stringify({path : path, line : line});
+        const data = {path : path, line : line};
         vscode.postMessage({ command: VSCODE_MESSAGES.GO_TO_SOURCE_FILE, data: data });	
     }
 }
