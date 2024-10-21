@@ -34,30 +34,27 @@ export class TraceExplorerItemPropertiesProvider extends AbstractTraceExplorerPr
             }
         });
 
-        this._view?.webview?.onDidReceiveMessage(
-            (message) => {
-                const command = message.command;
-                const data = message.data;
-                switch (command) {
-                    case VSCODE_MESSAGES.SOURCE_LOOKUP:
-                        // open an editor window with the file contents,
-                        // reveal the line and position the cursor at the beginning of the line
-                        const path : string = data.path;
-                        vscode.workspace.openTextDocument(path).then(
-                            (doc) => vscode.window.showTextDocument(doc)
-                        ).then(
-                            (editor) => {
-                                const zeroBasedLine = data.line-1;
-                                const range = new vscode.Range(zeroBasedLine, 0, zeroBasedLine, 0);
-                                editor.revealRange(range, vscode.TextEditorRevealType.AtTop);
-                                const selection = new vscode.Selection(zeroBasedLine, 0, zeroBasedLine, 0);
-                                editor.selection = selection;
-                            }
-                        );
-                        break;
-                }
+        this._view?.webview?.onDidReceiveMessage(message => {
+            const command = message.command;
+            const data = message.data;
+            switch (command) {
+                case VSCODE_MESSAGES.SOURCE_LOOKUP:
+                    // open an editor window with the file contents,
+                    // reveal the line and position the cursor at the beginning of the line
+                    const path: string = data.path;
+                    vscode.workspace
+                        .openTextDocument(path)
+                        .then(doc => vscode.window.showTextDocument(doc))
+                        .then(editor => {
+                            const zeroBasedLine = data.line - 1;
+                            const range = new vscode.Range(zeroBasedLine, 0, zeroBasedLine, 0);
+                            editor.revealRange(range, vscode.TextEditorRevealType.AtTop);
+                            const selection = new vscode.Selection(zeroBasedLine, 0, zeroBasedLine, 0);
+                            editor.selection = selection;
+                        });
+                    break;
             }
-        );
+        });
 
         signalManager().on(Signals.ITEM_PROPERTIES_UPDATED, this.handleUpdatedProperties);
         signalManager().on(Signals.EXPERIMENT_SELECTED, this.handleExperimentChanged);
