@@ -39,7 +39,7 @@ export class TraceExplorerItemPropertiesProvider extends AbstractTraceExplorerPr
                 const command = message.command;
                 const data = message.data;
                 switch (command) {
-                    case VSCODE_MESSAGES.GO_TO_SOURCE_FILE:
+                    case VSCODE_MESSAGES.SOURCE_LOOKUP:
                         // open an editor window with the file contents,
                         // reveal the line and position the cursor at the beginning of the line
                         const path : string = data.path;

@@ -74,7 +74,7 @@ export const VSCODE_MESSAGES = {
     OUTPUT_DATA_CHANGED: 'outputDataChanged',
     CONTRIBUTE_CONTEXT_MENU: 'contributeContextMenu',
     CONTEXT_MENU_ITEM_CLICKED: 'contextMenuItemClicked',
-    GO_TO_SOURCE_FILE: 'goToSourceFile'
+    SOURCE_LOOKUP: 'sourceLookup'
 };
 
 export class VsCodeMessageManager extends Messages.MessageManager {
@@ -211,8 +211,8 @@ export class VsCodeMessageManager extends Messages.MessageManager {
         vscode.postMessage({ command: VSCODE_MESSAGES.CONTEXT_MENU_ITEM_CLICKED, data: data });
     }
 
-    goToSourceFile(path : string, line : number): void {
+    sourceLookup(path : string, line : number): void {
         const data = {path : path, line : line};
-        vscode.postMessage({ command: VSCODE_MESSAGES.GO_TO_SOURCE_FILE, data: data });	
+        vscode.postMessage({ command: VSCODE_MESSAGES.SOURCE_LOOKUP, data: data });	
     }
 }
