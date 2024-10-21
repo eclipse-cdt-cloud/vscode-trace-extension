@@ -40,10 +40,18 @@ export class TraceExplorerItemPropertiesProvider extends AbstractTraceExplorerPr
                 const data = message.data;
                 switch (command) {
                     case VSCODE_MESSAGES.GO_TO_SOURCE_FILE:
+                        // open an editor window with the file contents,
+                        // reveal the line and position the cursor at the beginning of the line
                         const path : string = data.path;
                         vscode.workspace.openTextDocument(path).then(
-                            (doc) => {
-                                vscode.window.showTextDocument(doc);
+                            (doc) => vscode.window.showTextDocument(doc)
+                        ).then(
+                            (editor) => {
+                                const zeroBasedLine = data.line-1;
+                                const range = new vscode.Range(zeroBasedLine, 0, zeroBasedLine, 0);
+                                editor.revealRange(range, vscode.TextEditorRevealType.AtTop);
+                                const selection = new vscode.Selection(zeroBasedLine, 0, zeroBasedLine, 0);
+                                editor.selection = selection;
                             }
                         );
                         break;
