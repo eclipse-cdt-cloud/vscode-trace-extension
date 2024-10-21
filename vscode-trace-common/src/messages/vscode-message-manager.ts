@@ -211,8 +211,8 @@ export class VsCodeMessageManager extends Messages.MessageManager {
         vscode.postMessage({ command: VSCODE_MESSAGES.CONTEXT_MENU_ITEM_CLICKED, data: data });
     }
 
-    sourceLookup(path : string, line : number): void {
-        const data = {path : path, line : line};
-        vscode.postMessage({ command: VSCODE_MESSAGES.SOURCE_LOOKUP, data: data });	
+    sourceLookup(path: string, line: number): void {
+        const data = { path: path, line: line };
+        vscode.postMessage({ command: VSCODE_MESSAGES.SOURCE_LOOKUP, data: data });
     }
 }
