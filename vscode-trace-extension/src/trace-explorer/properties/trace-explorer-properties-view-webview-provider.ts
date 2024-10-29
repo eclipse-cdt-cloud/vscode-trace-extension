@@ -5,7 +5,7 @@
  ***************************************************************************************/
 import * as vscode from 'vscode';
 import { AbstractTraceExplorerProvider } from '../abstract-trace-explorer-provider';
-import { Signals, signalManager } from 'traceviewer-base/lib/signals/signal-manager';
+import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { ItemPropertiesSignalPayload } from 'traceviewer-base/lib/signals/item-properties-signal-payload';
@@ -56,26 +56,23 @@ export class TraceExplorerItemPropertiesProvider extends AbstractTraceExplorerPr
             }
         });
 
-        signalManager().on(Signals.ITEM_PROPERTIES_UPDATED, this.handleUpdatedProperties);
-        signalManager().on(Signals.EXPERIMENT_SELECTED, this.handleExperimentChanged);
-        signalManager().on(Signals.CLOSE_TRACEVIEWERTAB, this.handleTabClosed);
+        signalManager().on('ITEM_PROPERTIES_UPDATED', this.handleUpdatedProperties);
+        signalManager().on('EXPERIMENT_SELECTED', this.handleExperimentChanged);
+        signalManager().on('CLOSE_TRACEVIEWERTAB', this.handleTabClosed);
         return;
     }
 
-    handleExperimentChanged = (exp: Experiment) => {
-        const props = this.propertiesMap.get(exp?.UUID);
-        if (props) {
-            this.handleUpdatedProperties(props);
-        } else {
-            const emptyPayload = new ItemPropertiesSignalPayload({});
-            this.handleUpdatedProperties(emptyPayload);
-        }
+    handleExperimentChanged = (exp?: Experiment) => {
+        const payload = exp
+            ? this.propertiesMap.get(exp.UUID) || new ItemPropertiesSignalPayload({})
+            : new ItemPropertiesSignalPayload({});
+        this.handleUpdatedProperties(payload);
     };
 
     protected dispose(): void {
-        signalManager().off(Signals.ITEM_PROPERTIES_UPDATED, this.handleUpdatedProperties);
-        signalManager().off(Signals.EXPERIMENT_SELECTED, this.handleExperimentChanged);
-        signalManager().off(Signals.CLOSE_TRACEVIEWERTAB, this.handleTabClosed);
+        signalManager().off('ITEM_PROPERTIES_UPDATED', this.handleUpdatedProperties);
+        signalManager().off('EXPERIMENT_SELECTED', this.handleExperimentChanged);
+        signalManager().off('CLOSE_TRACEVIEWERTAB', this.handleTabClosed);
     }
 
     handleTabClosed = (expUUID: string) => {
