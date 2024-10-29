@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import JSONBigConfig from 'json-bigint';
-import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
+import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import * as vscode from 'vscode';
 import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
@@ -51,7 +51,7 @@ export class TraceExplorerOpenedTracesViewProvider extends AbstractTraceExplorer
                 // Note that the open-traces webview will send experimentSelectedSignal signal to update the
                 // available-views view. If the webview is not visible (e.g. it's minimized) then send the signal
                 // here to update the available-views view.
-                signalManager().fireExperimentSelectedSignal(this._selectedExperiment);
+                signalManager().emit('EXPERIMENT_SELECTED', this._selectedExperiment);
             }
         }
     }
@@ -87,7 +87,7 @@ export class TraceExplorerOpenedTracesViewProvider extends AbstractTraceExplorer
                         if (this._selectedExperiment !== undefined) {
                             // tabActivatedSignal will select the experiment in the opened-traces view
                             // which will then update available-views view
-                            signalManager().fireTraceViewerTabActivatedSignal(this._selectedExperiment);
+                            signalManager().emit('TRACEVIEWERTAB_ACTIVATED', this._selectedExperiment);
                         }
                         return;
                     case VSCODE_MESSAGES.RE_OPEN_TRACE:
@@ -110,7 +110,7 @@ export class TraceExplorerOpenedTracesViewProvider extends AbstractTraceExplorer
                         if (data && data.wrapper) {
                             // just remove the panel here
                             TraceViewerPanel.disposePanel(this._extensionUri, JSONBig.parse(data.wrapper).name);
-                            signalManager().fireExperimentSelectedSignal(undefined);
+                            signalManager().emit('EXPERIMENT_SELECTED', undefined);
                         }
                         return;
                     case VSCODE_MESSAGES.OPENED_TRACES_UPDATED:
@@ -126,7 +126,7 @@ export class TraceExplorerOpenedTracesViewProvider extends AbstractTraceExplorer
                         } else {
                             experiment = undefined;
                         }
-                        signalManager().fireExperimentSelectedSignal(experiment);
+                        signalManager().emit('EXPERIMENT_SELECTED', experiment);
                     }
                 }
             },
@@ -134,14 +134,14 @@ export class TraceExplorerOpenedTracesViewProvider extends AbstractTraceExplorer
             this._disposables
         );
 
-        signalManager().on(Signals.TRACEVIEWERTAB_ACTIVATED, this._onOpenedTracesWidgetActivated);
-        signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
-        signalManager().on(Signals.EXPERIMENT_OPENED, this._onExperimentOpened);
+        signalManager().on('TRACEVIEWERTAB_ACTIVATED', this._onOpenedTracesWidgetActivated);
+        signalManager().on('EXPERIMENT_SELECTED', this._onExperimentSelected);
+        signalManager().on('EXPERIMENT_OPENED', this._onExperimentOpened);
     }
     protected dispose() {
-        signalManager().off(Signals.TRACEVIEWERTAB_ACTIVATED, this._onOpenedTracesWidgetActivated);
-        signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
-        signalManager().off(Signals.EXPERIMENT_OPENED, this._onExperimentOpened);
+        signalManager().off('TRACEVIEWERTAB_ACTIVATED', this._onOpenedTracesWidgetActivated);
+        signalManager().off('EXPERIMENT_SELECTED', this._onExperimentSelected);
+        signalManager().off('EXPERIMENT_OPENED', this._onExperimentOpened);
         super.dispose();
     }
 }

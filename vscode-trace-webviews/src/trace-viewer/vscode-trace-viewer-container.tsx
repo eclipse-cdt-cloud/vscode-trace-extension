@@ -6,7 +6,7 @@ import JSONBigConfig from 'json-bigint';
 import * as React from 'react';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
-import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
+import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import {
     ContextMenuItems,
     ContextMenuContributedSignalPayload
@@ -53,7 +53,7 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
 
     private _onProperties = (properties: ItemPropertiesSignalPayload): void =>
         this.doHandlePropertiesSignal(properties);
-    private _onSaveAsCSV = (payload: { traceId: string; data: string }): void => this.doHandleSaveAsCSVSignal(payload);
+    private _onSaveAsCSV = (traceId: string, data: string): void => this.doHandleSaveAsCSVSignal(traceId, data);
     private _onRowSelectionChanged = (payload: RowSelectionsChangedSignalPayload): void =>
         this.doHandleRowSelectSignal(payload);
     private _onContextMenuItemClicked = (payload: ContextMenuItemClickedSignalPayload): void =>
@@ -64,8 +64,8 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
         this._signalHandler.propertiesUpdated(properties);
     }
 
-    private doHandleSaveAsCSVSignal(payload: { traceId: string; data: string }) {
-        this._signalHandler.saveAsCSV(payload);
+    private doHandleSaveAsCSVSignal(traceId: string, data: string) {
+        this._signalHandler.saveAsCSV({ traceId, data });
     }
 
     private doHandleRowSelectSignal(payload: RowSelectionsChangedSignalPayload) {
@@ -76,10 +76,10 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
         this._signalHandler.contextMenuItemClicked(payload);
     }
 
-    private _onOverviewSelected = (payload: { traceId: string; outputDescriptor: OutputDescriptor }): void =>
-        this.doHandleOverviewSelectedSignal(payload);
-    private onMarkerCategoryClosedSignal = (payload: { traceViewerId: string; markerCategory: string }) =>
-        this.doHandleMarkerCategoryClosedSignal(payload);
+    private _onOverviewSelected = (traceId: string, outputDescriptor: OutputDescriptor): void =>
+        this.doHandleOverviewSelectedSignal(traceId, outputDescriptor);
+    private onMarkerCategoryClosedSignal = (traceViewerId: string, markerCategory: string) =>
+        this.doHandleMarkerCategoryClosedSignal(traceViewerId, markerCategory);
 
     protected resizeHandlers: (() => void)[] = [];
     protected readonly addResizeHandler = (h: () => void): void => {
@@ -163,10 +163,10 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
                 case VSCODE_MESSAGES.UPDATE_ZOOM:
                     this.updateZoom(message.data);
                 case VSCODE_MESSAGES.VIEW_RANGE_UPDATED:
-                    signalManager().fireViewRangeUpdated(JSONBig.parse(message.data));
+                    signalManager().emit('VIEW_RANGE_UPDATED', JSONBig.parse(message.data));
                     break;
                 case VSCODE_MESSAGES.SELECTION_RANGE_UPDATED:
-                    signalManager().fireSelectionRangeUpdated(JSONBig.parse(message.data));
+                    signalManager().emit('SELECTION_RANGE_UPDATED', JSONBig.parse(message.data));
                     break;
                 case VSCODE_MESSAGES.REQUEST_SELECTION_RANGE_CHANGE:
                     const { experimentUUID, timeRange } = JSONBig.parse(message.data);
@@ -174,7 +174,7 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
                         experimentUUID,
                         timeRange: new TimeRange(BigInt(timeRange.start), BigInt(timeRange.end))
                     } as TimeRangeUpdatePayload;
-                    signalManager().fireRequestSelectionRangeChange(payload);
+                    signalManager().emit('REQUEST_SELECTION_RANGE_CHANGE', payload);
                     break;
                 case VSCODE_MESSAGES.UPDATE_MARKER_CATEGORY_STATE:
                     if (message?.data) {
@@ -221,31 +221,31 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
         window.addEventListener('resize', this.onResize);
         this.onOutputRemoved = this.onOutputRemoved.bind(this);
         this.onOverviewRemoved = this.onOverviewRemoved.bind(this);
-        signalManager().on(Signals.OVERVIEW_OUTPUT_SELECTED, this._onOverviewSelected);
+        signalManager().on('OVERVIEW_OUTPUT_SELECTED', this._onOverviewSelected);
     }
 
     componentDidMount(): void {
         this._signalHandler.notifyReady();
-        signalManager().on(Signals.CONTEXT_MENU_ITEM_CLICKED, this._onContextMenuItemClicked);
-        signalManager().on(Signals.ROW_SELECTIONS_CHANGED, this._onRowSelectionChanged);
-        signalManager().on(Signals.ITEM_PROPERTIES_UPDATED, this._onProperties);
-        signalManager().on(Signals.SAVE_AS_CSV, this._onSaveAsCSV);
-        signalManager().on(Signals.MARKER_CATEGORY_CLOSED, this.onMarkerCategoryClosedSignal);
-        signalManager().on(Signals.VIEW_RANGE_UPDATED, this.onViewRangeUpdated);
-        signalManager().on(Signals.SELECTION_RANGE_UPDATED, this.onSelectionRangeUpdated);
-        signalManager().on(Signals.EXPERIMENT_UPDATED, this.onExperimentUpdated);
+        signalManager().on('CONTEXT_MENU_ITEM_CLICKED', this._onContextMenuItemClicked);
+        signalManager().on('ROW_SELECTIONS_CHANGED', this._onRowSelectionChanged);
+        signalManager().on('ITEM_PROPERTIES_UPDATED', this._onProperties);
+        signalManager().on('SAVE_AS_CSV', this._onSaveAsCSV);
+        signalManager().on('MARKER_CATEGORY_CLOSED', this.onMarkerCategoryClosedSignal);
+        signalManager().on('VIEW_RANGE_UPDATED', this.onViewRangeUpdated);
+        signalManager().on('SELECTION_RANGE_UPDATED', this.onSelectionRangeUpdated);
+        signalManager().on('EXPERIMENT_UPDATED', this.onExperimentUpdated);
     }
 
     componentWillUnmount(): void {
-        signalManager().off(Signals.CONTEXT_MENU_ITEM_CLICKED, this._onContextMenuItemClicked);
-        signalManager().off(Signals.ROW_SELECTIONS_CHANGED, this._onRowSelectionChanged);
-        signalManager().off(Signals.ITEM_PROPERTIES_UPDATED, this._onProperties);
-        signalManager().off(Signals.OVERVIEW_OUTPUT_SELECTED, this._onOverviewSelected);
-        signalManager().off(Signals.SAVE_AS_CSV, this._onSaveAsCSV);
-        signalManager().off(Signals.MARKER_CATEGORY_CLOSED, this.onMarkerCategoryClosedSignal);
-        signalManager().off(Signals.VIEW_RANGE_UPDATED, this.onViewRangeUpdated);
-        signalManager().off(Signals.SELECTION_RANGE_UPDATED, this.onSelectionRangeUpdated);
-        signalManager().off(Signals.EXPERIMENT_UPDATED, this.onExperimentUpdated);
+        signalManager().off('CONTEXT_MENU_ITEM_CLICKED', this._onContextMenuItemClicked);
+        signalManager().off('ROW_SELECTIONS_CHANGED', this._onRowSelectionChanged);
+        signalManager().off('ITEM_PROPERTIES_UPDATED', this._onProperties);
+        signalManager().off('OVERVIEW_OUTPUT_SELECTED', this._onOverviewSelected);
+        signalManager().off('SAVE_AS_CSV', this._onSaveAsCSV);
+        signalManager().off('MARKER_CATEGORY_CLOSED', this.onMarkerCategoryClosedSignal);
+        signalManager().off('VIEW_RANGE_UPDATED', this.onViewRangeUpdated);
+        signalManager().off('SELECTION_RANGE_UPDATED', this.onSelectionRangeUpdated);
+        signalManager().off('EXPERIMENT_UPDATED', this.onExperimentUpdated);
         window.removeEventListener('resize', this.onResize);
     }
 
@@ -264,27 +264,27 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
     }
 
     protected resetZoom(): void {
-        signalManager().fireResetZoomSignal();
+        signalManager().emit('RESET_ZOOM');
     }
 
     protected undo(): void {
-        signalManager().fireUndoSignal();
+        signalManager().emit('UNDO');
     }
 
     protected redo(): void {
-        signalManager().fireRedoSignal();
+        signalManager().emit('REDO');
     }
 
     protected contributeContextMenu(payload: ContextMenuContributedSignalPayload): void {
-        signalManager().fireContributeContextMenu(payload);
+        signalManager().emit('CONTRIBUTE_CONTEXT_MENU', payload);
     }
 
     protected doHandleOutputDataChanged(descriptors: OutputDescriptor[]): void {
-        signalManager().fireOutputDataChanged(descriptors);
+        signalManager().emit('OUTPUT_DATA_CHANGED', descriptors);
     }
 
     protected updateZoom(hasZoomedIn: boolean): void {
-        signalManager().fireUpdateZoomSignal(hasZoomedIn);
+        signalManager().emit('UPDATE_ZOOM', hasZoomedIn);
     }
 
     protected async doHandleExperimentSetSignal(
@@ -390,9 +390,7 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
         this._signalHandler.setMarkerCategoriesContext(this.toolbarMarkerCategoriesMap.size > 0);
     }
 
-    private doHandleMarkerCategoryClosedSignal(payload: { traceViewerId: string; markerCategory: string }) {
-        const traceViewerId = payload.traceViewerId;
-        const markerCategory = payload.markerCategory;
+    private doHandleMarkerCategoryClosedSignal(traceViewerId: string, markerCategory: string) {
         if (traceViewerId === this.state.experiment?.UUID) {
             this.updateMarkerCategoryState(markerCategory, false);
         }
@@ -456,20 +454,15 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
         }
     }
 
-    protected doHandleOverviewSelectedSignal(payload: { traceId: string; outputDescriptor: OutputDescriptor }): void {
-        if (
-            this.state.experiment &&
-            payload &&
-            payload?.traceId === this.state.experiment.UUID &&
-            payload.outputDescriptor
-        ) {
-            this.setState({ overviewOutputDescriptor: payload.outputDescriptor });
+    protected doHandleOverviewSelectedSignal(traceId: string, outputDescriptor: OutputDescriptor): void {
+        if (this.state.experiment && traceId === this.state.experiment.UUID && outputDescriptor) {
+            this.setState({ overviewOutputDescriptor: outputDescriptor });
         }
     }
 
     protected doHandleThemeChanged(theme: string): void {
         this.setState({ theme }, () => {
-            signalManager().fireThemeChangedSignal(theme);
+            signalManager().emit('THEME_CHANGED', theme);
         });
     }
 
