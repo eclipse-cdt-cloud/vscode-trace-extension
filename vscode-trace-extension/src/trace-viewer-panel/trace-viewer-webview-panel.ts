@@ -5,7 +5,7 @@ import { getTspClientUrl, getTraceServerUrl } from '../utils/backend-tsp-client-
 import { TraceServerConnectionStatusService } from '../utils/trace-server-status';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
 import { handleStatusMessage, handleRemoveMessage, setStatusFromPanel } from '../common/trace-message';
-import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
+import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import { MarkerSet } from 'tsp-typescript-client/lib/models/markerset';
 import JSONBigConfig from 'json-bigint';
@@ -219,10 +219,10 @@ export class TraceViewerPanel {
             this.dispose();
             TraceViewerPanel.activePanels[name] = undefined;
             if (traceUUID) {
-                signalManager().fireCloseTraceViewerTabSignal(traceUUID);
+                signalManager().emit('CLOSE_TRACEVIEWERTAB', traceUUID);
             }
             if (isActivePanel) {
-                signalManager().fireExperimentSelectedSignal(undefined);
+                signalManager().emit('EXPERIMENT_SELECTED', undefined);
             }
             return this._disposables;
         });
@@ -234,7 +234,7 @@ export class TraceViewerPanel {
                 if (this._experiment) {
                     // tabActivatedSignal will select the experiment in the opened-traces view
                     // which will then update available-views view
-                    signalManager().fireTraceViewerTabActivatedSignal(this._experiment);
+                    signalManager().emit('TRACEVIEWERTAB_ACTIVATED', this._experiment);
                 }
             }
         });
@@ -276,7 +276,8 @@ export class TraceViewerPanel {
                         return;
                     case VSCODE_MESSAGES.UPDATE_PROPERTIES:
                         if (message.data?.properties) {
-                            signalManager().fireItemPropertiesSignalUpdated(
+                            signalManager().emit(
+                                'ITEM_PROPERTIES_UPDATED',
                                 new ItemPropertiesSignalPayload(
                                     message.data.properties,
                                     message.data.experimentUUID,
@@ -328,22 +329,22 @@ export class TraceViewerPanel {
                         }
                         return;
                     case VSCODE_MESSAGES.VIEW_RANGE_UPDATED:
-                        signalManager().fireViewRangeUpdated(JSONBig.parse(message.data));
+                        signalManager().emit('VIEW_RANGE_UPDATED', JSONBig.parse(message.data));
                         break;
                     case VSCODE_MESSAGES.SELECTION_RANGE_UPDATED:
-                        signalManager().fireSelectionRangeUpdated(JSONBig.parse(message.data));
+                        signalManager().emit('SELECTION_RANGE_UPDATED', JSONBig.parse(message.data));
                         break;
                     case VSCODE_MESSAGES.EXPERIMENT_UPDATED:
                         const experiment = convertSignalExperiment(JSONBig.parse(message.data));
-                        signalManager().fireExperimentUpdatedSignal(experiment);
+                        signalManager().emit('EXPERIMENT_UPDATED', experiment);
                         break;
                 }
             },
             undefined,
             this._disposables
         );
-        signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
-        signalManager().on(Signals.REQUEST_SELECTION_RANGE_CHANGE, this._onRequestSelectionRangeChange);
+        signalManager().on('EXPERIMENT_SELECTED', this._onExperimentSelected);
+        signalManager().on('REQUEST_SELECTION_RANGE_CHANGE', this._onRequestSelectionRangeChange);
     }
 
     public doRefactor(): void {
@@ -364,8 +365,8 @@ export class TraceViewerPanel {
                 x.dispose();
             }
         }
-        signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
-        signalManager().off(Signals.REQUEST_SELECTION_RANGE_CHANGE, this._onRequestSelectionRangeChange);
+        signalManager().off('EXPERIMENT_SELECTED', this._onExperimentSelected);
+        signalManager().off('REQUEST_SELECTION_RANGE_CHANGE', this._onRequestSelectionRangeChange);
     }
 
     protected doHandleExperimentSelectedSignal(experiment: Experiment | undefined): void {
@@ -376,7 +377,7 @@ export class TraceViewerPanel {
     }
 
     protected doHandleExperimentUpdatedSignal(experiment: Experiment): void {
-        signalManager().fireExperimentUpdatedSignal(experiment);
+        signalManager().emit('EXPERIMENT_UPDATED', experiment);
     }
 
     protected doHandleRequestSelectionRangeChange(payload: TimeRangeUpdatePayload): void {
@@ -389,8 +390,8 @@ export class TraceViewerPanel {
         this._experiment = experiment;
         const wrapper: string = JSONBig.stringify(experiment);
         this._panel.webview.postMessage({ command: VSCODE_MESSAGES.SET_EXPERIMENT, data: wrapper });
-        signalManager().fireExperimentOpenedSignal(experiment);
-        signalManager().fireTraceViewerTabActivatedSignal(experiment);
+        signalManager().emit('EXPERIMENT_OPENED', experiment);
+        signalManager().emit('TRACEVIEWERTAB_ACTIVATED', experiment);
     }
 
     addOutput(descriptor: OutputDescriptor): void {
