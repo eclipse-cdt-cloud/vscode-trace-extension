@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import JSONBigConfig from 'json-bigint';
-import { Signals, signalManager } from 'traceviewer-base/lib/signals/signal-manager';
+import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
 import { TimeRangeDataMap } from 'traceviewer-react-components/lib/components/utils/time-range-data-map';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
@@ -35,7 +35,7 @@ export class TraceExplorerTimeRangeDataProvider extends AbstractTraceExplorerPro
 
                 switch (command) {
                     case VSCODE_MESSAGES.REQUEST_SELECTION_RANGE_CHANGE:
-                        signalManager().fireRequestSelectionRangeChange(parsedData);
+                        signalManager().emit('REQUEST_SELECTION_RANGE_CHANGE', parsedData);
                         break;
                 }
             },
@@ -56,21 +56,21 @@ export class TraceExplorerTimeRangeDataProvider extends AbstractTraceExplorerPro
             }
         });
 
-        signalManager().on(Signals.VIEW_RANGE_UPDATED, this.onViewRangeUpdated);
-        signalManager().on(Signals.SELECTION_RANGE_UPDATED, this.onSelectionRangeUpdated);
-        signalManager().on(Signals.EXPERIMENT_SELECTED, this.onExperimentSelected);
-        signalManager().on(Signals.EXPERIMENT_UPDATED, this.onExperimentUpdated);
-        signalManager().on(Signals.EXPERIMENT_CLOSED, this.onExperimentClosed);
-        signalManager().on(Signals.CLOSE_TRACEVIEWERTAB, this.onExperimentTabClosed);
+        signalManager().on('VIEW_RANGE_UPDATED', this.onViewRangeUpdated);
+        signalManager().on('SELECTION_RANGE_UPDATED', this.onSelectionRangeUpdated);
+        signalManager().on('EXPERIMENT_SELECTED', this.onExperimentSelected);
+        signalManager().on('EXPERIMENT_UPDATED', this.onExperimentUpdated);
+        signalManager().on('EXPERIMENT_CLOSED', this.onExperimentClosed);
+        signalManager().on('CLOSE_TRACEVIEWERTAB', this.onExperimentTabClosed);
     }
 
     protected dispose() {
-        signalManager().off(Signals.VIEW_RANGE_UPDATED, this.onViewRangeUpdated);
-        signalManager().off(Signals.SELECTION_RANGE_UPDATED, this.onSelectionRangeUpdated);
-        signalManager().off(Signals.EXPERIMENT_SELECTED, this.onExperimentSelected);
-        signalManager().off(Signals.EXPERIMENT_UPDATED, this.onExperimentUpdated);
-        signalManager().off(Signals.EXPERIMENT_CLOSED, this.onExperimentClosed);
-        signalManager().off(Signals.CLOSE_TRACEVIEWERTAB, this.onExperimentTabClosed);
+        signalManager().off('VIEW_RANGE_UPDATED', this.onViewRangeUpdated);
+        signalManager().off('SELECTION_RANGE_UPDATED', this.onSelectionRangeUpdated);
+        signalManager().off('EXPERIMENT_SELECTED', this.onExperimentSelected);
+        signalManager().off('EXPERIMENT_UPDATED', this.onExperimentUpdated);
+        signalManager().off('EXPERIMENT_CLOSED', this.onExperimentClosed);
+        signalManager().off('CLOSE_TRACEVIEWERTAB', this.onExperimentTabClosed);
         super.dispose();
     }
 

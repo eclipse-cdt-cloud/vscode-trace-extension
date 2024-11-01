@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import JSONBigConfig from 'json-bigint';
-import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
+import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
 import * as vscode from 'vscode';
@@ -51,7 +51,7 @@ export class TraceExplorerAvailableViewsProvider extends AbstractTraceExplorerPr
                             data: getTspClientUrl()
                         });
                         if (this._selectedExperiment !== undefined) {
-                            signalManager().fireExperimentSelectedSignal(this._selectedExperiment);
+                            signalManager().emit('EXPERIMENT_SELECTED', this._selectedExperiment);
                         }
                         return;
                     case VSCODE_MESSAGES.OUTPUT_ADDED:
@@ -75,7 +75,7 @@ export class TraceExplorerAvailableViewsProvider extends AbstractTraceExplorerPr
                             } else {
                                 this._selectedExperiment = undefined;
                             }
-                            signalManager().fireExperimentSelectedSignal(this._selectedExperiment);
+                            signalManager().emit('EXPERIMENT_SELECTED', this._selectedExperiment);
                         } finally {
                             this._selectionOngoing = false;
                         }
@@ -86,11 +86,11 @@ export class TraceExplorerAvailableViewsProvider extends AbstractTraceExplorerPr
             this._disposables
         );
 
-        signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
+        signalManager().on('EXPERIMENT_SELECTED', this._onExperimentSelected);
     }
 
     protected dispose() {
-        signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
+        signalManager().off('EXPERIMENT_SELECTED', this._onExperimentSelected);
         super.dispose();
     }
 
