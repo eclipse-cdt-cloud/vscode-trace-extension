@@ -28,8 +28,6 @@ npm i -g yarn  # the default version should be ok
 
 ## Installation Instructions
 
-The code was migrated from the [PR in theia-trace-extension][init-contrib].
-
 It depends on the trace viewer plugins from the [theia trace extension package][theia-trace] and the [tsp typescript client][tsp-client], as well as the [timeline chart][timeline-chart]. They are all available from the NPM package registry.
 
 - timeline-chart
@@ -42,6 +40,8 @@ To build the VSCode extension, run the `yarn` command:
 ``` bash
 yarn
 ```
+
+
 
 ## Running the extension
 
@@ -380,6 +380,9 @@ git add RELEASE && git commit --amend
 ```
 
 Finally, push the branch to the main repository (not a fork!) and use it to create a PR. When the PR is merged, a GitHub release should be created with auto-generated release notes, as well as a git tag. Then the `publish-*` CI jobs should trigger, and if everything goes well, publish the new version of the extension to both registries.
+
+## Intital contribution
+The code was migrated from the [PR in theia-trace-extension][init-contrib].
 
 [init-contrib]: https://github.com/eclipse-cdt-cloud/theia-trace-extension/pull/124
 [install]: https://code.visualstudio.com/docs/editor/extension-marketplace#_install-from-a-vsix
