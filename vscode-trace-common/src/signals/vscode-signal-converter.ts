@@ -25,7 +25,8 @@ export function convertSignalTraces(signalExperiment: Experiment): Trace[] {
             start: BigInt(t.start),
             indexingStatus: t.indexingStatus,
             nbEvents: t.nbEvents,
-            path: t.path
+            path: t.path,
+            properties: t.properties
         };
         traces.push(trace);
     });

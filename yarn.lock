@@ -7639,10 +7639,10 @@ through@2, "through@>=2.2.7 <3", through@^2.3.4, through@^2.3.6:
   resolved "https://registry.npmjs.org/through/-/through-2.3.8.tgz#0dd4c9ffaabc357960b1b724115d7e0e86a2e1f5"
   integrity sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==
 
-timeline-chart@^0.3.4:
-  version "0.3.4"
-  resolved "https://registry.npmjs.org/timeline-chart/-/timeline-chart-0.3.4.tgz#2833ac5c1250ae1273bc8287b989af350b373792"
-  integrity sha512-npz+x1/b11DzNAmh3FBS3QGLuUbvmOioZ9CSEi2e/97vo046ds1Y1wHR6vvmnhqVMmKSf0/TueQB6F8NhmhCdg==
+timeline-chart@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.npmjs.org/timeline-chart/-/timeline-chart-0.4.1.tgz#57cefac6cfa928cd84842cfb5031a157d8bb716e"
+  integrity sha512-f5lNTaY4438ml6x4bHdh29/FTXZgMOvunM5FDA1fWocxlq5PCBWvndwSh/HiqOHT0HLuom7jz9juxFtjyFCZmg==
   dependencies:
     "@types/lodash.throttle" "^4.1.4"
     glob "^7.1.6"
@@ -7679,17 +7679,17 @@ tr46@~0.0.3:
   resolved "https://registry.npmjs.org/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
   integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
 
-traceviewer-base@0.2.7, traceviewer-base@^0.2.7:
-  version "0.2.7"
-  resolved "https://registry.npmjs.org/traceviewer-base/-/traceviewer-base-0.2.7.tgz#236b1be27df31309fdd377ef347c2de492f7cbda"
-  integrity sha512-26tyH2JQQGos0OOQEx37rJisro++sakhDmokjMgTzQkhhoJbgGVQh0CKyibbHWENzf80ZI+CxfLH5NpMq/6hkg==
+traceviewer-base@0.4.2, traceviewer-base@^0.4.2:
+  version "0.4.2"
+  resolved "https://registry.npmjs.org/traceviewer-base/-/traceviewer-base-0.4.2.tgz#877058cea38ab6a658e8608bd5dc5cdaa8e68958"
+  integrity sha512-jyz9mZX7+fldkfmHb8WBNBe7k6txcgTXco6+Kv8y/xSKBVlt/YFrkmEqwPc4BG9KD6nVAdf5CcZNLO9ku67YIA==
   dependencies:
-    tsp-typescript-client "^0.4.3"
+    tsp-typescript-client "^0.5.1"
 
-traceviewer-react-components@^0.2.7:
-  version "0.2.7"
-  resolved "https://registry.npmjs.org/traceviewer-react-components/-/traceviewer-react-components-0.2.7.tgz#09f5b6732227c93b8293ca80f0b0b5de382ea3b3"
-  integrity sha512-pFRFjMd0S+Qaf2Fx0I6GwtoXrRnIiDoPjbrbE+ZqvL/+pQEMoEr15k9VAN5ghErAgjgGH8sPjL6E5UgU2Diq3A==
+traceviewer-react-components@^0.4.2:
+  version "0.4.2"
+  resolved "https://registry.npmjs.org/traceviewer-react-components/-/traceviewer-react-components-0.4.2.tgz#c23ecce5893798409432894ea72dde2932806e39"
+  integrity sha512-r+fWRaEYUGmk+c3B+i3rY7JXyYA4sA3IYlweDpXd3TYXhQmivlfL3skITHNiem7E5tbolNolG9Q5zVzqSp5wlw==
   dependencies:
     "@ag-grid-community/core" "^32.0.1"
     "@ag-grid-community/infinite-row-model" "^32.0.0"
@@ -7711,9 +7711,9 @@ traceviewer-react-components@^0.2.7:
     react-virtualized "^9.21.0"
     semantic-ui-css "^2.4.1"
     semantic-ui-react "^0.86.0"
-    timeline-chart "^0.3.4"
-    traceviewer-base "0.2.7"
-    tsp-typescript-client "^0.4.3"
+    timeline-chart "^0.4.1"
+    traceviewer-base "0.4.2"
+    tsp-typescript-client "^0.5.1"
 
 trim-newlines@^3.0.0:
   version "3.0.1"
@@ -7760,10 +7760,10 @@ tslib@^2.1.0, tslib@^2.3.0, tslib@^2.4.0:
   resolved "https://registry.npmjs.org/tslib/-/tslib-2.7.0.tgz#d9b40c5c40ab59e8738f297df3087bf1a2690c01"
   integrity sha512-gLXCKdN1/j47AiHiOkJN69hJmcbGTHI0ImLmbYLHykhgeN0jVGola9yVjFgzCUklsZQMW55o+dW7IXv3RCXDzA==
 
-tsp-typescript-client@^0.4.3:
-  version "0.4.3"
-  resolved "https://registry.npmjs.org/tsp-typescript-client/-/tsp-typescript-client-0.4.3.tgz#c2a679c8bed359ff09f4532d0365e0ee42dae461"
-  integrity sha512-6wmi9Y6ftWJHWdNmzt7b5ST2EPP3srDnPfviA/8hSt/VYsFnagDKLCWWuCHVSPee2XmEWG2vfIIy3Q6LzJdHiQ==
+tsp-typescript-client@^0.5.1:
+  version "0.5.1"
+  resolved "https://registry.npmjs.org/tsp-typescript-client/-/tsp-typescript-client-0.5.1.tgz#248ef5d0aab0c90a7066a1f8a9ebb62b3ccf2c54"
+  integrity sha512-GaE2YQLx4NmqU3aNjvZlFaEDzviKYqw1TnswW73e1NgIaeRoub9a2FmzIxMvajP+lt5dehA5TXMCDiDE6fYawA==
   dependencies:
     json-bigint sidorares/json-bigint#2c0a5f896d7888e68e5f4ae3c7ea5cd42fd54473
     node-fetch "^2.5.0"
