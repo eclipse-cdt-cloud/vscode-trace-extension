@@ -28,7 +28,7 @@ npm i -g yarn  # the default version should be ok
 
 ## Installation Instructions
 
-It depends on the trace viewer plugins from the [theia trace extension package][theia-trace] and the [tsp typescript client][tsp-client], as well as the [timeline chart][timeline-chart]. They are all available from the NPM package registry.
+It depends on the trace viewer plugins (traceviewer_base and traceviewer_react_components) from the [theia trace extension package][theia-trace] and the [tsp typescript client][tsp-client], as well as the [timeline chart][timeline-chart]. They are all available from the NPM package registry.
 
 - timeline-chart
 - traceviewer-base
@@ -40,8 +40,85 @@ To build the VSCode extension, run the `yarn` command:
 ``` bash
 yarn
 ```
+### Building from local sources
 
+To build local changes in the above libraries you need to build the libaries from source code and link them to the vscode-trace-extension repository. Follow instructions on the above repositories to clone and build the libraries.
 
+After cloing the libraries, you need to link each library so that a local build can be used. Using command `yarn link` a reference link into the user's home directory is created under `~/.config/yarn/link`. 
+The `yarn link` command makes sure that the libraries are available locally and can be linked from the `vscode-trace-extension`. This also avoids conflicts caused by different versions of the librares and their dependencies used in the corresponding repositories.
+
+Make sure that you don't have links in `~/.config/yarn/link` from other repositories than relevant for the trace viewer. The `yarn link` command won't override exising links. For example, if there is a link to `react` with the wrong version, then there will be runtime exection problems. Remove links beforehand.
+
+Assuming all repositories are stored in your home directory under the `rootDir=~/git`
+
+```bash
+cd $rootDir/tsp-typescript-client
+yarn
+cd tsp-typescript-client
+yarn link
+```
+
+```bash
+cd $rootDir/timeline-chart
+yarn
+cd timeline-chart
+yarn link
+```
+
+```bash
+cd $rootDir/theia-trace-extension
+yarn link tsp-typescript-client
+yarn link timeline-chart
+yarn
+cd packages/base
+yarn link
+cd ../react-components
+yarn link
+cd ../../node-modules/react
+yarn link
+```
+
+To link the local dependencies to this repository, run the following commands:
+
+```bash
+cd $rootDir/vscode-trace-extension
+yarn link tsp-typescript-client
+yarn link timeline-chart
+yarn link traceviewer-base
+yarn link traceviewer-react-components
+yarn link react
+```
+
+After linking the local dependencies on this repo and before running the vscode extension, run the `yarn` command:
+
+```bash
+yarn
+```
+
+### Removing links to local sources
+
+To remove the links execute the following commands:
+
+```bash
+cd $rootDir/vscode-trace-extension
+yarn unlink tsp-typescript-client
+yarn un link timeline-chart
+yarn unlink traceviewer-base
+yarn unlink traceviewer-react-components
+yarn unlink react
+```
+
+```bash
+cd $rootDir/theia-trace-extension
+yarn unlink tsp-typescript-client
+yarn unlink timeline-chart
+```
+
+Note that you will need to run `yarn install --force` to re-install the packages that were linked.
+
+```bash
+yarn install --force
+```
 
 ## Running the extension
 
