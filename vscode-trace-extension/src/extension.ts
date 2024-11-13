@@ -5,6 +5,7 @@ import { TraceExplorerItemPropertiesProvider } from './trace-explorer/properties
 import { TraceExplorerTimeRangeDataProvider } from './trace-explorer/time-range/trace-explorer-time-range-data-webview-provider';
 import { TraceExplorerAvailableViewsProvider } from './trace-explorer/available-views/trace-explorer-available-views-webview-provider';
 import { TraceExplorerOpenedTracesViewProvider } from './trace-explorer/opened-traces/trace-explorer-opened-traces-webview-provider';
+import { JsonConfigEditor } from './json-editor/json-editor';
 import {
     openDialog,
     fileHandler,
@@ -44,6 +45,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
     vscode.commands.executeCommand('setContext', 'traceViewer.serverUp', false);
 
     const resourceTypeHandler: TraceExplorerResourceTypeHandler = TraceExplorerResourceTypeHandler.getInstance();
+    const jsonConfigEditor: JsonConfigEditor = new JsonConfigEditor(messenger);
 
     await updateTspClientUrl();
     const serverStatusBarItemPriority = 1;
@@ -99,6 +101,24 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
                 await fileOpenHandler(context, file);
                 vscode.commands.executeCommand('trace-explorer.refreshContext');
             }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('traceViewer.customization.submitConfig', async () => {
+            await jsonConfigEditor.closeIfValid();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('traceViewer.customization.saveConfig', async () => {
+            await jsonConfigEditor.saveDocumentIfValid();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('traceViewer.customization.loadConfig', async () => {
+            await jsonConfigEditor.loadExistingConfig();
         })
     );
 
