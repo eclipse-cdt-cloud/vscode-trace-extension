@@ -53,7 +53,7 @@ export class JsonConfigEditor {
         });
     }
 
-    public async openJsonEditor() {
+    public async openJsonEditor(useDefaults: boolean = true) {
         if (this.isEditing) {
             vscode.window.showInformationMessage('A config editing session is already active');
             return;
@@ -67,14 +67,20 @@ export class JsonConfigEditor {
             statusBarItem.show();
 
             try {
-                const [schema, currentConfig] = await Promise.all([
-                    this.fetchSchema(),
-                    this.fetchConfig()
-                ]);
+                // Always fetch schema
+                const schema = await this.fetchSchema();
+                
+                // Get configuration based on useDefaults parameter
+                let config;
+                if (useDefaults) {
+                    config = extractSchemaDefaults(schema);
+                } else {
+                    config = await this.fetchConfig();
+                }
 
                 fs.writeFileSync(
                     this.tempFilePath, 
-                    JSON.stringify(currentConfig, null, 2),
+                    JSON.stringify(config, null, 2),
                     'utf-8'
                 );
 
@@ -127,13 +133,13 @@ export class JsonConfigEditor {
 
             if (validate(jsonContent)) {
                 // Show confirmation dialog
-                const action = await vscode.window.showInformationMessage(
-                    'Do you want to save these changes to the server?',
+                const submit = await vscode.window.showInformationMessage(
+                    'Do you want to submit this configuration?',
                     'Yes',
                     'No'
                 );
 
-                if (action === 'Yes') {
+                if (submit === 'Yes') {
                     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
                     statusBarItem.text = "$(loading~spin) Saving configuration...";
                     statusBarItem.show();
@@ -145,6 +151,42 @@ export class JsonConfigEditor {
                         statusBarItem.dispose();
                     }
                 }
+
+                const saveAs = await vscode.window.showInformationMessage(
+                    'Do you want to store this configuration for future use?',
+                    'Yes',
+                    'No'
+                );
+
+                if (saveAs === 'Yes') {
+                    // Show save file dialog
+                    const uri = await vscode.window.showSaveDialog({
+                        filters: {
+                            'JSON files': ['json']
+                        },
+                        title: 'Save Configuration File',
+                        saveLabel: 'Save Configuration',
+                        defaultUri: vscode.Uri.file('config.json')
+                    });
+
+                    if (uri) {
+                        try {
+                            // Convert the configuration to a pretty-printed JSON string
+                            const jsonString = JSON.stringify(jsonContent, null, 2);
+                            
+                            // Write the file using VS Code's workspace API
+                            await vscode.workspace.fs.writeFile(
+                                uri,
+                                Buffer.from(jsonString, 'utf8')
+                            );
+                            
+                            vscode.window.showInformationMessage('Configuration file saved successfully');
+                        } catch (error) {
+                            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+                            vscode.window.showErrorMessage(`Failed to save configuration file: ${errorMessage}`);
+                        }
+                    }
+                }   
             } else {
                 const errors = validate.errors?.map(error => 
                     `${error.instancePath} ${error.message}`
@@ -152,7 +194,7 @@ export class JsonConfigEditor {
                 
                 const viewDetails = 'View Details';
                 const response = await vscode.window.showErrorMessage(
-                    'Configuration has validation errors.',
+                    'Configuration has validation errors. \n Changes were not saved.',
                     viewDetails
                 );
 
@@ -204,4 +246,60 @@ export class JsonConfigEditor {
 
         await config.update('schemas', schemas, vscode.ConfigurationTarget.Global);
     }
+}
+
+interface JSONSchemaDefinition {
+    $schema?: string;
+    type?: string;
+    properties?: Record<string, JSONSchemaDefinition>;
+    items?: JSONSchemaDefinition;
+    default?: any;
+    enum?: any[];
+    description?: string;
+    minimum?: number;
+    maximum?: number;
+    required?: string[];
+}
+
+type DefaultValue = string | number | boolean | null | Record<string, any> | any[];
+
+/**
+ * Extracts default values from a JSON Schema and creates a default configuration object
+ * @param {JSONSchemaDefinition} schema - The JSON Schema object
+ * @param {DefaultValue} [undefinedValue=null] - Value to use when no default is specified
+ * @returns {DefaultValue} Object containing the default values
+ */
+function extractSchemaDefaults(
+    schema: JSONSchemaDefinition,
+    undefinedValue: DefaultValue = null
+): DefaultValue {
+    // Handle non-object schemas
+    if (!schema || typeof schema !== 'object') {
+        return undefinedValue;
+    }
+
+    // Handle arrays
+    if (schema.type === 'array' && schema.items) {
+        return Array.isArray(schema.default) ? schema.default : undefinedValue;
+    }
+
+    // Handle primitive types
+    if (schema.type && schema.type !== 'object') {
+        return schema.default !== undefined ? schema.default : undefinedValue;
+    }
+
+    // Handle objects
+    if (schema.properties) {
+        const defaults: Record<string, DefaultValue> = {};
+        
+        for (const [key, value] of Object.entries(schema.properties)) {
+            // Recursively process nested objects
+            defaults[key] = extractSchemaDefaults(value, undefinedValue);
+        }
+        
+        // If the schema itself has a default, use it instead
+        return schema.default !== undefined ? schema.default : defaults;
+    }
+
+    return schema.default !== undefined ? schema.default : undefinedValue;
 }
