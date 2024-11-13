@@ -35,6 +35,10 @@
     "contributes": {
         "commands": [
             {
+                "command": "yourExtension.openJsonEditor",
+                "title": "Open JSON Configuration"
+            },
+            {
                 "command": "outputs.reset",
                 "title": "Reset",
                 "icon": {
@@ -192,7 +196,11 @@
                 {
                     "command": "traces.openTraceFile",
                     "group": "navigation@40"
-                }
+                },
+                {
+                    "command": "yourExtension.openJsonEditor",
+                    "group": "navigation@41"
+                  }
             ],
             "editor/title": [
                 {
@@ -283,6 +291,7 @@
         "@vscode/codicons": "^0.0.33",
         "@vscode/vsce": "2.25.0",
         "ag-grid-react": "^28.2.0",
+        "ajv": "^8.17.1",
         "chart.js": "^2.8.0",
         "json-bigint": "sidorares/json-bigint#2c0a5f896d7888e68e5f4ae3c7ea5cd42fd54473",
         "lodash": "^4.17.15",
