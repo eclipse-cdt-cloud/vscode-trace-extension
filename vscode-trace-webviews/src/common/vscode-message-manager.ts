@@ -33,7 +33,8 @@ import {
     updateProperties,
     viewRangeUpdated,
     webviewReady,
-    StatusNotifier
+    StatusNotifier,
+    userCustomizedOutput
 } from 'vscode-trace-common/lib/messages/vscode-messages';
 import { JSONBigUtils } from 'tsp-typescript-client/lib/utils/jsonbig-utils';
 
@@ -188,4 +189,12 @@ export class VsCodeMessageManager extends Messages.MessageManager implements Sta
         const data = { path: path, line: line };
         this._messenger.sendNotification(sourceCodeLookup, _receiver ?? HOST_EXTENSION, data);
     }
+
+    async userCustomizedOutput(
+        payload: { schemas: object[] },
+        _receiver?: MessageParticipant
+    ): Promise<{ userConfig: object }> {
+        return this._messenger.sendRequest(userCustomizedOutput, HOST_EXTENSION, payload)
+    }
+
 }

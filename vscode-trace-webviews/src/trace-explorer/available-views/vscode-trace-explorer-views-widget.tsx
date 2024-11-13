@@ -16,9 +16,11 @@ import { messenger } from '.';
 import { VsCodeMessageManager } from '../../common/vscode-message-manager';
 import '../../style/react-contextify.css';
 import '../../style/trace-viewer.css';
+import { OutputConfigurationQuery, OutputDescriptor } from 'tsp-typescript-client';
 
 interface AvailableViewsAppState {
     tspClientProvider: TspClientProvider | undefined;
+    experiment: Experiment | undefined;
 }
 
 class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppState> {
@@ -41,6 +43,7 @@ class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppStat
         if (data?.wrapper) {
             experiment = JSONBigUtils.parse(data.wrapper, Experiment);
         }
+        this.setState({ experiment });
         signalManager().emit('EXPERIMENT_SELECTED', experiment);
     };
 
@@ -53,7 +56,8 @@ class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppStat
     constructor(props: {}) {
         super(props);
         this.state = {
-            tspClientProvider: undefined
+            tspClientProvider: undefined,
+            experiment: undefined,
         };
 
         this._signalHandler = new VsCodeMessageManager(messenger);
@@ -77,6 +81,38 @@ class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppStat
         }
     }
 
+    protected handleOutputCustomization = async (output: OutputDescriptor, experiment: Experiment): Promise<void> => {
+        if (!this.state.tspClientProvider) {
+            return;
+        }
+
+        const tsp = this.state.tspClientProvider.getTspClient();
+        const configSourceArray = await tsp.fetchOutputConfigurationTypes(experiment.UUID, output.id)
+            .then(res => res.getModel());
+
+        if (!configSourceArray || !configSourceArray[0]) {
+            // TODO some nice error handling or something
+            return;
+        }
+
+        console.dir(configSourceArray);
+
+        const { userConfig } = await this._signalHandler.userCustomizedOutput({ schemas: configSourceArray }) as any; // TODO fix any
+
+        if (!userConfig) {
+            // TODO some nice error handling or something
+            return;
+        }
+
+        const { name, description, options } = userConfig;
+
+        // TODO fix this parameters thing 
+        const parameters = new OutputConfigurationQuery(name, description,  'com.ericsson.flex.tracing.core.config.emca', options); 
+        await tsp.createDerivedOutput(experiment.UUID, output.id, parameters);
+        return;
+        
+    };
+
     public render(): React.ReactNode {
         return (
             <div>
@@ -85,6 +121,7 @@ class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppStat
                         id={TraceExplorerViewsWidget.ID}
                         title={TraceExplorerViewsWidget.LABEL}
                         tspClientProvider={this.state.tspClientProvider}
+                        onCustomizationClick={this.handleOutputCustomization}
                     ></ReactAvailableViewsWidget>
                 )}
             </div>
