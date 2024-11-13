@@ -35,6 +35,21 @@
     "contributes": {
         "commands": [
             {
+                "command": "traceViewer.customization.submitConfig",
+                "title": "Submit",
+                "icon": "$(pass)"
+            },
+            {
+                "command": "traceViewer.customization.loadConfig",
+                "title": "Load",
+                "icon": "$(file-submodule)"
+            },
+            {
+                "command": "traceViewer.customization.saveConfig",
+                "title": "Save",
+                "icon": "$(save)"
+            },
+            {
                 "command": "outputs.reset",
                 "title": "Reset",
                 "icon": {
@@ -239,6 +254,21 @@
                     "when": "activeWebviewPanelId == 'react'",
                     "command": "traceViewer.shortcuts",
                     "group": "navigation@9"
+                },
+                {
+                    "when": "resourcePath in traceViewer.customization.configPath",
+                    "command": "traceViewer.customization.submitConfig",
+                    "group": "navigation"
+                },
+                {
+                    "when": "resourcePath in traceViewer.customization.configPath",
+                    "command": "traceViewer.customization.saveConfig",
+                    "group": "navigation"
+                },
+                {
+                    "when": "resourcePath in traceViewer.customization.configPath",
+                    "command": "traceViewer.customization.loadConfig",
+                    "group": "navigation"
                 }
             ],
             "commandPalette": [
@@ -296,12 +326,15 @@
         "@fortawesome/react-fontawesome": "^0.1.4",
         "@vscode/codicons": "^0.0.33",
         "@vscode/vsce": "2.25.0",
-        "vscode-messenger": "^0.5.0",
+        "ag-grid-react": "^28.2.0",
+        "ajv": "^8.17.1",
         "chart.js": "^2.8.0",
+        "jsonc-parser": "^3.3.1",
         "lodash": "^4.17.15",
         "terser": "4.8.1",
-        "traceviewer-base": "^0.7.2",
-        "traceviewer-react-components": "^0.7.2",
+        "traceviewer-base": "^0.8.0",
+        "traceviewer-react-components": "^0.8.0",
+        "vscode-messenger": "^0.5.0",
         "vscode-trace-common": "0.4.0"
     },
     "devDependencies": {
