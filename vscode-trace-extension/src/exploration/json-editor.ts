@@ -53,7 +53,29 @@ export class JsonConfigEditor {
         });
     }
 
-    public async openJsonEditor(useDefaults: boolean = true) {
+    private async validateJsonFile(filePath: string, schema: any): Promise<{ isValid: boolean; content?: any; errors?: string[] }> {
+        try {
+            const fileContent = fs.readFileSync(filePath, 'utf-8');
+            const jsonContent = JSON.parse(fileContent);
+            
+            const validate = this.ajv.compile(schema);
+            if (validate(jsonContent)) {
+                return { isValid: true, content: jsonContent };
+            } else {
+                const errors = validate.errors?.map(error => 
+                    `${error.instancePath} ${error.message}`
+                ) || [];
+                return { isValid: false, errors };
+            }
+        } catch (error) {
+            if (error instanceof Error) {
+                return { isValid: false, errors: [error.message] };
+            }
+            return { isValid: false, errors: ['Unknown error occurred while validating JSON file'] };
+        }
+    }
+
+    public async openJsonEditor(options: { useDefaults?: boolean; sourceFile?: vscode.Uri } = {}) {
         if (this.isEditing) {
             vscode.window.showInformationMessage('A config editing session is already active');
             return;
@@ -70,9 +92,32 @@ export class JsonConfigEditor {
                 // Always fetch schema
                 const schema = await this.fetchSchema();
                 
-                // Get configuration based on useDefaults parameter
-                let config;
-                if (useDefaults) {
+                // Determine the configuration source
+                let config: any;
+                
+                if (options.sourceFile) {
+                    // Validate the source file against the schema
+                    const validation = await this.validateJsonFile(options.sourceFile.fsPath, schema);
+                    
+                    if (!validation.isValid) {
+                        const viewDetails = 'View Details';
+                        const response = await vscode.window.showErrorMessage(
+                            'The selected file has validation errors and cannot be loaded.',
+                            viewDetails
+                        );
+
+                        if (response === viewDetails) {
+                            const errorDoc = await vscode.workspace.openTextDocument({
+                                content: `Validation Errors:\n\n${validation.errors?.join('\n')}`,
+                                language: 'text'
+                            });
+                            await vscode.window.showTextDocument(errorDoc);
+                        }
+                        return;
+                    }
+                    
+                    config = validation.content;
+                } else if (options.useDefaults) {
                     config = extractSchemaDefaults(schema);
                 } else {
                     config = await this.fetchConfig();
@@ -90,10 +135,8 @@ export class JsonConfigEditor {
 
                 await this.setJsonSchema(uri, schema);
 
-                // Improved editor close detection
                 this.closeSubscription = vscode.window.onDidChangeVisibleTextEditors(async (editors) => {
                     if (this.trackedEditor && !editors.some(e => e.document.uri.fsPath === this.tempFilePath)) {
-                        // Editor was closed
                         if (this.closeSubscription) {
                             this.closeSubscription.dispose();
                         }

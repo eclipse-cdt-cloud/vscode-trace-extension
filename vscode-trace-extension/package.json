@@ -39,6 +39,10 @@
                 "title": "Open JSON Configuration"
             },
             {
+                "command": "yourExtension.openJsonEditorFromFile",
+                "title": "Open JSON Configuration from File"
+            },
+            {
                 "command": "outputs.reset",
                 "title": "Reset",
                 "icon": {
@@ -200,7 +204,11 @@
                 {
                     "command": "yourExtension.openJsonEditor",
                     "group": "navigation@41"
-                  }
+                },
+                {
+                    "command": "yourExtension.openJsonEditorFromFile",
+                    "group": "navigation@42"
+                }
             ],
             "editor/title": [
                 {
