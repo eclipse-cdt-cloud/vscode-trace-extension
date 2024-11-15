@@ -68,7 +68,7 @@ class TraceExplorerProperties extends React.Component<{}, PropertiesViewState> {
             `${e.currentTarget.getAttribute('data-id')}`
         );
         console.log('filename: ' + fileLocation + ':' + line);
-        console.log('Source lookup method not implemented');
+        this._signalHandler.sourceLookup(fileLocation, +line);
     }
 }
 
