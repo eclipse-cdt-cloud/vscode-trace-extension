@@ -207,6 +207,7 @@ export class TraceViewerPanel {
             ]
         });
 
+        this._panel.iconPath = vscode.Uri.joinPath(this._extensionUri, 'images', 'trace-compass.png');
         // Set the webview's initial html content
         this._panel.webview.html = this._getHtmlForWebview(this._panel.webview);
         traceExtensionWebviewManager.fireWebviewPanelCreated(this._panel);
