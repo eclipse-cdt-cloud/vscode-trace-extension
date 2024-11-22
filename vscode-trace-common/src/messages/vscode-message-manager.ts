@@ -73,7 +73,8 @@ export const VSCODE_MESSAGES = {
     RESTORE_COMPLETE: 'restoreComplete',
     OUTPUT_DATA_CHANGED: 'outputDataChanged',
     CONTRIBUTE_CONTEXT_MENU: 'contributeContextMenu',
-    CONTEXT_MENU_ITEM_CLICKED: 'contextMenuItemClicked'
+    CONTEXT_MENU_ITEM_CLICKED: 'contextMenuItemClicked',
+    SOURCE_LOOKUP: 'sourceLookup'
 };
 
 export class VsCodeMessageManager extends Messages.MessageManager {
@@ -208,5 +209,10 @@ export class VsCodeMessageManager extends Messages.MessageManager {
     contextMenuItemClicked(payload: ContextMenuItemClickedSignalPayload): void {
         const data = JSON.stringify(payload);
         vscode.postMessage({ command: VSCODE_MESSAGES.CONTEXT_MENU_ITEM_CLICKED, data: data });
+    }
+
+    sourceLookup(path: string, line: number): void {
+        const data = { path: path, line: line };
+        vscode.postMessage({ command: VSCODE_MESSAGES.SOURCE_LOOKUP, data: data });
     }
 }

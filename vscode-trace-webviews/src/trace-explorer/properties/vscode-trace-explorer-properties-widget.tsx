@@ -6,6 +6,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import React from 'react';
 import '../../style/trace-viewer.css';
+import 'traceviewer-react-components/style/trace-explorer.css';
 import { VSCODE_MESSAGES, VsCodeMessageManager } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import { ReactItemPropertiesWidget } from 'traceviewer-react-components/lib/trace-explorer/trace-explorer-properties-widget';
 import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
@@ -67,8 +68,7 @@ class TraceExplorerProperties extends React.Component<{}, PropertiesViewState> {
         const { fileLocation, line }: { fileLocation: string; line: string } = JSON.parse(
             `${e.currentTarget.getAttribute('data-id')}`
         );
-        console.log('filename: ' + fileLocation + ':' + line);
-        console.log('Source lookup method not implemented');
+        this._signalHandler.sourceLookup(fileLocation, +line);
     }
 }
 
