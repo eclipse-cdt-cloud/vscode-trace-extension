@@ -86,6 +86,12 @@ export const fileHandler =
                     if (fileStat.type === vscode.FileType.Directory) {
                         // Find recursively CTF traces
                         const foundTraces = await findTraces(filePath);
+
+                        // No CTF traces found. Add root directory as trace directory.
+                        // Back-end will reject if it is not a trace
+                        if (foundTraces.length === 0) {
+                            foundTraces.push(filePath);
+                        }
                         foundTraces.forEach(trace => tracesArray.push(trace));
                     } else {
                         // Open single trace file
