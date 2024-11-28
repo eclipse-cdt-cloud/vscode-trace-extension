@@ -7679,17 +7679,17 @@ tr46@~0.0.3:
   resolved "https://registry.npmjs.org/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
   integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
 
-traceviewer-base@0.4.3, traceviewer-base@^0.4.3:
-  version "0.4.3"
-  resolved "https://registry.npmjs.org/traceviewer-base/-/traceviewer-base-0.4.3.tgz#007f89830e9ce8d88744f1761827af6ed8d85a1a"
-  integrity sha512-erG5CUoY0F2JyLlFdiLa9fSQwhO5l7v2Gd11PwfqmvHXGmazlpmaIVobwe/hBPHviDn3tO37OtlRZSehWpfbPg==
+traceviewer-base@0.4.4, traceviewer-base@^0.4.4:
+  version "0.4.4"
+  resolved "https://registry.npmjs.org/traceviewer-base/-/traceviewer-base-0.4.4.tgz#67670e22c76cd7067bca7773d7e2bba263e3fdc6"
+  integrity sha512-3anxFolMPnTvUFD9/Yg1s097RtId2F7F5ZBRwpNlDiZGtzuNN0IS3WvQS9zNBLDt+vfugBx6oXAJa7FYglai+w==
   dependencies:
     tsp-typescript-client "^0.5.1"
 
-traceviewer-react-components@^0.4.3:
-  version "0.4.3"
-  resolved "https://registry.npmjs.org/traceviewer-react-components/-/traceviewer-react-components-0.4.3.tgz#35b1dcdfd49f5fbec6012bb3423b0dc71d5a9388"
-  integrity sha512-Ni8XK5TdZ42qFtLdffy76HQGEuVbhitWCOs/lzi+z3AwWzvUW67Ke5yQtBaOvqVql+KRaOKnn5ClhCIQBUwNwA==
+traceviewer-react-components@^0.4.4:
+  version "0.4.4"
+  resolved "https://registry.npmjs.org/traceviewer-react-components/-/traceviewer-react-components-0.4.4.tgz#02984aabaacf246312f28d811c2b209825118c10"
+  integrity sha512-kNAYzF4cLfdAbIY5uzMuOShzLFcebugWRzNsDGdYg1+8T0HtWDlJh2krbKwbQzfZPAPk5oC0O4cXe2mawNkzwQ==
   dependencies:
     "@ag-grid-community/core" "^32.0.1"
     "@ag-grid-community/infinite-row-model" "^32.0.0"
@@ -7712,7 +7712,7 @@ traceviewer-react-components@^0.4.3:
     semantic-ui-css "^2.4.1"
     semantic-ui-react "^0.86.0"
     timeline-chart "^0.4.1"
-    traceviewer-base "0.4.3"
+    traceviewer-base "0.4.4"
     tsp-typescript-client "^0.5.1"
 
 trim-newlines@^3.0.0:
