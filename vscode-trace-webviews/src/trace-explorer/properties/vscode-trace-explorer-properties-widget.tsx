@@ -38,7 +38,7 @@ class TraceExplorerProperties extends React.Component<{}, PropertiesViewState> {
                             message.data.experimentUUID,
                             message.data.outputDescriptorId
                         );
-                        signalManager().fireItemPropertiesSignalUpdated(payload);
+                        signalManager().emit('ITEM_PROPERTIES_UPDATED', payload);
                     }
                     break;
             }

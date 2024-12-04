@@ -5,7 +5,7 @@ import { VsCodeMessageManager, VSCODE_MESSAGES } from 'vscode-trace-common/lib/m
 import { Menu, Item, useContextMenu, ItemParams } from 'react-contexify';
 import { TspClientProvider } from 'vscode-trace-common/lib/client/tsp-client-provider-impl';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
-import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
+import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import '../../style/trace-viewer.css';
 import 'traceviewer-react-components/style/trace-explorer.css';
 import '../../style/react-contextify.css';
@@ -66,17 +66,17 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
                 case VSCODE_MESSAGES.TRACE_VIEWER_TAB_ACTIVATED:
                     if (message.data) {
                         const experiment = convertSignalExperiment(JSONBig.parse(message.data));
-                        signalManager().fireTraceViewerTabActivatedSignal(experiment);
+                        signalManager().emit('TRACEVIEWERTAB_ACTIVATED', experiment);
                     }
                     break;
                 case VSCODE_MESSAGES.EXPERIMENT_OPENED:
                     if (message.data) {
                         const experiment = convertSignalExperiment(JSONBig.parse(message.data));
-                        signalManager().fireExperimentOpenedSignal(experiment);
+                        signalManager().emit('EXPERIMENT_OPENED', experiment);
                     }
                     break;
                 case VSCODE_MESSAGES.TRACE_SERVER_STARTED:
-                    signalManager().fireTraceServerStartedSignal();
+                    signalManager().emit('TRACE_SERVER_STARTED');
                 case VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED:
                     if (message.data && this.state.tspClientProvider) {
                         this.state.tspClientProvider.updateTspClientUrl(message.data);
@@ -91,15 +91,15 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
         this._signalHandler.notifyReady();
         // ExperimentSelected handler is registered in the constructor (upstream code), but it's
         // better to register it here when the react component gets mounted.
-        signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
-        signalManager().on(Signals.CLOSE_TRACEVIEWERTAB, this._onRemoveTraceButton);
-        signalManager().on(Signals.OPENED_TRACES_UPDATED, this.onUpdateSignal);
+        signalManager().on('EXPERIMENT_SELECTED', this._onExperimentSelected);
+        signalManager().on('CLOSE_TRACEVIEWERTAB', this._onRemoveTraceButton);
+        signalManager().on('OPENED_TRACES_UPDATED', this.onUpdateSignal);
     }
 
     componentWillUnmount(): void {
-        signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
-        signalManager().off(Signals.CLOSE_TRACEVIEWERTAB, this._onRemoveTraceButton);
-        signalManager().off(Signals.OPENED_TRACES_UPDATED, this.onUpdateSignal);
+        signalManager().off('EXPERIMENT_SELECTED', this._onExperimentSelected);
+        signalManager().off('CLOSE_TRACEVIEWERTAB', this._onRemoveTraceButton);
+        signalManager().off('OPENED_TRACES_UPDATED', this.onUpdateSignal);
     }
 
     private initialized = false;

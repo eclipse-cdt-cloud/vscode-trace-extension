@@ -8,7 +8,7 @@ import { TraceViewerPanel } from '../trace-viewer-panel/trace-viewer-webview-pan
 import * as vscode from 'vscode';
 import { traceExtensionWebviewManager, traceServerManager } from '../extension';
 import { TraceServerContributor } from '../utils/trace-server-manager';
-import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
+import { SignalArgs, signalManager, Signals, SignalType } from 'traceviewer-base/lib/signals/signal-manager';
 import { TraceExplorerResourceTypeHandler } from '../utils/trace-explorer-resource-type-handler';
 
 export interface ExternalAPI {
@@ -17,8 +17,18 @@ export interface ExternalAPI {
     getActiveWebviews(): vscode.WebviewView[];
     onWebviewCreated(listener: (data: vscode.WebviewView) => void): void;
     onWebviewPanelCreated(listener: (data: vscode.WebviewPanel) => void): void;
-    onSignalManagerSignal(event: string | symbol, listener: (...args: unknown[]) => void): void;
-    offSignalManagerSignal(event: string | symbol, listener: (...args: unknown[]) => void): void;
+    onSignalManagerSignal<K extends SignalType>(
+        event: K,
+        listener: (
+            ...args: SignalArgs<Signals[K]> extends [] ? [] : [...SignalArgs<Signals[K]>]
+        ) => void | Promise<void>
+    ): void;
+    offSignalManagerSignal<K extends SignalType>(
+        event: K,
+        listener: (
+            ...args: SignalArgs<Signals[K]> extends [] ? [] : [...SignalArgs<Signals[K]>]
+        ) => void | Promise<void>
+    ): void;
     addTraceServerContributor(contributor: TraceServerContributor): void;
     setHandleTraceResourceType(handleFiles: boolean, handleFolders: boolean): void;
 }
@@ -75,7 +85,12 @@ export const traceExtensionAPI: ExternalAPI = {
      * @param event event for which a listener should be attached
      * @param listener event listener
      */
-    onSignalManagerSignal(event: string | symbol, listener: (...args: unknown[]) => void): void {
+    onSignalManagerSignal<K extends SignalType>(
+        event: K,
+        listener: (
+            ...args: SignalArgs<Signals[K]> extends [] ? [] : [...SignalArgs<Signals[K]>]
+        ) => void | Promise<void>
+    ): void {
         signalManager().on(event, listener);
     },
 
@@ -85,7 +100,12 @@ export const traceExtensionAPI: ExternalAPI = {
      * @param event event for which a listener should be removed
      * @param listener event listener to remove
      */
-    offSignalManagerSignal(event: string | symbol, listener: (...args: unknown[]) => void): void {
+    offSignalManagerSignal<K extends SignalType>(
+        event: K,
+        listener: (
+            ...args: SignalArgs<Signals[K]> extends [] ? [] : [...SignalArgs<Signals[K]>]
+        ) => void | Promise<void>
+    ): void {
         signalManager().off(event, listener);
     },
 

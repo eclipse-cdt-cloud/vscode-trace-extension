@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Signals, signalManager } from 'traceviewer-base/lib/signals/signal-manager';
+import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import {
     ExperimentTimeRangeData,
     ReactTimeRangeDataWidget
@@ -43,31 +43,32 @@ class TimeRangeDataWidget extends React.Component {
                     this.restoreState(mapArray, activeData);
                     return;
                 case VSCODE_MESSAGES.TRACE_VIEWER_TAB_CLOSED:
-                    signalManager().fireCloseTraceViewerTabSignal(data);
+                    signalManager().emit('CLOSE_TRACEVIEWERTAB', data);
                     break;
                 case VSCODE_MESSAGES.EXPERIMENT_SELECTED:
-                    signalManager().fireExperimentSelectedSignal(
+                    signalManager().emit(
+                        'EXPERIMENT_SELECTED',
                         data?.wrapper ? convertSignalExperiment(JSONBig.parse(data.wrapper)) : undefined
                     );
                     break;
                 case VSCODE_MESSAGES.EXPERIMENT_UPDATED:
-                    signalManager().fireExperimentUpdatedSignal(convertSignalExperiment(JSONBig.parse(data.wrapper)));
+                    signalManager().emit('EXPERIMENT_UPDATED', convertSignalExperiment(JSONBig.parse(data.wrapper)));
                     break;
                 case VSCODE_MESSAGES.EXPERIMENT_CLOSED:
-                    signalManager().fireExperimentClosedSignal(convertSignalExperiment(JSONBig.parse(data.wrapper)));
+                    signalManager().emit('EXPERIMENT_CLOSED', convertSignalExperiment(JSONBig.parse(data.wrapper)));
                     break;
                 case VSCODE_MESSAGES.SELECTION_RANGE_UPDATED:
-                    signalManager().fireSelectionRangeUpdated(JSONBig.parse(data));
+                    signalManager().emit('SELECTION_RANGE_UPDATED', JSONBig.parse(data));
                     break;
                 case VSCODE_MESSAGES.VIEW_RANGE_UPDATED:
-                    signalManager().fireViewRangeUpdated(JSONBig.parse(data));
+                    signalManager().emit('VIEW_RANGE_UPDATED', JSONBig.parse(data));
                     break;
             }
         });
     }
 
     componentWillUnmount = (): void => {
-        signalManager().off(Signals.REQUEST_SELECTION_RANGE_CHANGE, this.onRequestSelectionChange);
+        signalManager().off('REQUEST_SELECTION_RANGE_CHANGE', this.onRequestSelectionChange);
     };
 
     onRequestSelectionChange = (payload: TimeRangeUpdatePayload): void => {
@@ -76,7 +77,7 @@ class TimeRangeDataWidget extends React.Component {
 
     componentDidMount = (): void => {
         this._signalHandler.notifyReady();
-        signalManager().on(Signals.REQUEST_SELECTION_RANGE_CHANGE, this.onRequestSelectionChange);
+        signalManager().on('REQUEST_SELECTION_RANGE_CHANGE', this.onRequestSelectionChange);
     };
 
     restoreState = (mapArray: Array<ExperimentTimeRangeData>, activeData: ExperimentTimeRangeData): void => {

@@ -303,16 +303,16 @@ yarn playwright test --retries <retries>
 
 VSCode Trace Extension provides an external API that adopter extensions can rely on for communication. Currently the API is limited to the following:
 
-```javascript
-getActiveExperiment(): Experiment | undefined
-getActiveWebviewPanels(): { [key: string]: TraceViewerPanel | undefined; }
-getActiveWebviews(): vscode.WebviewView[]
-onWebviewCreated(listener: (data: vscode.WebviewView) => void): void
-onWebviewPanelCreated(listener: (data: vscode.WebviewPanel) => void): void
-onSignalManagerSignal(event: string | symbol, listener: (...args: unknown[]) => void): void;
-offSignalManagerSignal(event: string | symbol, listener: (...args: unknown[]) => void): void;
+```typescript
+getActiveExperiment(): Experiment | undefined;
+getActiveWebviewPanels(): { [key: string]: TraceViewerPanel | undefined; };
+getActiveWebviews(): vscode.WebviewView[];
+onWebviewCreated(listener: (data: vscode.WebviewView) => void): void;
+onWebviewPanelCreated(listener: (data: vscode.WebviewPanel) => void): void;
 addTraceServerContributor(contributor: TraceServerContributor): void;
 setHandleTraceResourceType(handleFiles: boolean, handleFolders: boolean): void;
+onSignalManagerSignal(event: K extends SignalType, listener: (...args: [...SignalArgs<Signals[K]>]) => void | Promise<void>): void;
+offSignalManagerSignal(event: K extends SignalType, listener: (...args: [...SignalArgs<Signals[K]>]) => void | Promise<void>): void;
 ```
 
 ### Using the API from Adopter Extensions
@@ -374,9 +374,9 @@ const _onExperimentOpened = (experiment: Experiment): void => {
     console.log(experiment.UUID);
 };
 //Add a listener
-importedApi.onSignalManagerSignal('experiment opened', _onExperimentOpened);
+importedApi.onSignalManagerSignal('EXPERIMENT_OPENED', _onExperimentOpened);
 //Remove a listener
-importedApi.offSignalManagerSignal('experiment opened', _onExperimentOpened);
+importedApi.offSignalManagerSignal('EXPERIMENT_OPENED', _onExperimentOpened);
 ```
 
 If the adopter extensions needs to add a custom hook to the trace server's start/stop API, a contribution can be made by calling `addTraceServerContributor`.

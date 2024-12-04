@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import * as React from 'react';
 import { OutputAddedSignalPayload } from 'traceviewer-base/lib/signals/output-added-signal-payload';
-import { signalManager, Signals } from 'traceviewer-base/lib/signals/signal-manager';
+import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { ReactAvailableViewsWidget } from 'traceviewer-react-components/lib/trace-explorer/trace-explorer-views-widget';
 import 'traceviewer-react-components/style/trace-explorer.css';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
@@ -49,7 +49,7 @@ class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppStat
                     if (message.data) {
                         experiment = convertSignalExperiment(JSONBig.parse(message.data));
                     }
-                    signalManager().fireExperimentSelectedSignal(experiment);
+                    signalManager().emit('EXPERIMENT_SELECTED', experiment);
                     break;
                 case VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED:
                     if (message.data && this.state.tspClientProvider) {
@@ -62,13 +62,13 @@ class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppStat
 
     componentDidMount(): void {
         this._signalHandler.notifyReady();
-        signalManager().on(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
-        signalManager().on(Signals.OUTPUT_ADDED, this._onOutputAdded);
+        signalManager().on('EXPERIMENT_SELECTED', this._onExperimentSelected);
+        signalManager().on('OUTPUT_ADDED', this._onOutputAdded);
     }
 
     componentWillUnmount(): void {
-        signalManager().off(Signals.EXPERIMENT_SELECTED, this._onExperimentSelected);
-        signalManager().off(Signals.OUTPUT_ADDED, this._onOutputAdded);
+        signalManager().off('EXPERIMENT_SELECTED', this._onExperimentSelected);
+        signalManager().off('OUTPUT_ADDED', this._onOutputAdded);
     }
 
     protected doHandleExperimentSelectedSignal(experiment: Experiment | undefined): void {
