@@ -4,6 +4,7 @@ import { TraceExplorerItemPropertiesProvider } from './trace-explorer/properties
 import { TraceExplorerTimeRangeDataProvider } from './trace-explorer/time-range/trace-explorer-time-range-data-webview-provider';
 import { TraceExplorerAvailableViewsProvider } from './trace-explorer/available-views/trace-explorer-available-views-webview-provider';
 import { TraceExplorerOpenedTracesViewProvider } from './trace-explorer/opened-traces/trace-explorer-opened-traces-webview-provider';
+import { JsonConfigEditor } from './exploration/json-editor';
 import {
     openDialog,
     fileHandler,
@@ -72,6 +73,39 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
             }
         })
     );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('yourExtension.openJsonEditorFromFile', async (fileUri?: vscode.Uri) => {
+            // If fileUri is not provided (command palette), show file picker
+            // if (!fileUri) {
+                const files = await vscode.window.showOpenDialog({
+                    canSelectFiles: true,
+                    canSelectFolders: false,
+                    canSelectMany: false,
+                    filters: {
+                        'JSON files': ['json']
+                    }
+                });
+                
+                if (!files || files.length === 0) {
+                    return;
+                }
+                
+                fileUri = files[0];
+            // }
+            
+            jsonEditor.openJsonEditor({ sourceFile: fileUri });
+        })
+    );
+
+    // TEST - TODO remove idk 
+    const jsonEditor = new JsonConfigEditor();
+    
+    let disposable = vscode.commands.registerCommand('yourExtension.openJsonEditor', () => {
+        jsonEditor.openJsonEditor();
+    });
+
+    context.subscriptions.push(disposable);
 
     // Listening to configuration change for the trace server URL
     context.subscriptions.push(
