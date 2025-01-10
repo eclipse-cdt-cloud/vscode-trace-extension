@@ -22,11 +22,17 @@
     },
     "devDependencies": {
         "@eclipse-dash/nodejs-wrapper": "^0.0.1",
-        "copy-webpack-plugin": "^11.0.0",
+        "copy-webpack-plugin": "^12.0.0",
+        "eslint": "^8.43.0",
         "eslint-config-prettier": "^9.0.0",
+        "eslint-plugin-import": "^2.21.2",
+        "eslint-plugin-no-null": "^1.0.2",
+        "eslint-plugin-react": "^7.20.0",
         "lerna": "^7.0.0",
         "ovsx": "^0.9.0",
-        "prettier": "^3.0.2"
+        "prettier": "^3.0.2",
+        "webpack": "^5.20.2",
+        "webpack-cli": "^4.5.0"
     },
     "workspaces": [
         "vscode-trace-common",
