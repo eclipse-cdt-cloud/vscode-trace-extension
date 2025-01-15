@@ -5,7 +5,7 @@ import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import * as vscode from 'vscode';
 import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import { TraceViewerPanel } from '../../trace-viewer-panel/trace-viewer-webview-panel';
-import { getTspClientUrl, updateNoExperimentsContext } from '../../utils/backend-tsp-client-provider';
+import { ClientType, getTspClientUrl, updateNoExperimentsContext } from '../../utils/backend-tsp-client-provider';
 import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 import { AbstractTraceExplorerProvider } from '../abstract-trace-explorer-provider';
 
@@ -82,7 +82,7 @@ export class TraceExplorerOpenedTracesViewProvider extends AbstractTraceExplorer
                         // Post the tspTypescriptClient
                         this._view?.webview.postMessage({
                             command: VSCODE_MESSAGES.SET_TSP_CLIENT,
-                            data: getTspClientUrl()
+                            data: getTspClientUrl(ClientType.FRONTEND)
                         });
                         if (this._selectedExperiment !== undefined) {
                             // tabActivatedSignal will select the experiment in the opened-traces view

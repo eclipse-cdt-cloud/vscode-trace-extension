@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { getTraceServerUrl } from '../utils/backend-tsp-client-provider';
+import { ClientType, getTraceServerUrl } from '../utils/backend-tsp-client-provider';
 
 /**
  * Manages the keyboard and mouse shortcuts panel
@@ -56,7 +56,7 @@ export class KeyboardShortcutsPanel {
 					img-src ${webview.cspSource};
 					script-src 'nonce-${nonce}' 'unsafe-eval';
 					style-src ${webview.cspSource} 'unsafe-inline';
-					connect-src ${getTraceServerUrl()};
+					connect-src ${getTraceServerUrl(ClientType.BACKEND)} ${getTraceServerUrl(ClientType.FRONTEND)};
                     font-src ${webview.cspSource}">
                 <base href="${packUri}/">
 			</head>

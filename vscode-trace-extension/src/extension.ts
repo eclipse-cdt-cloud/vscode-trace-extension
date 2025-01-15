@@ -14,7 +14,13 @@ import {
     keyboardShortcutsHandler
 } from './trace-explorer/trace-utils';
 import { TraceServerConnectionStatusService } from './utils/trace-server-status';
-import { updateTspClientUrl, isTraceServerUp, updateNoExperimentsContext } from './utils/backend-tsp-client-provider';
+import {
+    updateTspClientUrl,
+    isTraceServerUp,
+    updateNoExperimentsContext,
+    getTspClientUrl,
+    ClientType
+} from './utils/backend-tsp-client-provider';
 import { TraceExtensionLogger } from './utils/trace-extension-logger';
 import { ExternalAPI, traceExtensionAPI } from './external-api/external-api';
 import { TraceExtensionWebviewManager } from './utils/trace-extension-webview-manager';
@@ -78,9 +84,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
         vscode.workspace.onDidChangeConfiguration(async e => {
             if (
                 e.affectsConfiguration('trace-compass.traceserver.url') ||
-                e.affectsConfiguration('trace-compass.traceserver.apiPath')
+                e.affectsConfiguration('trace-compass.traceserver.apiPath') ||
+                e.affectsConfiguration('trace-compass.traceserver.backendUrl') ||
+                e.affectsConfiguration('trace-compass.traceserver.enableSeparateBackendUrl')
             ) {
-                const newTspClientURL = await updateTspClientUrl();
+                await updateTspClientUrl();
+                const newTspClientURL = getTspClientUrl(ClientType.FRONTEND);
 
                 // Signal the change to the `Opened traces` and `Available views` webview
                 tracesProvider.updateTraceServerUrl(newTspClientURL);

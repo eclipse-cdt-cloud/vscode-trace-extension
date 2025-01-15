@@ -258,12 +258,26 @@
                 "trace-compass.traceserver.url": {
                     "type": "string",
                     "default": "http://localhost:8080",
-                    "description": "Enter the trace server's URL, including port. Eg: http://localhost:8080."
+                    "description": "Enter the trace server's URL, including port. Eg: http://localhost:8080.",
+                    "order": 0
                 },
                 "trace-compass.traceserver.apiPath": {
                     "type": "string",
                     "default": "tsp/api",
-                    "description": "Enter the trace server's API path, to be appended to the server URL. Eg: 'tsp/api'."
+                    "description": "Enter the trace server's API path, to be appended to the server URL. Eg: 'tsp/api'.",
+                    "order": 1
+                },
+                "trace-compass.traceserver.enableSeparateBackendUrl": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable separate backend URL - Allows the vscode-backend to use a different URL. This is useful for a remote-deployment with K8s where the frontend needs to access an ingress, while backend needs to access the same trace-server using an internal URL.",
+                    "order": 2
+                },
+                "trace-compass.traceserver.backendUrl": {
+                    "type": "string",
+                    "default": "http://localhost:8080",
+                    "description": "Backend trace-server URL - Only used when separate backend URL is enabled.",
+                    "order": 4
                 }
             }
         },

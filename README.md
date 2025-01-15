@@ -424,7 +424,9 @@ Forwarded ports can be seen in the 'Ports' view of the remote VsCode.  To open t
 
 Make sure that there is no Trace Server running on your local host. If the `Trace Viewer for VSCode` is unresponsive, stop the port forwarding by pressing the 'Stop Port Fowarding (Delete)' of the trace server port and restart remote VSCode.
 
-If you are a developers of the `Trace Viewer for VsCode` and want to modify and test the extension, you can [package it as a VSCode extension (.vsix)](#package-as-a-vscode-extension-vsix), upload the `VSIX` to the remote host and install the extension using the `Install from VSIX...` view menu of the `Extensions` view.
+Make sure that the `Enable separate backend URL` setting of the `Trace Viewer for VSCode` extension is deselected (because the port can only be forwarded once).
+
+If you are a developer of the `Trace Viewer for VsCode` and want to modify and test the extension, you can [package it as a VSCode extension (.vsix)](#package-as-a-vscode-extension-vsix), upload the `VSIX` to the remote host and install the extension using the `Install from VSIX...` view menu of the `Extensions` view.
 
 ## Release/publish
 
