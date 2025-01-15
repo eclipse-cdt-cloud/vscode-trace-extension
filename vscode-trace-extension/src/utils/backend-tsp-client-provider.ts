@@ -9,32 +9,41 @@ import { TspClientProvider } from 'vscode-trace-common/lib/client/tsp-client-pro
  *  for the Trace Extension's VSCode Backend
  */
 
-let _root: string;
-let _path: string;
-let _url: string;
+let _rootBE: string;
+let _rootFE: string;
+let _urlBE: string;
+let _urlFE: string;
 let _provider: TspClientProvider;
 
-export const getTraceServerUrl = (): string => _root;
-export const getTspApiEndpoint = (): string => _path;
-export const getTspClientUrl = (): string => _url;
+export enum ClientType {
+    BACKEND = 'backend',
+    FRONTEND = 'frontend'
+}
+
+export const getTraceServerUrl = (clientType: ClientType): string =>
+    clientType === ClientType.FRONTEND ? _rootFE : _rootBE;
+export const getTspClientUrl = (clientType: ClientType): string =>
+    clientType === ClientType.FRONTEND ? _urlFE : _urlBE;
 
 export const getTspClient = (): TspClient => _provider.getTspClient();
 export const getExperimentManager = (): ExperimentManager => _provider.getExperimentManager();
 export const getTraceManager = (): TraceManager => _provider.getTraceManager();
 
-export const updateTspClientUrl = async (): Promise<string> => {
-    const _extUri = await getExternalUriFromUserSettings();
-    _root = _extUri.toString();
-    _path = getApiPathFromUserSettings();
-    _url = _root + _path;
+export const updateTspClientUrl = async (): Promise<void> => {
+    const extUri = await getExternalUriFromUserSettings(ClientType.BACKEND);
+    _rootBE = extUri.toString();
+    const apiPath = getApiPathFromUserSettings();
+    _urlBE = _rootBE + apiPath;
+
+    const extUriFE = await getExternalUriFromUserSettings(ClientType.FRONTEND);
+    _rootFE = extUriFE.toString();
+    _urlFE = _rootFE + apiPath;
 
     if (!_provider) {
-        _provider = new TspClientProvider(_url, undefined);
+        _provider = new TspClientProvider(_urlBE, undefined);
     } else {
-        _provider.updateTspClientUrl(_url);
+        _provider.updateTspClientUrl(_urlBE);
     }
-
-    return _url;
 };
 
 export const addTspClientChangeListener = (listenerFunction: (tspClient: TspClient) => void): void => {
@@ -67,9 +76,21 @@ export async function updateNoExperimentsContext(): Promise<void> {
     return;
 }
 
-async function getExternalUriFromUserSettings(): Promise<vscode.Uri> {
+async function getExternalUriFromUserSettings(clientType: ClientType): Promise<vscode.Uri> {
     const tsConfig = vscode.workspace.getConfiguration('trace-compass.traceserver');
-    const traceServerUrl: string = tsConfig.get<string>('url') || 'http://localhost:8080';
+    let traceServerUrl: string;
+    switch (clientType) {
+        case ClientType.FRONTEND:
+            traceServerUrl = tsConfig.get<string>('url') || 'http://localhost:8080';
+            break;
+        case ClientType.BACKEND:
+            traceServerUrl = tsConfig.get<boolean>('enableSeparateBackendUrl')
+                ? tsConfig.get<string>('backendUrl') || tsConfig.get<string>('url') || 'http://localhost:8080'
+                : tsConfig.get<string>('url') || 'http://localhost:8080';
+            break;
+        default:
+            throw new Error(`Invalid client type ${clientType}`);
+    }
     const url = traceServerUrl.endsWith('/') ? traceServerUrl : traceServerUrl + '/';
     const baseUri = vscode.Uri.parse(url);
     return vscode.env.asExternalUri(baseUri);

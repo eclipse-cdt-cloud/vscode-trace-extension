@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
-import { getTspClientUrl, getTraceServerUrl } from '../utils/backend-tsp-client-provider';
+import { ClientType, getTraceServerUrl, getTspClientUrl } from '../utils/backend-tsp-client-provider';
 import { TraceServerConnectionStatusService } from '../utils/trace-server-status';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
 import { handleStatusMessage, handleRemoveMessage, setStatusFromPanel } from '../common/trace-message';
@@ -263,13 +263,13 @@ export class TraceViewerPanel {
                             const wrapper: string = JSONBig.stringify(this._experiment);
                             this._panel.webview.postMessage({
                                 command: VSCODE_MESSAGES.SET_TSP_CLIENT,
-                                data: getTspClientUrl(),
+                                data: getTspClientUrl(ClientType.FRONTEND),
                                 experiment: wrapper
                             });
                         } else {
                             this._panel.webview.postMessage({
                                 command: VSCODE_MESSAGES.SET_TSP_CLIENT,
-                                data: getTspClientUrl()
+                                data: getTspClientUrl(ClientType.FRONTEND)
                             });
                         }
                         this.loadTheme();
@@ -531,7 +531,7 @@ export class TraceViewerPanel {
 					img-src ${webview.cspSource} data:;
 					script-src 'nonce-${nonce}' 'unsafe-eval';
 					style-src ${webview.cspSource} 'unsafe-inline';
-					connect-src ${getTraceServerUrl()};
+					connect-src ${getTraceServerUrl(ClientType.BACKEND)} ${getTraceServerUrl(ClientType.FRONTEND)};
 					font-src ${webview.cspSource} data:">
 				<link href="${codiconsUri}" rel="stylesheet" />
 				<base href="${packUri}/">
@@ -569,7 +569,7 @@ export class TraceViewerPanel {
 					img-src ${webview.cspSource} data:;
 					script-src 'nonce-${nonce}' 'unsafe-eval';
 					style-src ${webview.cspSource} 'unsafe-inline';
-					connect-src ${getTraceServerUrl()};
+					connect-src ${getTraceServerUrl(ClientType.BACKEND)} ${getTraceServerUrl(ClientType.FRONTEND)};
 					font-src ${webview.cspSource} data:">
 				<link href="${codiconsUri}" rel="stylesheet" />
 				<base href="${packUri}/">

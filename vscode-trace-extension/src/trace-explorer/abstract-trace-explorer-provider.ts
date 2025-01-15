@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as vscode from 'vscode';
 import { TraceServerConnectionStatusService } from '../utils/trace-server-status';
-import { getTraceServerUrl } from '../utils/backend-tsp-client-provider';
+import { ClientType, getTraceServerUrl } from '../utils/backend-tsp-client-provider';
 import { traceExtensionWebviewManager } from 'vscode-trace-extension/src/extension';
 import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
 
@@ -93,7 +93,7 @@ export abstract class AbstractTraceExplorerProvider implements vscode.WebviewVie
 					img-src ${webview.cspSource};
 					script-src 'nonce-${nonce}' 'unsafe-eval';
 					style-src ${webview.cspSource} 'unsafe-inline';
-					connect-src ${getTraceServerUrl()};
+					connect-src ${getTraceServerUrl(ClientType.BACKEND)} ${getTraceServerUrl(ClientType.FRONTEND)};
 					font-src ${webview.cspSource}">
 				<link href="${codiconsUri}" rel="stylesheet" />
 				<base href="${packUri}/">
