@@ -6,7 +6,19 @@ import * as vscode from 'vscode';
 import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import { TraceViewerPanel } from '../../trace-viewer-panel/trace-viewer-webview-panel';
 import { ClientType, getTspClientUrl, updateNoExperimentsContext } from '../../utils/backend-tsp-client-provider';
-import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
+import {
+    webviewReady,
+    connectionStatus,
+    reOpenTrace,
+    closeTrace,
+    deleteTrace,
+    openTracesUpdated,
+    openTrace,
+    experimentSelected,
+    traceViewerTabActivated,
+    setTspClient,
+    experimentOpened
+} from 'vscode-trace-common/lib/messages/vscode-messages';
 import { AbstractTraceExplorerProvider } from '../abstract-trace-explorer-provider';
 
 const JSONBig = JSONBigConfig({
@@ -26,16 +38,76 @@ export class TraceExplorerOpenedTracesViewProvider extends AbstractTraceExplorer
 
     private _selectedExperiment: Experiment | undefined;
 
+    // Signal handlers
     private _onOpenedTracesWidgetActivated = (experiment: Experiment): void =>
         this.doHandleTracesWidgetActivatedSignal(experiment);
     private _onExperimentSelected = (experiment: Experiment | undefined): void =>
         this.doHandleExperimentSelectedSignal(experiment);
     private _onExperimentOpened = (experiment: Experiment): void => this.doHandleExperimentOpenedSignal(experiment);
 
+    // VSCODE message handlers
+    private _onVscodeWebviewReady = (): void => {
+        // Post the tspTypescriptClient
+        this._messenger.sendNotification(setTspClient, this._webviewParticipant, getTspClientUrl(ClientType.FRONTEND));
+        if (this._selectedExperiment !== undefined) {
+            signalManager().emit('TRACEVIEWERTAB_ACTIVATED', this._selectedExperiment);
+        }
+    };
+
+    private _onVscodeConnectionStatus = (data: any): void => {
+        if (data?.status) {
+            const status: boolean = JSON.parse(data.status);
+            this._statusService.updateServerStatus(status);
+        }
+    };
+
+    private _onVscodeOpenTrace = (): void => {
+        vscode.commands.executeCommand('openedTraces.openTrace');
+    };
+
+    private _onVscodeReOpenTrace = (data: any): void => {
+        if (data?.wrapper) {
+            const experiment = convertSignalExperiment(JSONBig.parse(data.wrapper));
+            const existingPanel = TraceViewerPanel.getExistingPanel(experiment.name);
+            const panel = TraceViewerPanel.createOrShow(
+                this._extensionUri,
+                experiment.name,
+                this._statusService,
+                this._messenger
+            );
+            // Only set the experiment if it's actually re-opend and not just a re-selection
+            if (existingPanel === undefined) {
+                panel.setExperiment(experiment);
+            }
+        }
+    };
+
+    private _onVscodeCloseTrace = (data: any): void => {
+        if (data?.wrapper) {
+            // just remove the panel here
+            TraceViewerPanel.disposePanel(this._extensionUri, JSONBig.parse(data.wrapper).name);
+            signalManager().emit('EXPERIMENT_SELECTED', undefined);
+        }
+    };
+
+    private _onVscodeOpenTracesUpdated = (_numberOfOpenedTraces: number): void => {
+        updateNoExperimentsContext();
+    };
+
+    private _onVscodeExperimentSelected = (data: any): void => {
+        let experiment: Experiment | undefined;
+        if (data?.wrapper) {
+            experiment = convertSignalExperiment(JSONBig.parse(data.wrapper));
+        } else {
+            experiment = undefined;
+        }
+        signalManager().emit('EXPERIMENT_SELECTED', experiment);
+    };
+
     protected doHandleExperimentOpenedSignal(experiment: Experiment): void {
         if (this._view && experiment) {
             const wrapper: string = JSONBig.stringify(experiment);
-            this._view.webview.postMessage({ command: VSCODE_MESSAGES.EXPERIMENT_OPENED, data: wrapper });
+            this._messenger.sendNotification(experimentOpened, this._webviewParticipant, wrapper);
         }
     }
 
@@ -46,7 +118,8 @@ export class TraceExplorerOpenedTracesViewProvider extends AbstractTraceExplorer
         if (this._view) {
             this._selectedExperiment = experiment;
             const wrapper: string = JSONBig.stringify(experiment);
-            this._view.webview.postMessage({ command: VSCODE_MESSAGES.TRACE_VIEWER_TAB_ACTIVATED, data: wrapper });
+            this._messenger.sendNotification(traceViewerTabActivated, this._webviewParticipant, wrapper);
+
             if (!this._view.visible) {
                 // Note that the open-traces webview will send experimentSelectedSignal signal to update the
                 // available-views view. If the webview is not visible (e.g. it's minimized) then send the signal
@@ -63,75 +136,26 @@ export class TraceExplorerOpenedTracesViewProvider extends AbstractTraceExplorer
     }
 
     protected init(
-        webviewView: vscode.WebviewView,
+        _webviewView: vscode.WebviewView,
         _context: vscode.WebviewViewResolveContext,
         _token: vscode.CancellationToken
     ): void {
-        webviewView.webview.onDidReceiveMessage(
-            message => {
-                const command: string = message.command;
-                const data: any = message.data;
-                switch (command) {
-                    case VSCODE_MESSAGES.CONNECTION_STATUS:
-                        if (data?.status) {
-                            const status: boolean = JSON.parse(message.data.status);
-                            this._statusService.updateServerStatus(status);
-                        }
-                        return;
-                    case VSCODE_MESSAGES.WEBVIEW_READY:
-                        // Post the tspTypescriptClient
-                        this._view?.webview.postMessage({
-                            command: VSCODE_MESSAGES.SET_TSP_CLIENT,
-                            data: getTspClientUrl(ClientType.FRONTEND)
-                        });
-                        if (this._selectedExperiment !== undefined) {
-                            // tabActivatedSignal will select the experiment in the opened-traces view
-                            // which will then update available-views view
-                            signalManager().emit('TRACEVIEWERTAB_ACTIVATED', this._selectedExperiment);
-                        }
-                        return;
-                    case VSCODE_MESSAGES.RE_OPEN_TRACE:
-                        if (data && data.wrapper) {
-                            const experiment = convertSignalExperiment(JSONBig.parse(data.wrapper));
-                            const existingPanel = TraceViewerPanel.getExistingPanel(experiment.name);
-                            const panel = TraceViewerPanel.createOrShow(
-                                this._extensionUri,
-                                experiment.name,
-                                this._statusService
-                            );
-                            // Only set the experiment if it's actually re-opend and not just a re-selection
-                            if (existingPanel === undefined) {
-                                panel.setExperiment(experiment);
-                            }
-                        }
-                        return;
-                    case VSCODE_MESSAGES.CLOSE_TRACE:
-                    case VSCODE_MESSAGES.DELETE_TRACE:
-                        if (data && data.wrapper) {
-                            // just remove the panel here
-                            TraceViewerPanel.disposePanel(this._extensionUri, JSONBig.parse(data.wrapper).name);
-                            signalManager().emit('EXPERIMENT_SELECTED', undefined);
-                        }
-                        return;
-                    case VSCODE_MESSAGES.OPENED_TRACES_UPDATED:
-                        updateNoExperimentsContext();
-                        return;
-                    case VSCODE_MESSAGES.OPEN_TRACE:
-                        vscode.commands.executeCommand('openedTraces.openTrace');
-                        return;
-                    case VSCODE_MESSAGES.EXPERIMENT_SELECTED: {
-                        let experiment: Experiment | undefined;
-                        if (data && data.wrapper) {
-                            experiment = convertSignalExperiment(JSONBig.parse(data.wrapper));
-                        } else {
-                            experiment = undefined;
-                        }
-                        signalManager().emit('EXPERIMENT_SELECTED', experiment);
-                    }
-                }
-            },
-            undefined,
-            this._disposables
+        const options = {
+            sender: this._webviewParticipant
+        };
+        this._disposables.push(this._messenger.onNotification<any>(webviewReady, this._onVscodeWebviewReady, options));
+        this._disposables.push(
+            this._messenger.onNotification<any>(connectionStatus, this._onVscodeConnectionStatus, options)
+        );
+        this._disposables.push(this._messenger.onNotification<any>(openTrace, this._onVscodeOpenTrace, options));
+        this._disposables.push(this._messenger.onNotification<any>(reOpenTrace, this._onVscodeReOpenTrace, options));
+        this._disposables.push(this._messenger.onNotification<any>(closeTrace, this._onVscodeCloseTrace, options));
+        this._disposables.push(this._messenger.onNotification<any>(deleteTrace, this._onVscodeCloseTrace, options));
+        this._disposables.push(
+            this._messenger.onNotification<number>(openTracesUpdated, this._onVscodeOpenTracesUpdated, options)
+        );
+        this._disposables.push(
+            this._messenger.onNotification<any>(experimentSelected, this._onVscodeExperimentSelected, options)
         );
 
         signalManager().on('TRACEVIEWERTAB_ACTIVATED', this._onOpenedTracesWidgetActivated);
@@ -142,6 +166,7 @@ export class TraceExplorerOpenedTracesViewProvider extends AbstractTraceExplorer
         signalManager().off('TRACEVIEWERTAB_ACTIVATED', this._onOpenedTracesWidgetActivated);
         signalManager().off('EXPERIMENT_SELECTED', this._onExperimentSelected);
         signalManager().off('EXPERIMENT_OPENED', this._onExperimentOpened);
+        this._disposables.forEach(disposable => disposable.dispose());
         super.dispose();
     }
 }
