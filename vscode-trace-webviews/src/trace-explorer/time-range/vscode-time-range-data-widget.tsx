@@ -1,16 +1,27 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import JSONBigConfig from 'json-bigint';
 import * as React from 'react';
 import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
+import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
 import {
     ExperimentTimeRangeData,
     ReactTimeRangeDataWidget
 } from 'traceviewer-react-components/lib/trace-explorer/trace-explorer-time-range-data-widget';
 import 'traceviewer-react-components/style/trace-explorer.css';
+import {
+    experimentClosed,
+    experimentSelected,
+    experimentUpdated,
+    restoreView,
+    selectionRangeUpdated,
+    traceViewerTabClosed,
+    viewRangeUpdated
+} from 'vscode-trace-common/lib/messages/vscode-messages';
+import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
+import { messenger } from '.';
+import { VsCodeMessageManager } from '../../common/vscode-message-manager';
 import '../../style/react-contextify.css';
 import '../../style/trace-viewer.css';
-import JSONBigConfig from 'json-bigint';
-import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
-import { VSCODE_MESSAGES, VsCodeMessageManager } from 'vscode-trace-common/lib/messages/vscode-message-manager';
-import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true
@@ -20,8 +31,6 @@ interface TimeRangeDataWidgetProps {
     data: boolean;
 }
 
-// declare const vscode: vscode;
-
 class TimeRangeDataWidget extends React.Component {
     private _signalHandler: VsCodeMessageManager;
     private _reactRef: React.RefObject<ReactTimeRangeDataWidget>;
@@ -29,42 +38,63 @@ class TimeRangeDataWidget extends React.Component {
     static ID = 'trace-explorer-time-range-data-widget';
     static LABEL = 'Time Range Data';
 
+    // VSCODE message handlers
+    private _onVscodeExperimentSelected = (data: any): void => {
+        signalManager().emit(
+            'EXPERIMENT_SELECTED',
+            data?.wrapper ? convertSignalExperiment(JSONBig.parse(data.wrapper)) : undefined
+        );
+    };
+
+    private _onVscodeExperimentUpdated = (data: any): void => {
+        if (data?.wrapper) {
+            signalManager().emit('EXPERIMENT_UPDATED', convertSignalExperiment(JSONBig.parse(data.wrapper)));
+        }
+    };
+
+    private _onVscodeExperimentClosed = (data: any): void => {
+        if (data?.wrapper) {
+            signalManager().emit('EXPERIMENT_CLOSED', convertSignalExperiment(JSONBig.parse(data.wrapper)));
+        }
+    };
+
+    private _onVscodeTraceViewerTabClosed = (data: any): void => {
+        if (data) {
+            signalManager().emit('CLOSE_TRACEVIEWERTAB', data);
+        }
+    };
+
+    private _onVscodeSelectionRangeUpdated = (data: any): void => {
+        if (data) {
+            const result = JSONBig.parse(data);
+            signalManager().emit('SELECTION_RANGE_UPDATED', result);
+        }
+    };
+
+    private _onVscodeViewRangeUpdated = (data: any): void => {
+        if (data) {
+            signalManager().emit('VIEW_RANGE_UPDATED', JSONBig.parse(data));
+        }
+    };
+
+    private _onVscodeRestoreView = (data: any): void => {
+        if (data) {
+            const { mapArray, activeData } = JSONBig.parse(data);
+            this.restoreState(mapArray, activeData);
+        }
+    };
+
     constructor(props: TimeRangeDataWidgetProps) {
         super(props);
-        this._signalHandler = new VsCodeMessageManager();
+        this._signalHandler = new VsCodeMessageManager(messenger);
         this._reactRef = React.createRef();
-
-        window.addEventListener('message', event => {
-            const { command, data } = event.data;
-
-            switch (command) {
-                case VSCODE_MESSAGES.RESTORE_VIEW:
-                    const { mapArray, activeData } = JSONBig.parse(data);
-                    this.restoreState(mapArray, activeData);
-                    return;
-                case VSCODE_MESSAGES.TRACE_VIEWER_TAB_CLOSED:
-                    signalManager().emit('CLOSE_TRACEVIEWERTAB', data);
-                    break;
-                case VSCODE_MESSAGES.EXPERIMENT_SELECTED:
-                    signalManager().emit(
-                        'EXPERIMENT_SELECTED',
-                        data?.wrapper ? convertSignalExperiment(JSONBig.parse(data.wrapper)) : undefined
-                    );
-                    break;
-                case VSCODE_MESSAGES.EXPERIMENT_UPDATED:
-                    signalManager().emit('EXPERIMENT_UPDATED', convertSignalExperiment(JSONBig.parse(data.wrapper)));
-                    break;
-                case VSCODE_MESSAGES.EXPERIMENT_CLOSED:
-                    signalManager().emit('EXPERIMENT_CLOSED', convertSignalExperiment(JSONBig.parse(data.wrapper)));
-                    break;
-                case VSCODE_MESSAGES.SELECTION_RANGE_UPDATED:
-                    signalManager().emit('SELECTION_RANGE_UPDATED', JSONBig.parse(data));
-                    break;
-                case VSCODE_MESSAGES.VIEW_RANGE_UPDATED:
-                    signalManager().emit('VIEW_RANGE_UPDATED', JSONBig.parse(data));
-                    break;
-            }
-        });
+        messenger.onNotification(experimentSelected, this._onVscodeExperimentSelected);
+        messenger.onNotification(experimentUpdated, this._onVscodeExperimentUpdated);
+        messenger.onNotification(experimentClosed, this._onVscodeExperimentClosed);
+        messenger.onNotification(traceViewerTabClosed, this._onVscodeTraceViewerTabClosed);
+        messenger.onNotification(selectionRangeUpdated, this._onVscodeSelectionRangeUpdated);
+        messenger.onNotification(viewRangeUpdated, this._onVscodeViewRangeUpdated);
+        messenger.onNotification(restoreView, this._onVscodeRestoreView);
     }
 
     componentWillUnmount = (): void => {

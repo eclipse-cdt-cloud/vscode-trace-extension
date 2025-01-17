@@ -1,10 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as vscode from 'vscode';
 import JSONBigConfig from 'json-bigint';
 import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
 import { TimeRangeDataMap } from 'traceviewer-react-components/lib/components/utils/time-range-data-map';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
-import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
+import {
+    requestSelectionRangeChange,
+    experimentSelected,
+    experimentUpdated,
+    experimentClosed,
+    traceViewerTabClosed,
+    selectionRangeUpdated,
+    viewRangeUpdated,
+    restoreView
+} from 'vscode-trace-common/lib/messages/vscode-messages';
 import { AbstractTraceExplorerProvider } from '../abstract-trace-explorer-provider';
 
 const JSONBig = JSONBigConfig({
@@ -23,34 +33,36 @@ export class TraceExplorerTimeRangeDataProvider extends AbstractTraceExplorerPro
     };
     private _experimentDataMap = new TimeRangeDataMap();
 
+    // VSCODE message handlers
+    private _onVscodeRequestSelectionRangeChange = (data: any): void => {
+        const parsedData = data ? JSONBig.parse(data) : undefined;
+        signalManager().emit('REQUEST_SELECTION_RANGE_CHANGE', parsedData);
+    };
+
     protected init(
-        webviewView: vscode.WebviewView,
+        _webviewView: vscode.WebviewView,
         _context: vscode.WebviewViewResolveContext,
         _token: vscode.CancellationToken
     ): void {
-        webviewView.webview.onDidReceiveMessage(
-            message => {
-                const command = message?.command;
-                const parsedData = message?.data ? JSONBig.parse(message.data) : undefined;
+        const options = {
+            sender: this._webviewParticipant
+        };
 
-                switch (command) {
-                    case VSCODE_MESSAGES.REQUEST_SELECTION_RANGE_CHANGE:
-                        signalManager().emit('REQUEST_SELECTION_RANGE_CHANGE', parsedData);
-                        break;
-                }
-            },
-            undefined,
-            this._disposables
+        this._disposables.push(
+            this._messenger.onNotification<any>(
+                requestSelectionRangeChange,
+                this._onVscodeRequestSelectionRangeChange,
+                options
+            )
         );
 
-        webviewView.onDidChangeVisibility(() => {
+        _webviewView.onDidChangeVisibility(() => {
             if (this._view?.visible) {
                 const data = {
                     mapArray: Array.from(this._experimentDataMap.experimentDataMap.values()),
                     activeData: this._experimentDataMap.activeData
                 };
-                this._view?.webview.postMessage({
-                    command: VSCODE_MESSAGES.RESTORE_VIEW,
+                this._messenger.sendNotification(restoreView, this._webviewParticipant, {
                     data: JSONBig.stringify(data)
                 });
             }
@@ -71,28 +83,23 @@ export class TraceExplorerTimeRangeDataProvider extends AbstractTraceExplorerPro
         signalManager().off('EXPERIMENT_UPDATED', this.onExperimentUpdated);
         signalManager().off('EXPERIMENT_CLOSED', this.onExperimentClosed);
         signalManager().off('CLOSE_TRACEVIEWERTAB', this.onExperimentTabClosed);
+
         super.dispose();
     }
 
     private onViewRangeUpdated = (update: TimeRangeUpdatePayload) => {
-        this._view?.webview.postMessage({
-            command: VSCODE_MESSAGES.VIEW_RANGE_UPDATED,
-            data: JSONBig.stringify(update)
-        });
+        this._messenger.sendNotification(viewRangeUpdated, this._webviewParticipant, JSONBig.stringify(update));
         this._experimentDataMap.updateViewRange(update);
     };
 
     private onSelectionRangeUpdated = (update: TimeRangeUpdatePayload) => {
-        this._view?.webview.postMessage({
-            command: VSCODE_MESSAGES.SELECTION_RANGE_UPDATED,
-            data: JSONBig.stringify(update)
-        });
+        this._messenger.sendNotification(selectionRangeUpdated, this._webviewParticipant, JSONBig.stringify(update));
         this._experimentDataMap.updateSelectionRange(update);
     };
 
     private onExperimentSelected = (experiment: Experiment | undefined) => {
         const data = { wrapper: experiment ? JSONBig.stringify(experiment) : undefined };
-        this._view?.webview.postMessage({ command: VSCODE_MESSAGES.EXPERIMENT_SELECTED, data });
+        this._messenger.sendNotification(experimentSelected, this._webviewParticipant, data);
         if (experiment) {
             this._experimentDataMap.updateAbsoluteRange(experiment);
         }
@@ -101,18 +108,18 @@ export class TraceExplorerTimeRangeDataProvider extends AbstractTraceExplorerPro
 
     private onExperimentUpdated = (experiment: Experiment) => {
         const data = { wrapper: JSONBig.stringify(experiment) };
-        this._view?.webview.postMessage({ command: VSCODE_MESSAGES.EXPERIMENT_UPDATED, data });
+        this._messenger.sendNotification(experimentUpdated, this._webviewParticipant, data);
         this._experimentDataMap.updateAbsoluteRange(experiment);
     };
 
     private onExperimentClosed = (experiment: Experiment) => {
         const data = { wrapper: JSONBig.stringify(experiment) };
-        this._view?.webview.postMessage({ command: VSCODE_MESSAGES.EXPERIMENT_CLOSED, data });
+        this._messenger.sendNotification(experimentClosed, this._webviewParticipant, data);
         this._experimentDataMap.delete(experiment);
     };
 
     private onExperimentTabClosed = (experimentUUID: string) => {
-        this._view?.webview.postMessage({ command: VSCODE_MESSAGES.TRACE_VIEWER_TAB_CLOSED, data: experimentUUID });
+        this._messenger.sendNotification(traceViewerTabClosed, this._webviewParticipant, experimentUUID);
         this._experimentDataMap.delete(experimentUUID);
     };
 }

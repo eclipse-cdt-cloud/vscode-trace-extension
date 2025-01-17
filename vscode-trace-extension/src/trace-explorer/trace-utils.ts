@@ -3,8 +3,8 @@ import * as path from 'path';
 import { Trace as TspTrace } from 'tsp-typescript-client/lib/models/trace';
 import { TraceViewerPanel } from '../trace-viewer-panel/trace-viewer-webview-panel';
 import { getExperimentManager, getTraceManager } from '../utils/backend-tsp-client-provider';
-import { traceLogger } from '../extension';
 import { updateNoExperimentsContext } from '../utils/backend-tsp-client-provider';
+import { messenger, traceLogger } from '../extension';
 import { KeyboardShortcutsPanel } from '../trace-viewer-panel/keyboard-shortcuts-panel';
 
 // eslint-disable-next-line no-shadow
@@ -139,7 +139,8 @@ export const fileHandler =
                     const panel = TraceViewerPanel.createOrShow(
                         context.extensionUri,
                         experiment?.name ?? name,
-                        undefined
+                        undefined,
+                        messenger
                     );
                     if (experiment) {
                         panel.setExperiment(experiment);

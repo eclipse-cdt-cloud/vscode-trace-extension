@@ -1,30 +1,51 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-balham.css';
 import JSONBigConfig from 'json-bigint';
 import * as React from 'react';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
-import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import {
-    ContextMenuItems,
-    ContextMenuContributedSignalPayload
+    ContextMenuContributedSignalPayload,
+    ContextMenuItems
 } from 'traceviewer-base/lib/signals/context-menu-contributed-signal-payload';
-import { RowSelectionsChangedSignalPayload } from 'traceviewer-base/lib/signals/row-selections-changed-signal-payload';
 import { ContextMenuItemClickedSignalPayload } from 'traceviewer-base/lib/signals/context-menu-item-clicked-signal-payload';
+import { ItemPropertiesSignalPayload } from 'traceviewer-base/lib/signals/item-properties-signal-payload';
+import { RowSelectionsChangedSignalPayload } from 'traceviewer-base/lib/signals/row-selections-changed-signal-payload';
+import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
+import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
 import { TraceContextComponent } from 'traceviewer-react-components/lib/components/trace-context-component';
 import 'traceviewer-react-components/style/trace-context-style.css';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
+import { MarkerSet } from 'tsp-typescript-client/lib/models/markerset';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
 import { TspClientProvider } from 'vscode-trace-common/lib/client/tsp-client-provider-impl';
-import { MarkerSet } from 'tsp-typescript-client/lib/models/markerset';
-import { VsCodeMessageManager, VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
+import {
+    setTspClient,
+    traceServerUrlChanged,
+    experimentSelected,
+    setExperiment,
+    addOutput,
+    outputDataChanged,
+    setTheme,
+    openOverview,
+    resetZoom,
+    undo,
+    redo,
+    updateZoom,
+    getMarkerCategories,
+    getMarkerSets,
+    updateMarkerCategoryState,
+    updateMarkerSetState,
+    contributeContextMenu,
+    connectionStatus
+} from 'vscode-trace-common/lib/messages/vscode-messages';
+import { VsCodeMessageManager } from '../common/vscode-message-manager';
 import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
+import { messenger } from '.';
 import '../style/trace-viewer.css';
-import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
-import { TimeRange } from 'traceviewer-base/lib/utils/time-range';
-import { ItemPropertiesSignalPayload } from 'traceviewer-base/lib/signals/item-properties-signal-payload';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true
@@ -45,36 +66,31 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
 
     private _signalHandler: VsCodeMessageManager;
 
-    private onViewRangeUpdated = (payload: TimeRangeUpdatePayload): void =>
-        this._signalHandler.viewRangeUpdated(payload);
-    private onSelectionRangeUpdated = (payload: TimeRangeUpdatePayload): void =>
-        this._signalHandler.selectionRangeUpdated(payload);
-    private onExperimentUpdated = (payload: Experiment): void => this._signalHandler.experimentUpdated(payload);
-
-    private _onProperties = (properties: ItemPropertiesSignalPayload): void =>
-        this.doHandlePropertiesSignal(properties);
-    private _onSaveAsCSV = (traceId: string, data: string): void => this.doHandleSaveAsCSVSignal(traceId, data);
-    private _onRowSelectionChanged = (payload: RowSelectionsChangedSignalPayload): void =>
-        this.doHandleRowSelectSignal(payload);
-    private _onContextMenuItemClicked = (payload: ContextMenuItemClickedSignalPayload): void =>
-        this.doHandleContextMenuItemClicked(payload);
-
     /** Signal Handlers */
-    private doHandlePropertiesSignal(properties: ItemPropertiesSignalPayload) {
+    private onViewRangeUpdated = (payload: TimeRangeUpdatePayload): void => {
+        this._signalHandler.viewRangeUpdated(payload);
+    };
+    private onSelectionRangeUpdated = (payload: TimeRangeUpdatePayload): void => {
+        this._signalHandler.selectionRangeUpdated(payload);
+    };
+    private onExperimentUpdated = (payload: Experiment): void => {
+        this._signalHandler.experimentUpdated(payload);
+    };
+
+    private _onProperties = (properties: ItemPropertiesSignalPayload): void => {
         this._signalHandler.propertiesUpdated(properties);
-    }
+    };
 
-    private doHandleSaveAsCSVSignal(traceId: string, data: string) {
+    private _onSaveAsCSV = (traceId: string, data: string): void => {
         this._signalHandler.saveAsCSV({ traceId, data });
-    }
+    };
 
-    private doHandleRowSelectSignal(payload: RowSelectionsChangedSignalPayload) {
+    private _onRowSelectionChanged = (payload: RowSelectionsChangedSignalPayload): void => {
         this._signalHandler.rowSelectChanged(payload);
-    }
-
-    private doHandleContextMenuItemClicked(payload: ContextMenuItemClickedSignalPayload) {
+    };
+    private _onContextMenuItemClicked = (payload: ContextMenuItemClickedSignalPayload): void => {
         this._signalHandler.contextMenuItemClicked(payload);
-    }
+    };
 
     private _onOverviewSelected = (traceId: string, outputDescriptor: OutputDescriptor): void =>
         this.doHandleOverviewSelectedSignal(traceId, outputDescriptor);
@@ -89,6 +105,117 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
         const index = this.resizeHandlers.indexOf(h, 0);
         if (index > -1) {
             this.resizeHandlers.splice(index, 1);
+        }
+    };
+
+    // VSCODE message handlers
+    private _onVscodeSetTspClient = (data: any): void => {
+        this.setState(
+            {
+                tspClientProvider: new TspClientProvider(data.data, this._signalHandler)
+            },
+            () => {
+                if (data.experiment) {
+                    this.doHandleExperimentSetSignal(convertSignalExperiment(JSONBig.parse(data.experiment)), true);
+                }
+            }
+        );
+    };
+
+    private _onVscodeExperimentSelected = (data: any): void => {
+        if (data?.wrapper) {
+            this.doHandleExperimentSelectedSignal(convertSignalExperiment(JSONBig.parse(data.wrapper)));
+        }
+    };
+
+    private _onVscodeUrlChanged = (data: string): void => {
+        if (data && this.state.tspClientProvider) {
+            this.state.tspClientProvider.updateTspClientUrl(data);
+        }
+    };
+
+    private _onVscodeSetExperiment = (data: any): void => {
+        if (data?.wrapper) {
+            this.doHandleExperimentSetSignal(convertSignalExperiment(JSONBig.parse(data.wrapper)), false);
+        }
+    };
+
+    private _onVscodeAddOutput = (data: any): void => {
+        if (data?.wrapper) {
+            // FIXME: JSONBig.parse() create bigint if numbers are small
+            // Not an issue right now for output descriptors.
+            const descriptor: OutputDescriptor = JSONBig.parse(data.wrapper);
+            this.doHandleOutputAddedMessage(descriptor);
+        }
+    };
+
+    private _onVscodeOutputDataChanged = (data: any): void => {
+        if (data) {
+            const descriptors: OutputDescriptor[] = JSONBig.parse(data);
+            this.doHandleOutputDataChanged(descriptors);
+        }
+    };
+
+    private _onVscodeSetTheme = (data: any): void => {
+        this.doHandleThemeChanged(data);
+    };
+
+    private _onVscodeOpenOverview = (): void => {
+        this.doHandleExperimentSetSignal(this.state.experiment, false);
+    };
+
+    private _onVscodeResetZoom = (): void => {
+        this.resetZoom();
+    };
+
+    private _onVscodeUndo = (): void => {
+        this.undo();
+    };
+
+    private _onVscodeRedo = (): void => {
+        this.redo();
+    };
+
+    private _onVscodeUpdateZoom = (data: any): void => {
+        this.updateZoom(data);
+        signalManager().emit('VIEW_RANGE_UPDATED', JSONBig.parse(data));
+    };
+
+    private _onVscodeGetMarkerCategories = (): void => {
+        this._signalHandler.fetchMarkerCategories(this.toolbarMarkerCategoriesMap);
+    };
+
+    private _onVscodeGetMarkerSets = (): void => {
+        this._signalHandler.fetchMarkerSets(this.markerSetsMap);
+    };
+
+    private _onVscodeUpdateMarkerCategoryState = (data: any): void => {
+        if (data?.wrapper) {
+            const selection: string[] = JSON.parse(data.wrapper);
+            this.updateAllMarkerCategoryState(selection);
+        }
+    };
+
+    private _onVscodeUpdateMarkerSetState = (data: any): void => {
+        if (data) {
+            this.updateMarkerSetState(data);
+        }
+    };
+
+    private _onVscodeUpdateContributeContextMenu = (data: any): void => {
+        if (data) {
+            const ctxMenuPayload: ContextMenuContributedSignalPayload = new ContextMenuContributedSignalPayload(
+                data.outputDescriptorId,
+                data.menuItems as ContextMenuItems
+            );
+            this.contributeContextMenu(ctxMenuPayload);
+        }
+    };
+
+    private _onVscodeConnectionStatus = (data: any): void => {
+        if (data) {
+            const serverStatus: boolean = JSONBig.parse(data);
+            this.setState({ serverStatus });
         }
     };
 
@@ -108,116 +235,26 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
             theme: 'light',
             serverStatus: true
         };
-        this._signalHandler = new VsCodeMessageManager();
+        this._signalHandler = new VsCodeMessageManager(messenger);
+        messenger.onNotification(setTspClient, this._onVscodeSetTspClient);
+        messenger.onNotification(traceServerUrlChanged, this._onVscodeUrlChanged);
+        messenger.onNotification(experimentSelected, this._onVscodeExperimentSelected);
+        messenger.onNotification(setExperiment, this._onVscodeSetExperiment);
+        messenger.onNotification(addOutput, this._onVscodeAddOutput);
+        messenger.onNotification(outputDataChanged, this._onVscodeOutputDataChanged);
+        messenger.onNotification(setTheme, this._onVscodeSetTheme);
+        messenger.onNotification(openOverview, this._onVscodeOpenOverview);
+        messenger.onNotification(resetZoom, this._onVscodeResetZoom);
+        messenger.onNotification(undo, this._onVscodeUndo);
+        messenger.onNotification(redo, this._onVscodeRedo);
+        messenger.onNotification(updateZoom, this._onVscodeUpdateZoom);
+        messenger.onNotification(getMarkerCategories, this._onVscodeGetMarkerCategories);
+        messenger.onNotification(getMarkerSets, this._onVscodeGetMarkerSets);
+        messenger.onNotification(updateMarkerCategoryState, this._onVscodeUpdateMarkerCategoryState);
+        messenger.onNotification(updateMarkerSetState, this._onVscodeUpdateMarkerSetState);
+        messenger.onNotification(contributeContextMenu, this._onVscodeUpdateContributeContextMenu);
+        messenger.onNotification(connectionStatus, this._onVscodeConnectionStatus);
 
-        window.addEventListener('message', event => {
-            const message = event.data; // The JSON data our extension sent
-            switch (message.command) {
-                case VSCODE_MESSAGES.SET_EXPERIMENT:
-                    this.doHandleExperimentSetSignal(convertSignalExperiment(JSONBig.parse(message.data)), false);
-                    break;
-                case VSCODE_MESSAGES.SET_TSP_CLIENT:
-                    this.setState(
-                        {
-                            tspClientProvider: new TspClientProvider(message.data, this._signalHandler)
-                        },
-                        () => {
-                            if (message.experiment) {
-                                this.doHandleExperimentSetSignal(
-                                    convertSignalExperiment(JSONBig.parse(message.experiment)),
-                                    true
-                                );
-                            }
-                        }
-                    );
-                    break;
-                case VSCODE_MESSAGES.ADD_OUTPUT:
-                    // FIXME: JSONBig.parse() create bigint if numbers are small
-                    // Not an issue right now for output descriptors.
-                    if (message?.data) {
-                        const descriptor: OutputDescriptor = JSONBig.parse(message.data);
-                        this.doHandleOutputAddedMessage(descriptor);
-                    }
-                    break;
-                case VSCODE_MESSAGES.OUTPUT_DATA_CHANGED:
-                    if (message?.data) {
-                        const descriptors: OutputDescriptor[] = JSONBig.parse(message.data);
-                        this.doHandleOutputDataChanged(descriptors);
-                    }
-                    break;
-                case VSCODE_MESSAGES.OPEN_OVERVIEW:
-                    this.doHandleExperimentSetSignal(this.state.experiment, false);
-                    break;
-                case VSCODE_MESSAGES.SET_THEME:
-                    this.doHandleThemeChanged(message.data);
-                    break;
-                case VSCODE_MESSAGES.RESET_ZOOM:
-                    this.resetZoom();
-                    break;
-                case VSCODE_MESSAGES.UNDO:
-                    this.undo();
-                    break;
-                case VSCODE_MESSAGES.REDO:
-                    this.redo();
-                    break;
-                case VSCODE_MESSAGES.UPDATE_ZOOM:
-                    this.updateZoom(message.data);
-                case VSCODE_MESSAGES.VIEW_RANGE_UPDATED:
-                    signalManager().emit('VIEW_RANGE_UPDATED', JSONBig.parse(message.data));
-                    break;
-                case VSCODE_MESSAGES.SELECTION_RANGE_UPDATED:
-                    signalManager().emit('SELECTION_RANGE_UPDATED', JSONBig.parse(message.data));
-                    break;
-                case VSCODE_MESSAGES.REQUEST_SELECTION_RANGE_CHANGE:
-                    const { experimentUUID, timeRange } = JSONBig.parse(message.data);
-                    const payload = {
-                        experimentUUID,
-                        timeRange: new TimeRange(BigInt(timeRange.start), BigInt(timeRange.end))
-                    } as TimeRangeUpdatePayload;
-                    signalManager().emit('REQUEST_SELECTION_RANGE_CHANGE', payload);
-                    break;
-                case VSCODE_MESSAGES.UPDATE_MARKER_CATEGORY_STATE:
-                    if (message?.data) {
-                        const selection: string[] = JSON.parse(message.data);
-                        this.updateAllMarkerCategoryState(selection);
-                    }
-                    break;
-                case VSCODE_MESSAGES.UPDATE_MARKER_SET_STATE:
-                    if (message?.data) {
-                        this.updateMarkerSetState(message.data);
-                    }
-                    break;
-                case VSCODE_MESSAGES.GET_MARKER_CATEGORIES:
-                    this._signalHandler.fetchMarkerCategories(this.toolbarMarkerCategoriesMap);
-                    break;
-                case VSCODE_MESSAGES.GET_MARKER_SETS:
-                    this._signalHandler.fetchMarkerSets(this.markerSetsMap);
-                    break;
-                case VSCODE_MESSAGES.EXPERIMENT_SELECTED:
-                    this.doHandleExperimentSelectedSignal(convertSignalExperiment(JSONBig.parse(message.data)));
-                    break;
-                case VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED:
-                    if (message.data && this.state.tspClientProvider) {
-                        this.state.tspClientProvider.updateTspClientUrl(message.data);
-                    }
-                    break;
-                case VSCODE_MESSAGES.CONTRIBUTE_CONTEXT_MENU:
-                    if (message.data) {
-                        const ctxMenuPayload: ContextMenuContributedSignalPayload =
-                            new ContextMenuContributedSignalPayload(
-                                message.data.outputDescriptorId,
-                                message.data.menuItems as ContextMenuItems
-                            );
-                        this.contributeContextMenu(ctxMenuPayload);
-                    }
-                    break;
-                case VSCODE_MESSAGES.CONNECTION_STATUS:
-                    const serverStatus: boolean = JSONBig.parse(message.data);
-                    console.log('CONNECTION STATUS:', serverStatus);
-                    this.setState({ serverStatus });
-                    break;
-            }
-        });
         window.addEventListener('resize', this.onResize);
         this.onOutputRemoved = this.onOutputRemoved.bind(this);
         this.onOverviewRemoved = this.onOverviewRemoved.bind(this);
