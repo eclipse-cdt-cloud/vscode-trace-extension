@@ -8089,6 +8089,25 @@ walk-up-path@^3.0.1:
   resolved "https://registry.npmjs.org/walk-up-path/-/walk-up-path-3.0.1.tgz#c8d78d5375b4966c717eb17ada73dbd41490e886"
   integrity sha512-9YlCL/ynK3CTlrSRrDxZvUauLzAswPCrsaCgilqFevUYpeEW0/3ScEjaa3kbW/T0ghhkEr7mv+fpjqn1Y1YuTA==
 
+vscode-messenger-common@^0.5:
+  version "0.5.1"
+  resolved "https://registry.npmjs.org/vscode-messenger-common/-/vscode-messenger-common-0.5.1.tgz#2fdb41df2b0e2c7b92196a6b1687444b05b3b698"
+  integrity sha512-YJRUdK278/K7vNyhVoePINOHmz3xjQFQbSiuNXCm3+GfQ6NSmjjWTpumAYAzNs05HKAeF9glU532livdwc3W0A==
+
+vscode-messenger-webview@^0.5.0:
+  version "0.5.1"
+  resolved "https://registry.npmjs.org/vscode-messenger-webview/-/vscode-messenger-webview-0.5.1.tgz#33caba1cbbf3640452c7e9b9636dabf4d4bb7cfb"
+  integrity sha512-3IXFORcjD3c9khECdqRUeBh05mt0AZA/86FhY/MlCRB2YHGzqpJeD/5rRX92fO2M42rUjXLi5bnzmXSvVGXadw==
+  dependencies:
+    vscode-messenger-common "^0.5"
+
+vscode-messenger@^0.5.0:
+  version "0.5.1"
+  resolved "https://registry.npmjs.org/vscode-messenger/-/vscode-messenger-0.5.1.tgz#f0db2c4c30798861abfcfa4b200c9b2cf517b491"
+  integrity sha512-pHexyKLr6FgVkdXi9NcCgygikVkFsbpk9PoObT4JXSQfnosNLTWS2NTdGJ+nv/xhUw5OodmVId/oJwNU7HxoQw==
+  dependencies:
+    vscode-messenger-common "^0.5"
+
 warning@^4.0.3:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/warning/-/warning-4.0.3.tgz#16e9e077eb8a86d6af7d64aa1e05fd85b4678ca3"

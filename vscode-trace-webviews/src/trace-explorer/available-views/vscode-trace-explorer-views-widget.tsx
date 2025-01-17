@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any */
+import JSONBigConfig from 'json-bigint';
 import * as React from 'react';
 import { OutputAddedSignalPayload } from 'traceviewer-base/lib/signals/output-added-signal-payload';
 import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
@@ -6,11 +7,16 @@ import { ReactAvailableViewsWidget } from 'traceviewer-react-components/lib/trac
 import 'traceviewer-react-components/style/trace-explorer.css';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { TspClientProvider } from 'vscode-trace-common/lib/client/tsp-client-provider-impl';
-import { VsCodeMessageManager, VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
+import {
+    experimentSelected,
+    setTspClient,
+    traceServerUrlChanged
+} from 'vscode-trace-common/lib/messages/vscode-messages';
+import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
+import { messenger } from '.';
+import { VsCodeMessageManager } from '../../common/vscode-message-manager';
 import '../../style/react-contextify.css';
 import '../../style/trace-viewer.css';
-import JSONBigConfig from 'json-bigint';
-import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true
@@ -26,53 +32,48 @@ class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppStat
     static ID = 'trace-explorer-analysis-widget';
     static LABEL = 'Available Analyses';
 
-    private _onExperimentSelected = (openedExperiment: Experiment | undefined): void =>
-        this.doHandleExperimentSelectedSignal(openedExperiment);
     private _onOutputAdded = (payload: OutputAddedSignalPayload): void => this.doHandleOutputAddedSignal(payload);
+
+    // VSCODE message handlers
+    private _onVscodeSetTspClient = (data: string): void => {
+        this.setState({
+            tspClientProvider: new TspClientProvider(data, this._signalHandler)
+        });
+    };
+
+    private _onVscodeExperimentSelected = (data: any): void => {
+        let experiment: Experiment | undefined = undefined;
+        if (data?.wrapper) {
+            experiment = convertSignalExperiment(JSONBig.parse(data.wrapper));
+        }
+        signalManager().emit('EXPERIMENT_SELECTED', experiment);
+    };
+
+    private _onVscodeUrlChanged = (data: string): void => {
+        if (data && this.state.tspClientProvider) {
+            this.state.tspClientProvider.updateTspClientUrl(data);
+        }
+    };
 
     constructor(props: {}) {
         super(props);
         this.state = {
             tspClientProvider: undefined
         };
-        this._signalHandler = new VsCodeMessageManager();
-        window.addEventListener('message', event => {
-            const message = event.data; // The JSON data our extension sent
-            switch (message.command) {
-                case VSCODE_MESSAGES.SET_TSP_CLIENT:
-                    this.setState({
-                        tspClientProvider: new TspClientProvider(message.data, this._signalHandler)
-                    });
-                    break;
-                case VSCODE_MESSAGES.EXPERIMENT_SELECTED:
-                    let experiment: Experiment | undefined = undefined;
-                    if (message.data) {
-                        experiment = convertSignalExperiment(JSONBig.parse(message.data));
-                    }
-                    signalManager().emit('EXPERIMENT_SELECTED', experiment);
-                    break;
-                case VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED:
-                    if (message.data && this.state.tspClientProvider) {
-                        this.state.tspClientProvider.updateTspClientUrl(message.data);
-                    }
-                    break;
-            }
-        });
+
+        this._signalHandler = new VsCodeMessageManager(messenger);
+        messenger.onNotification(setTspClient, this._onVscodeSetTspClient);
+        messenger.onNotification(experimentSelected, this._onVscodeExperimentSelected);
+        messenger.onNotification(traceServerUrlChanged, this._onVscodeUrlChanged);
     }
 
     componentDidMount(): void {
         this._signalHandler.notifyReady();
-        signalManager().on('EXPERIMENT_SELECTED', this._onExperimentSelected);
         signalManager().on('OUTPUT_ADDED', this._onOutputAdded);
     }
 
     componentWillUnmount(): void {
-        signalManager().off('EXPERIMENT_SELECTED', this._onExperimentSelected);
         signalManager().off('OUTPUT_ADDED', this._onOutputAdded);
-    }
-
-    protected doHandleExperimentSelectedSignal(experiment: Experiment | undefined): void {
-        this._signalHandler.experimentSelected(experiment);
     }
 
     protected doHandleOutputAddedSignal(payload: OutputAddedSignalPayload): void {

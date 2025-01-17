@@ -1,17 +1,24 @@
-/* eslint-disable @typescript-eslint/ban-types */
-import * as React from 'react';
-import { ReactOpenTracesWidget } from 'traceviewer-react-components/lib/trace-explorer/trace-explorer-opened-traces-widget';
-import { VsCodeMessageManager, VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
-import { Menu, Item, useContextMenu, ItemParams } from 'react-contexify';
-import { TspClientProvider } from 'vscode-trace-common/lib/client/tsp-client-provider-impl';
-import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
-import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
-import '../../style/trace-viewer.css';
-import 'traceviewer-react-components/style/trace-explorer.css';
-import '../../style/react-contextify.css';
-import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
+/* eslint-disable @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any */
 import JSONBigConfig from 'json-bigint';
+import * as React from 'react';
+import { Item, ItemParams, Menu, useContextMenu } from 'react-contexify';
 import { OpenedTracesUpdatedSignalPayload } from 'traceviewer-base/lib/signals/opened-traces-updated-signal-payload';
+import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
+import { ReactOpenTracesWidget } from 'traceviewer-react-components/lib/trace-explorer/trace-explorer-opened-traces-widget';
+import 'traceviewer-react-components/style/trace-explorer.css';
+import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
+import { TspClientProvider } from 'vscode-trace-common/lib/client/tsp-client-provider-impl';
+import {
+    experimentOpened,
+    setTspClient,
+    traceViewerTabActivated,
+    traceServerUrlChanged
+} from 'vscode-trace-common/lib/messages/vscode-messages';
+import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
+import { messenger } from '.';
+import { VsCodeMessageManager } from '../../common/vscode-message-manager';
+import '../../style/react-contextify.css';
+import '../../style/trace-viewer.css';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true
@@ -29,6 +36,7 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
     static ID = 'trace-explorer-opened-traces-widget';
     static LABEL = 'Opened Traces';
 
+    // Signal handlers
     private _onExperimentSelected = (openedExperiment: Experiment | undefined): void =>
         this.doHandleExperimentSelectedSignal(openedExperiment);
     private _onRemoveTraceButton = (traceUUID: string): void => this.doHandleRemoveTraceSignal(traceUUID);
@@ -49,42 +57,45 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
             });
     }
 
+    // VSCODE message handlers
+    private _onVscodeSetTspClient = (data: string): void => {
+        this.setState({
+            tspClientProvider: new TspClientProvider(data, this._signalHandler)
+        });
+    };
+
+    private _onVscodeUrlChanged = (data: string): void => {
+        if (data && this.state.tspClientProvider) {
+            this.state.tspClientProvider.updateTspClientUrl(data);
+        }
+    };
+
+    private _onVscodeExperimentOpened = (data: any): void => {
+        if (data) {
+            const experiment = convertSignalExperiment(JSONBig.parse(data));
+            signalManager().emit('EXPERIMENT_OPENED', experiment);
+        }
+    };
+
+    private _onVscodeUrlTraceViewerTabActivated = (data: any): void => {
+        if (data) {
+            const experiment = convertSignalExperiment(JSONBig.parse(data));
+            signalManager().emit('TRACEVIEWERTAB_ACTIVATED', experiment);
+        }
+    };
+
     constructor(props: {}) {
         super(props);
         this.state = {
             tspClientProvider: undefined
         };
-        this._signalHandler = new VsCodeMessageManager();
-        window.addEventListener('message', event => {
-            const message = event.data; // The JSON data our extension sent
-            switch (message.command) {
-                case VSCODE_MESSAGES.SET_TSP_CLIENT:
-                    const tspClientProvider = new TspClientProvider(message.data, this._signalHandler);
 
-                    this.setState({ tspClientProvider: tspClientProvider });
-                    break;
-                case VSCODE_MESSAGES.TRACE_VIEWER_TAB_ACTIVATED:
-                    if (message.data) {
-                        const experiment = convertSignalExperiment(JSONBig.parse(message.data));
-                        signalManager().emit('TRACEVIEWERTAB_ACTIVATED', experiment);
-                    }
-                    break;
-                case VSCODE_MESSAGES.EXPERIMENT_OPENED:
-                    if (message.data) {
-                        const experiment = convertSignalExperiment(JSONBig.parse(message.data));
-                        signalManager().emit('EXPERIMENT_OPENED', experiment);
-                    }
-                    break;
-                case VSCODE_MESSAGES.TRACE_SERVER_STARTED:
-                    signalManager().emit('TRACE_SERVER_STARTED');
-                case VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED:
-                    if (message.data && this.state.tspClientProvider) {
-                        this.state.tspClientProvider.updateTspClientUrl(message.data);
-                    }
-                    break;
-            }
-        });
-        // this.onOutputRemoved = this.onOutputRemoved.bind(this);
+        this._signalHandler = new VsCodeMessageManager(messenger);
+
+        messenger.onNotification(setTspClient, this._onVscodeSetTspClient);
+        messenger.onNotification(traceServerUrlChanged, this._onVscodeUrlChanged);
+        messenger.onNotification(experimentOpened, this._onVscodeExperimentOpened);
+        messenger.onNotification(traceViewerTabActivated, this._onVscodeUrlTraceViewerTabActivated);
     }
 
     componentDidMount(): void {
@@ -181,16 +192,18 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
             case 'open-id':
                 this.doHandleReOpenTrace(args.props.experiment as Experiment);
                 return;
-            case 'close-id':
+            case 'close-id': {
                 this._signalHandler.closeTrace(args.props.experiment as Experiment);
                 return;
-            case 'remove-id':
+            }
+            case 'remove-id': {
                 this._signalHandler.deleteTrace(args.props.experiment as Experiment);
                 this.state.tspClientProvider
                     ?.getExperimentManager()
                     .deleteExperiment((args.props.experiment as Experiment).UUID);
 
                 return;
+            }
             default:
             // Do nothing
         }

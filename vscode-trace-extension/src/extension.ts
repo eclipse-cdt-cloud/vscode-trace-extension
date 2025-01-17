@@ -1,5 +1,6 @@
 'use strict';
 import * as vscode from 'vscode';
+import { Messenger } from 'vscode-messenger';
 import { TraceExplorerItemPropertiesProvider } from './trace-explorer/properties/trace-explorer-properties-view-webview-provider';
 import { TraceExplorerTimeRangeDataProvider } from './trace-explorer/time-range/trace-explorer-time-range-data-webview-provider';
 import { TraceExplorerAvailableViewsProvider } from './trace-explorer/available-views/trace-explorer-available-views-webview-provider';
@@ -24,7 +25,7 @@ import {
 import { TraceExtensionLogger } from './utils/trace-extension-logger';
 import { ExternalAPI, traceExtensionAPI } from './external-api/external-api';
 import { TraceExtensionWebviewManager } from './utils/trace-extension-webview-manager';
-import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
+import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-messages';
 import { TraceViewerPanel } from './trace-viewer-panel/trace-viewer-webview-panel';
 import { TraceServerManager } from './utils/trace-server-manager';
 import { ResourceType, TraceExplorerResourceTypeHandler } from './utils/trace-explorer-resource-type-handler';
@@ -32,6 +33,8 @@ import { ResourceType, TraceExplorerResourceTypeHandler } from './utils/trace-ex
 export let traceLogger: TraceExtensionLogger;
 export const traceExtensionWebviewManager: TraceExtensionWebviewManager = new TraceExtensionWebviewManager();
 export const traceServerManager: TraceServerManager = new TraceServerManager();
+
+export const messenger = new Messenger({ ignoreHiddenViews: false });
 
 export async function activate(context: vscode.ExtensionContext): Promise<ExternalAPI> {
     traceLogger = new TraceExtensionLogger('Trace Extension');
@@ -47,22 +50,38 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
     context.subscriptions.push(serverStatusBarItem);
     const serverStatusService = new TraceServerConnectionStatusService(serverStatusBarItem);
 
-    const tracesProvider = new TraceExplorerOpenedTracesViewProvider(context.extensionUri, serverStatusService);
+    const tracesProvider = new TraceExplorerOpenedTracesViewProvider(
+        context.extensionUri,
+        serverStatusService,
+        messenger
+    );
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(TraceExplorerOpenedTracesViewProvider.viewType, tracesProvider)
     );
 
-    const myAnalysisProvider = new TraceExplorerAvailableViewsProvider(context.extensionUri, serverStatusService);
+    const myAnalysisProvider = new TraceExplorerAvailableViewsProvider(
+        context.extensionUri,
+        serverStatusService,
+        messenger
+    );
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(TraceExplorerAvailableViewsProvider.viewType, myAnalysisProvider)
     );
 
-    const propertiesProvider = new TraceExplorerItemPropertiesProvider(context.extensionUri, serverStatusService);
+    const propertiesProvider = new TraceExplorerItemPropertiesProvider(
+        context.extensionUri,
+        serverStatusService,
+        messenger
+    );
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(TraceExplorerItemPropertiesProvider.viewType, propertiesProvider)
     );
 
-    const timeRangeDataProvider = new TraceExplorerTimeRangeDataProvider(context.extensionUri, serverStatusService);
+    const timeRangeDataProvider = new TraceExplorerTimeRangeDataProvider(
+        context.extensionUri,
+        serverStatusService,
+        messenger
+    );
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(TraceExplorerTimeRangeDataProvider.viewType, timeRangeDataProvider)
     );
@@ -231,7 +250,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
     // Workaround for Theia compatibility of welcome screen. See https://github.com/eclipse-theia/theia/issues/9361
     context.subscriptions.push(vscode.window.registerTreeDataProvider('welcome', new EmptyTreeDataProvider()));
 
-    return traceExtensionAPI;
+    // Append Diagnostic to traceExtensionAPI
+    const diagnostics = messenger.diagnosticApi({ withParameterData: true, withResponseData: true });
+    return { ...traceExtensionAPI, ...diagnostics };
 }
 
 // Workaround for Theia compatibility of welcome screen. See https://github.com/eclipse-theia/theia/issues/9361

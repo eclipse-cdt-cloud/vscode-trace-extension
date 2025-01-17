@@ -1,7 +1,7 @@
 import { ThemeColor, StatusBarItem } from 'vscode';
 import { isTraceServerUp } from './backend-tsp-client-provider';
 import * as vscode from 'vscode';
-import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
+import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-messages';
 import { TraceViewerPanel } from '../trace-viewer-panel/trace-viewer-webview-panel';
 
 export class TraceServerConnectionStatusService {

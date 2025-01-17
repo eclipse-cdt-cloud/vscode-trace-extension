@@ -1,19 +1,52 @@
-import * as vscode from 'vscode';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import * as fs from 'fs';
+import JSONBigConfig from 'json-bigint';
 import * as path from 'path';
+import { ItemPropertiesSignalPayload } from 'traceviewer-base/lib/signals/item-properties-signal-payload';
+import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
+import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
+import { MarkerSet } from 'tsp-typescript-client/lib/models/markerset';
+import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
+import * as vscode from 'vscode';
+import type { Messenger } from 'vscode-messenger';
+import { NotificationType, WebviewIdMessageParticipant } from 'vscode-messenger-common';
+import {
+    VSCODE_MESSAGES,
+    webviewReady,
+    alert,
+    newStatus,
+    removeStatus,
+    updateProperties,
+    saveAsCSV,
+    connectionStatus,
+    showMarkerCategories,
+    sendMarkerSets,
+    markerSetsContext,
+    markerCategoryContext,
+    viewRangeUpdated,
+    selectionRangeUpdated,
+    experimentUpdated,
+    setTheme,
+    setTspClient,
+    experimentSelected,
+    setExperiment,
+    addOutput,
+    openOverview,
+    resetZoom,
+    undo,
+    redo,
+    updateZoom,
+    getMarkerCategories,
+    getMarkerSets,
+    updateMarkerCategoryState,
+    updateMarkerSetState
+} from 'vscode-trace-common/lib/messages/vscode-messages';
+import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
+import { handleRemoveMessage, handleStatusMessage, setStatusFromPanel } from '../common/trace-message';
+import { traceExtensionWebviewManager } from '../extension';
 import { ClientType, getTraceServerUrl, getTspClientUrl } from '../utils/backend-tsp-client-provider';
 import { TraceServerConnectionStatusService } from '../utils/trace-server-status';
-import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
-import { handleStatusMessage, handleRemoveMessage, setStatusFromPanel } from '../common/trace-message';
-import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
-import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
-import { MarkerSet } from 'tsp-typescript-client/lib/models/markerset';
-import JSONBigConfig from 'json-bigint';
-import * as fs from 'fs';
-import { traceExtensionWebviewManager } from '../extension';
-import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
-import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
-import { ItemPropertiesSignalPayload } from 'traceviewer-base/lib/signals/item-properties-signal-payload';
 
 const JSONBig = JSONBigConfig({
     useNativeBigInt: true
@@ -44,11 +77,70 @@ export class TraceViewerPanel {
     private readonly _statusService: TraceServerConnectionStatusService | undefined;
 
     private _disposables: vscode.Disposable[] = [];
+    private readonly _messenger: Messenger;
+    protected _webviewParticipant: WebviewIdMessageParticipant;
     private _experiment: Experiment | undefined = undefined;
     private _onExperimentSelected = (openedExperiment: Experiment | undefined): void =>
         this.doHandleExperimentSelectedSignal(openedExperiment);
     private _onRequestSelectionRangeChange = (payload: TimeRangeUpdatePayload): void =>
         this.doHandleRequestSelectionRangeChange(payload);
+
+    // VSCODE message handlers
+    private _onVscodeWebviewReady = (): void => {
+        this.doHandleVscodeWebViewReady();
+    };
+
+    private _onVscodeAlert = (text: any): void => {
+        this.doHandleVscodeAlert(text);
+    };
+
+    private _onVscodeNewStatus = (data: any): void => {
+        this.doHandleVscodeNewStatus(data);
+    };
+
+    private _onVscodeRemoveStatus = (data: any): void => {
+        this.doHandleVscodeRemoveStatus(data);
+    };
+
+    private _onVscodeUpdateProperties = (data: any): void => {
+        this.doHandleVscodeUpdateProperties(data);
+    };
+
+    private _onVscodeSaveAsCsv = (data: any): void => {
+        this.doHandleVscodeSaveAsCsv(data);
+    };
+
+    private _onVscodeConnectionStatus = (data: any): void => {
+        this.doHandleConnectionStatus(data);
+    };
+
+    private _onVscodeShowMarkerCategories = (data: any): void => {
+        this.doHandleVscodeShowMarkerCategories(data);
+    };
+
+    private _onVscodeSendMarkerSets = (data: any): void => {
+        this.doHandleVscodeSendMarkerSets(data);
+    };
+
+    private _onVscodeMarkerSetsContext = (data: any): void => {
+        this.doHandleVscodeMarkerSetsContext(data);
+    };
+
+    private _onVscodeMarkerCategoryContext = (data: any): void => {
+        this.doHandleVscodeMarkerCategoryContext(data);
+    };
+
+    private _onVscodeViewRangeUpdated = (data: any): void => {
+        this.doHandleVscodeViewRangeUpdated(data);
+    };
+
+    private _onVscodeSelectionRangeUpdated = (data: any): void => {
+        this.doHandleVscodeSelectionRangeUpdated(data);
+    };
+
+    private _onVscodeExperimentUpdated = (data: any): void => {
+        this.doHandleExperimentUpdated(data);
+    };
 
     /**
      * Creates a new or gets an existing panel by name. Shows existing if not active.
@@ -60,7 +152,8 @@ export class TraceViewerPanel {
     public static createOrShow(
         extensionUri: vscode.Uri,
         name: string,
-        statusService: TraceServerConnectionStatusService | undefined
+        statusService: TraceServerConnectionStatusService | undefined,
+        messenger: Messenger
     ): TraceViewerPanel {
         const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
 
@@ -73,7 +166,13 @@ export class TraceViewerPanel {
                 openedPanel._panel.reveal(column);
             }
         } else {
-            openedPanel = new TraceViewerPanel(extensionUri, column || vscode.ViewColumn.One, name, statusService);
+            openedPanel = new TraceViewerPanel(
+                extensionUri,
+                column || vscode.ViewColumn.One,
+                name,
+                statusService,
+                messenger
+            );
             TraceViewerPanel.activePanels[name] = openedPanel;
             setStatusFromPanel(name);
         }
@@ -114,8 +213,8 @@ export class TraceViewerPanel {
         TraceViewerPanel.currentPanel?.resetZoom();
     }
 
-    public static undoRedoOnCurrent(undo: boolean): void {
-        TraceViewerPanel.currentPanel?.undoRedo(undo);
+    public static undoRedoOnCurrent(isUndo: boolean): void {
+        TraceViewerPanel.currentPanel?.undoRedo(isUndo);
     }
 
     public static zoomOnCurrent(hasZoomedIn: boolean): void {
@@ -166,18 +265,15 @@ export class TraceViewerPanel {
             if (!activePanel?._panel) {
                 return;
             }
-            activePanel._panel.webview.postMessage({ command, data });
+            activePanel.postMessageToWebview(command, data);
         });
     }
 
     public static updateTraceServerUrl(newUrl: string): void {
-        Object.values(TraceViewerPanel.activePanels).forEach(trace => {
-            if (trace) {
-                trace._panel.webview.postMessage({
-                    command: VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED,
-                    data: newUrl
-                });
-                trace._panel.webview.html = trace._getHtmlForWebview(trace._panel.webview);
+        Object.values(TraceViewerPanel.activePanels).forEach(panel => {
+            if (panel) {
+                panel.postMessageToWebview(VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED, newUrl);
+                panel._panel.webview.html = panel._getHtmlForWebview(panel._panel.webview);
             }
         });
     }
@@ -186,10 +282,12 @@ export class TraceViewerPanel {
         extensionUri: vscode.Uri,
         column: vscode.ViewColumn,
         name: string,
-        statusService: TraceServerConnectionStatusService | undefined
+        statusService: TraceServerConnectionStatusService | undefined,
+        messenger: Messenger
     ) {
         this._extensionUri = extensionUri;
         this._statusService = statusService;
+        this._messenger = messenger;
 
         // Create and show a new webview panel
         this._panel = vscode.window.createWebviewPanel(TraceViewerPanel.viewType, name, column, {
@@ -206,6 +304,9 @@ export class TraceViewerPanel {
                 vscode.Uri.joinPath(this._extensionUri, 'lib', 'codicons')
             ]
         });
+
+        // Register webview panel to messenger
+        this._webviewParticipant = this._messenger.registerWebviewPanel(this._panel);
 
         // Set the webview's initial html content
         this._panel.webview.html = this._getHtmlForWebview(this._panel.webview);
@@ -240,122 +341,55 @@ export class TraceViewerPanel {
         });
 
         vscode.window.onDidChangeActiveColorTheme(e => {
-            const wrapper = e.kind === 1 ? 'light' : 'dark';
-            this._panel.webview.postMessage({ command: VSCODE_MESSAGES.SET_THEME, data: wrapper });
+            const data = e.kind === 1 ? 'light' : 'dark';
+            this._messenger.sendNotification(setTheme, this._webviewParticipant, data);
         });
 
-        // Handle messages from the webview
-        this._panel.webview.onDidReceiveMessage(
-            message => {
-                switch (message.command) {
-                    case VSCODE_MESSAGES.ALERT:
-                        vscode.window.showErrorMessage(message.text);
-                        return;
-                    case VSCODE_MESSAGES.NEW_STATUS:
-                        handleStatusMessage(name, message.data);
-                        return;
-                    case VSCODE_MESSAGES.REMOVE_STATUS:
-                        handleRemoveMessage(name, message.data);
-                        return;
-                    case VSCODE_MESSAGES.WEBVIEW_READY:
-                        // Post the tspTypescriptClient
-                        if (this._experiment) {
-                            const wrapper: string = JSONBig.stringify(this._experiment);
-                            this._panel.webview.postMessage({
-                                command: VSCODE_MESSAGES.SET_TSP_CLIENT,
-                                data: getTspClientUrl(ClientType.FRONTEND),
-                                experiment: wrapper
-                            });
-                        } else {
-                            this._panel.webview.postMessage({
-                                command: VSCODE_MESSAGES.SET_TSP_CLIENT,
-                                data: getTspClientUrl(ClientType.FRONTEND)
-                            });
-                        }
-                        this.loadTheme();
-                        return;
-                    case VSCODE_MESSAGES.UPDATE_PROPERTIES:
-                        if (message.data?.properties) {
-                            signalManager().emit(
-                                'ITEM_PROPERTIES_UPDATED',
-                                new ItemPropertiesSignalPayload(
-                                    message.data.properties,
-                                    message.data.experimentUUID,
-                                    message.data.outputDescriptorId
-                                )
-                            );
-                        }
-                        return;
-                    case VSCODE_MESSAGES.SAVE_AS_CSV:
-                        if (message.payload.data && typeof message.payload.data === 'string') {
-                            TraceViewerPanel.saveTraceCsv(
-                                message.payload.data,
-                                (this._experiment !== undefined ? this._experiment.name : 'trace') + '.csv'
-                            );
-                        }
-                        return;
-                    case VSCODE_MESSAGES.CONNECTION_STATUS:
-                        if (message.data?.status && this._statusService) {
-                            const status: boolean = JSON.parse(message.data.status);
-                            this._statusService.updateServerStatus(status);
-                        }
-                        return;
-                    case VSCODE_MESSAGES.SHOW_MARKER_CATEGORIES:
-                        if (message.data?.wrapper) {
-                            const markerCategories = new Map<string, { categoryCount: number; toggleInd: boolean }>(
-                                JSON.parse(message.data.wrapper)
-                            );
-                            TraceViewerPanel.currentPanel?.renderMarkersFilter(markerCategories);
-                        }
-                        return;
-                    case VSCODE_MESSAGES.SEND_MARKER_SETS:
-                        if (message.data?.wrapper) {
-                            const markerSetsMap = new Map<string, { marker: MarkerSet; enabled: boolean }>(
-                                JSON.parse(message.data.wrapper)
-                            );
-                            TraceViewerPanel.currentPanel?.renderMarkerSets(markerSetsMap);
-                        }
-                        return;
-                    case VSCODE_MESSAGES.MARKER_SETS_CONTEXT:
-                        if (message.data?.status) {
-                            const status: boolean = JSON.parse(message.data.status);
-                            vscode.commands.executeCommand('setContext', 'traceViewer.markerSetsPresent', status);
-                        }
-                        return;
-                    case VSCODE_MESSAGES.MARKER_CATEGORIES_CONTEXT:
-                        if (message.data?.status) {
-                            const status: boolean = JSON.parse(message.data.status);
-                            vscode.commands.executeCommand('setContext', 'traceViewer.markerCategoriesPresent', status);
-                        }
-                        return;
-                    case VSCODE_MESSAGES.VIEW_RANGE_UPDATED:
-                        signalManager().emit('VIEW_RANGE_UPDATED', JSONBig.parse(message.data));
-                        break;
-                    case VSCODE_MESSAGES.SELECTION_RANGE_UPDATED:
-                        signalManager().emit('SELECTION_RANGE_UPDATED', JSONBig.parse(message.data));
-                        break;
-                    case VSCODE_MESSAGES.EXPERIMENT_UPDATED:
-                        const experiment = convertSignalExperiment(JSONBig.parse(message.data));
-                        signalManager().emit('EXPERIMENT_UPDATED', experiment);
-                        break;
-                }
-            },
-            undefined,
-            this._disposables
+        const options = {
+            sender: this._webviewParticipant
+        };
+
+        this._disposables.push(this._messenger.onNotification<void>(webviewReady, this._onVscodeWebviewReady, options));
+        this._disposables.push(this._messenger.onNotification<string>(alert, this._onVscodeAlert, options));
+        this._disposables.push(this._messenger.onNotification<string>(newStatus, this._onVscodeNewStatus, options));
+        this._disposables.push(
+            this._messenger.onNotification<string>(removeStatus, this._onVscodeRemoveStatus, options)
         );
+        this._disposables.push(
+            this._messenger.onNotification<any>(updateProperties, this._onVscodeUpdateProperties, options)
+        );
+        this._disposables.push(this._messenger.onNotification<any>(saveAsCSV, this._onVscodeSaveAsCsv, options));
+        this._disposables.push(
+            this._messenger.onNotification<any>(connectionStatus, this._onVscodeConnectionStatus, options)
+        );
+        this._disposables.push(
+            this._messenger.onNotification<any>(showMarkerCategories, this._onVscodeShowMarkerCategories, options)
+        );
+        this._disposables.push(
+            this._messenger.onNotification<any>(sendMarkerSets, this._onVscodeSendMarkerSets, options)
+        );
+        this._disposables.push(
+            this._messenger.onNotification<any>(markerSetsContext, this._onVscodeMarkerSetsContext, options)
+        );
+        this._disposables.push(
+            this._messenger.onNotification<any>(markerCategoryContext, this._onVscodeMarkerCategoryContext, options)
+        );
+        this._disposables.push(
+            this._messenger.onNotification<any>(viewRangeUpdated, this._onVscodeViewRangeUpdated, options)
+        );
+        this._disposables.push(
+            this._messenger.onNotification<any>(selectionRangeUpdated, this._onVscodeSelectionRangeUpdated, options)
+        );
+        this._disposables.push(
+            this._messenger.onNotification<any>(experimentUpdated, this._onVscodeExperimentUpdated, options)
+        );
+
+        // Handle messages from the webview
         signalManager().on('EXPERIMENT_SELECTED', this._onExperimentSelected);
         signalManager().on('REQUEST_SELECTION_RANGE_CHANGE', this._onRequestSelectionRangeChange);
     }
 
-    public doRefactor(): void {
-        // Send a message to the webview webview.
-        // You can send any JSON serializable data.
-        this._panel.webview.postMessage({ command: VSCODE_MESSAGES.REFACTOR });
-    }
-
     public dispose(): void {
-        // ReactPanel.currentPanel = undefined;
-
         // Clean up our resources
         this._panel.dispose();
 
@@ -369,10 +403,21 @@ export class TraceViewerPanel {
         signalManager().off('REQUEST_SELECTION_RANGE_CHANGE', this._onRequestSelectionRangeChange);
     }
 
+    /**
+     * Directly sends a VSCode Message to all activePanel's webviews.
+     * @param {string} command - command from `VSCODE_MESSAGES` object
+     * @param {unknown} data - payload
+     */
+    public postMessageToWebview(command: string, data: unknown): void {
+        const message: NotificationType<any> = { method: command };
+        this._messenger.sendNotification(message, this._webviewParticipant, data);
+    }
+
     protected doHandleExperimentSelectedSignal(experiment: Experiment | undefined): void {
         if (this._experiment && experiment && this._experiment.UUID === experiment.UUID) {
             const wrapper: string = JSONBig.stringify(experiment);
-            this._panel.webview.postMessage({ command: VSCODE_MESSAGES.EXPERIMENT_SELECTED, data: wrapper });
+            const data = { wrapper };
+            this._messenger.sendNotification(experimentSelected, this._webviewParticipant, data);
         }
     }
 
@@ -381,50 +426,49 @@ export class TraceViewerPanel {
     }
 
     protected doHandleRequestSelectionRangeChange(payload: TimeRangeUpdatePayload): void {
-        this._panel.webview.postMessage({
-            command: VSCODE_MESSAGES.REQUEST_SELECTION_RANGE_CHANGE,
-            data: JSONBig.stringify(payload)
-        });
+        this._messenger.sendNotification(experimentSelected, this._webviewParticipant, JSONBig.stringify(payload));
     }
     setExperiment(experiment: Experiment): void {
         this._experiment = experiment;
         const wrapper: string = JSONBig.stringify(experiment);
-        this._panel.webview.postMessage({ command: VSCODE_MESSAGES.SET_EXPERIMENT, data: wrapper });
+        const data = { wrapper };
+        this._messenger.sendNotification(setExperiment, this._webviewParticipant, data);
         signalManager().emit('EXPERIMENT_OPENED', experiment);
         signalManager().emit('TRACEVIEWERTAB_ACTIVATED', experiment);
     }
 
     addOutput(descriptor: OutputDescriptor): void {
         const wrapper: string = JSONBig.stringify(descriptor);
-        this._panel.webview.postMessage({ command: VSCODE_MESSAGES.ADD_OUTPUT, data: wrapper });
+        const data = { wrapper };
+        this._messenger.sendNotification(addOutput, this._webviewParticipant, data);
     }
 
     showOverview(): void {
-        this._panel.webview.postMessage({ command: VSCODE_MESSAGES.OPEN_OVERVIEW });
+        this._messenger.sendNotification(openOverview, this._webviewParticipant);
     }
 
     resetZoom(): void {
-        this._panel.webview.postMessage({ command: VSCODE_MESSAGES.RESET_ZOOM });
+        this._messenger.sendNotification(resetZoom, this._webviewParticipant);
     }
 
-    undoRedo(undo: boolean): void {
-        if (undo) {
-            this._panel.webview.postMessage({ command: VSCODE_MESSAGES.UNDO });
+    undoRedo(isUndo: boolean): void {
+        if (isUndo) {
+            this._messenger.sendNotification(undo, this._webviewParticipant);
         } else {
-            this._panel.webview.postMessage({ command: VSCODE_MESSAGES.REDO });
+            this._messenger.sendNotification(redo, this._webviewParticipant);
         }
     }
 
     updateZoom(hasZoomedIn: boolean): void {
-        this._panel.webview.postMessage({ command: VSCODE_MESSAGES.UPDATE_ZOOM, data: hasZoomedIn });
+        this._messenger.sendNotification(updateZoom, this._webviewParticipant, hasZoomedIn);
     }
 
     showMarkersFilter(): void {
-        this._panel.webview.postMessage({ command: VSCODE_MESSAGES.GET_MARKER_CATEGORIES });
+        this._messenger.sendNotification(getMarkerCategories, this._webviewParticipant);
     }
 
     showMarkerSets(): void {
-        this._panel.webview.postMessage({ command: VSCODE_MESSAGES.GET_MARKER_SETS });
+        this._messenger.sendNotification(getMarkerSets, this._webviewParticipant);
     }
 
     renderMarkersFilter(
@@ -462,10 +506,7 @@ export class TraceViewerPanel {
                     selectedCategories.push(category.label);
                 }
                 const wrapper = JSON.stringify(selectedCategories);
-                this._panel.webview.postMessage({
-                    command: VSCODE_MESSAGES.UPDATE_MARKER_CATEGORY_STATE,
-                    data: wrapper
-                });
+                this._messenger.sendNotification(updateMarkerCategoryState, this._webviewParticipant, { wrapper });
             });
     }
 
@@ -496,17 +537,112 @@ export class TraceViewerPanel {
                 }
 
                 if (markerSetsMap.has(selection.id)) {
-                    this._panel.webview.postMessage({
-                        command: VSCODE_MESSAGES.UPDATE_MARKER_SET_STATE,
-                        data: selection.id
-                    });
+                    this._messenger.sendNotification(updateMarkerSetState, this._webviewParticipant, selection.id);
                 }
             });
     }
 
     loadTheme(): void {
-        const wrapper = vscode.window.activeColorTheme.kind === 1 ? 'light' : 'dark';
-        this._panel.webview.postMessage({ command: VSCODE_MESSAGES.SET_THEME, data: wrapper });
+        const data = vscode.window.activeColorTheme.kind === 1 ? 'light' : 'dark';
+        this._messenger.sendNotification(setTheme, this._webviewParticipant, data);
+    }
+
+    private doHandleVscodeWebViewReady(): void {
+        // Post the tspTypescriptClient
+        if (this._experiment) {
+            const wrapper: string = JSONBig.stringify(this._experiment);
+            const data = { data: getTspClientUrl(ClientType.FRONTEND), experiment: wrapper };
+            this._messenger.sendNotification(setTspClient, this._webviewParticipant, data);
+        } else {
+            const data = { data: getTspClientUrl(ClientType.FRONTEND) };
+            this._messenger.sendNotification(setTspClient, this._webviewParticipant, data);
+        }
+        this.loadTheme();
+    }
+
+    private doHandleVscodeAlert(text: any): void {
+        vscode.window.showErrorMessage(text);
+    }
+
+    private doHandleVscodeNewStatus(data: any): void {
+        handleStatusMessage(this._panel?.title, data);
+    }
+
+    private doHandleVscodeRemoveStatus(data: any): void {
+        handleRemoveMessage(this._panel?.title, data);
+    }
+
+    private doHandleVscodeUpdateProperties(data: any): void {
+        if (data?.properties) {
+            signalManager().emit(
+                'ITEM_PROPERTIES_UPDATED',
+                new ItemPropertiesSignalPayload(data.properties, data.experimentUUID, data.outputDescriptorId)
+            );
+        }
+    }
+    private doHandleVscodeSaveAsCsv(payload: any): void {
+        if (payload.data && typeof payload.data === 'string') {
+            TraceViewerPanel.saveTraceCsv(
+                payload.data,
+                (this._experiment !== undefined ? this._experiment.name : 'trace') + '.csv'
+            );
+        }
+    }
+
+    private doHandleConnectionStatus(data: any): void {
+        if (data?.status && this._statusService) {
+            const status: boolean = JSON.parse(data.status);
+            this._statusService.updateServerStatus(status);
+        }
+    }
+
+    private doHandleVscodeShowMarkerCategories(data: any): void {
+        if (data?.wrapper) {
+            const markerCategories = new Map<string, { categoryCount: number; toggleInd: boolean }>(
+                JSON.parse(data.wrapper)
+            );
+            TraceViewerPanel.currentPanel?.renderMarkersFilter(markerCategories);
+        }
+    }
+
+    private doHandleVscodeSendMarkerSets(data: any): void {
+        if (data?.wrapper) {
+            const markerSetsMap = new Map<string, { marker: MarkerSet; enabled: boolean }>(JSON.parse(data.wrapper));
+            TraceViewerPanel.currentPanel?.renderMarkerSets(markerSetsMap);
+        }
+    }
+
+    private doHandleVscodeMarkerSetsContext(data: any): void {
+        if (data?.status) {
+            const status: boolean = JSON.parse(data.status);
+            vscode.commands.executeCommand('setContext', 'traceViewer.markerSetsPresent', status);
+        }
+    }
+
+    private doHandleVscodeMarkerCategoryContext(data: any): void {
+        if (data?.status) {
+            const status: boolean = JSON.parse(data.status);
+            vscode.commands.executeCommand('setContext', 'traceViewer.markerCategoriesPresent', status);
+        }
+    }
+
+    private doHandleVscodeViewRangeUpdated(data: any): void {
+        if (data) {
+            signalManager().emit('VIEW_RANGE_UPDATED', JSONBig.parse(data));
+        }
+    }
+
+    private doHandleVscodeSelectionRangeUpdated(data: any): void {
+        if (data) {
+            signalManager().emit('SELECTION_RANGE_UPDATED', JSONBig.parse(data));
+        }
+    }
+
+    private doHandleExperimentUpdated(data: any): void {
+        if (data) {
+            const experiment = convertSignalExperiment(JSONBig.parse(data));
+            signalManager().emit('EXPERIMENT_UPDATED', experiment);
+        }
     }
 
     private _getHtmlForWebview(webview: vscode.Webview) {
@@ -579,9 +715,6 @@ export class TraceViewerPanel {
 				<noscript>You need to enable JavaScript to run this app.</noscript>
 				<div id="root"></div>
 
-				<script nonce="${nonce}">
-					const vscode = acquireVsCodeApi();
-				</script>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;

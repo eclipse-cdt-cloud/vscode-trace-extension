@@ -1,13 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as vscode from 'vscode';
+import { NotificationType, WebviewIdMessageParticipant } from 'vscode-messenger-common';
+import { Messenger } from 'vscode-messenger';
 import { TraceServerConnectionStatusService } from '../utils/trace-server-status';
 import { ClientType, getTraceServerUrl } from '../utils/backend-tsp-client-provider';
 import { traceExtensionWebviewManager } from 'vscode-trace-extension/src/extension';
-import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message-manager';
+import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-messages';
 
 export abstract class AbstractTraceExplorerProvider implements vscode.WebviewViewProvider {
     protected _view: vscode.WebviewView | undefined;
     protected _disposables: vscode.Disposable[] = [];
+    protected _webviewParticipant: WebviewIdMessageParticipant;
 
     /**
      * Bundled JS script file for the webview.
@@ -22,7 +25,8 @@ export abstract class AbstractTraceExplorerProvider implements vscode.WebviewVie
 
     constructor(
         protected readonly _extensionUri: vscode.Uri,
-        protected readonly _statusService: TraceServerConnectionStatusService
+        protected readonly _statusService: TraceServerConnectionStatusService,
+        protected readonly _messenger: Messenger
     ) {}
 
     /**
@@ -34,7 +38,7 @@ export abstract class AbstractTraceExplorerProvider implements vscode.WebviewVie
         if (!this._view) {
             return;
         }
-        this._view.webview.postMessage({ command: VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED, data: newUrl });
+        this.postMessagetoWebview(VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED, newUrl);
         this._view.webview.html = this._getHtmlForWebview(this._view.webview);
     }
 
@@ -47,7 +51,8 @@ export abstract class AbstractTraceExplorerProvider implements vscode.WebviewVie
         if (!this._view || !command) {
             return;
         }
-        this._view.webview.postMessage({ command, data });
+        const message: NotificationType<any> = { method: command };
+        this._messenger.sendNotification(message, this._webviewParticipant, data);
     }
 
     public resolveWebviewView(
@@ -57,6 +62,9 @@ export abstract class AbstractTraceExplorerProvider implements vscode.WebviewVie
     ): void {
         this._view = webviewView;
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+
+        // Register webview to messenger
+        this._webviewParticipant = this._messenger.registerWebviewView(webviewView);
         webviewView.webview.options = this._webviewOptions;
 
         traceExtensionWebviewManager.fireWebviewCreated(webviewView);
@@ -103,9 +111,6 @@ export abstract class AbstractTraceExplorerProvider implements vscode.WebviewVie
 				<noscript>You need to enable JavaScript to run this app.</noscript>
 				<div id="root"></div>
 
-				<script nonce="${nonce}">
-					const vscode = acquireVsCodeApi();
-				</script>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;

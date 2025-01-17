@@ -296,6 +296,7 @@
         "@fortawesome/react-fontawesome": "^0.1.4",
         "@vscode/codicons": "^0.0.33",
         "@vscode/vsce": "2.25.0",
+        "vscode-messenger": "^0.5.0",
         "chart.js": "^2.8.0",
         "json-bigint": "sidorares/json-bigint#2c0a5f896d7888e68e5f4ae3c7ea5cd42fd54473",
         "lodash": "^4.17.15",
