@@ -29,7 +29,7 @@
         "eslint-plugin-no-null": "^1.0.2",
         "eslint-plugin-react": "^7.20.0",
         "lerna": "^7.0.0",
-        "ovsx": "0.9.1",
+        "ovsx": "0.9.4",
         "prettier": "^3.0.2",
         "webpack": "^5.20.2",
         "webpack-cli": "^4.5.0"
@@ -38,8 +38,5 @@
         "vscode-trace-common",
         "vscode-trace-webviews",
         "vscode-trace-extension"
-    ],
-    "resolutions": {
-        "@vscode/vsce": "2.25.0"
-    }
+    ]
 }
