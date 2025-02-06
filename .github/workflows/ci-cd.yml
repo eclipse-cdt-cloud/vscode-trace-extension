@@ -12,13 +12,13 @@ on:
 jobs:
 
   build-test:
-    name: Build and run UI Tests
+    name: Build & run UI Tests (${{ matrix.os }}, node-${{ matrix.node-version }})
     timeout-minutes: 60
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node-version: [18]
+        node-version: [18,20,22]
 
     steps:
     - uses: actions/checkout@v4
@@ -52,23 +52,24 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: playwright-report
+        name: playwright-report-node${{ matrix.node-version }}
         path: playwright-report/
         retention-days: 30
-     # Save the extension .vsix file for potential publishing
-     #  in later step (if appropriate)
+    # Save the extension ().vsix file) for publishing in later step 
+    # (when appropriate)
     - uses: actions/upload-artifact@v4
       with:
         name: extension
         path: vscode-trace-extension/*.vsix
+      if: github.event_name == 'release' && startsWith(github.ref, 'refs/tags/v') && github.repository == 'eclipse-cdt-cloud/vscode-trace-extension'
 
   code-lint:
-    name: Run linter
+    name: Run linter (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node-version: [18]
+        node-version: [20]
 
     steps:
     - name: Check out Git repository
@@ -93,7 +94,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node-version: [18]
+        node-version: [20]
     # Only execute when the trigger was a tag (new release)
     if: github.event_name == 'release' && startsWith(github.ref, 'refs/tags/v') && github.repository == 'eclipse-cdt-cloud/vscode-trace-extension'
 
@@ -126,7 +127,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node-version: [18]
+        node-version: [20]
     # Only execute when the trigger was a tag (new release)
     if: github.event_name == 'release' && startsWith(github.ref, 'refs/tags/v') && github.repository == 'eclipse-cdt-cloud/vscode-trace-extension'
 
