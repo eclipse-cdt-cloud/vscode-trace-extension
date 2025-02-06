@@ -14,13 +14,13 @@ on:
 jobs:
 
   License-check:
-    name: 3PP License Check using dash-licenses
+    name: 3PP License Check using dash-licenses (${{ matrix.os }})
 
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        node: [18]
+        node: [20]
         java: [11]
 
     runs-on: ${{ matrix.os }}
