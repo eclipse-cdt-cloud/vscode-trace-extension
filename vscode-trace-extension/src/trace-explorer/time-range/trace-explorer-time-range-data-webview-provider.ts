@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as vscode from 'vscode';
-import JSONBigConfig from 'json-bigint';
 import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
 import { TimeRangeDataMap } from 'traceviewer-react-components/lib/components/utils/time-range-data-map';
@@ -15,11 +14,8 @@ import {
     viewRangeUpdated,
     restoreView
 } from 'vscode-trace-common/lib/messages/vscode-messages';
+import { JSONBigUtils } from 'tsp-typescript-client/lib/utils/jsonbig-utils';
 import { AbstractTraceExplorerProvider } from '../abstract-trace-explorer-provider';
-
-const JSONBig = JSONBigConfig({
-    useNativeBigInt: true
-});
 
 export class TraceExplorerTimeRangeDataProvider extends AbstractTraceExplorerProvider {
     public static readonly viewType = 'traceExplorer.timeRangeDataView';
@@ -35,8 +31,10 @@ export class TraceExplorerTimeRangeDataProvider extends AbstractTraceExplorerPro
 
     // VSCODE message handlers
     private _onVscodeRequestSelectionRangeChange = (data: any): void => {
-        const parsedData = data ? JSONBig.parse(data) : undefined;
-        signalManager().emit('REQUEST_SELECTION_RANGE_CHANGE', parsedData);
+        if (data) {
+            const result = JSONBigUtils.parse<TimeRangeUpdatePayload>(data);
+            signalManager().emit('REQUEST_SELECTION_RANGE_CHANGE', result);
+        }
     };
 
     protected init(
@@ -62,9 +60,7 @@ export class TraceExplorerTimeRangeDataProvider extends AbstractTraceExplorerPro
                     mapArray: Array.from(this._experimentDataMap.experimentDataMap.values()),
                     activeData: this._experimentDataMap.activeData
                 };
-                this._messenger.sendNotification(restoreView, this._webviewParticipant, {
-                    data: JSONBig.stringify(data)
-                });
+                this._messenger.sendNotification(restoreView, this._webviewParticipant, JSONBigUtils.stringify(data));
             }
         });
 
@@ -88,17 +84,21 @@ export class TraceExplorerTimeRangeDataProvider extends AbstractTraceExplorerPro
     }
 
     private onViewRangeUpdated = (update: TimeRangeUpdatePayload) => {
-        this._messenger.sendNotification(viewRangeUpdated, this._webviewParticipant, JSONBig.stringify(update));
+        this._messenger.sendNotification(viewRangeUpdated, this._webviewParticipant, JSONBigUtils.stringify(update));
         this._experimentDataMap.updateViewRange(update);
     };
 
     private onSelectionRangeUpdated = (update: TimeRangeUpdatePayload) => {
-        this._messenger.sendNotification(selectionRangeUpdated, this._webviewParticipant, JSONBig.stringify(update));
+        this._messenger.sendNotification(
+            selectionRangeUpdated,
+            this._webviewParticipant,
+            JSONBigUtils.stringify(update)
+        );
         this._experimentDataMap.updateSelectionRange(update);
     };
 
     private onExperimentSelected = (experiment: Experiment | undefined) => {
-        const data = { wrapper: experiment ? JSONBig.stringify(experiment) : undefined };
+        const data = { wrapper: experiment ? JSONBigUtils.stringify(experiment) : undefined };
         this._messenger.sendNotification(experimentSelected, this._webviewParticipant, data);
         if (experiment) {
             this._experimentDataMap.updateAbsoluteRange(experiment);
@@ -107,13 +107,13 @@ export class TraceExplorerTimeRangeDataProvider extends AbstractTraceExplorerPro
     };
 
     private onExperimentUpdated = (experiment: Experiment) => {
-        const data = { wrapper: JSONBig.stringify(experiment) };
+        const data = { wrapper: JSONBigUtils.stringify(experiment) };
         this._messenger.sendNotification(experimentUpdated, this._webviewParticipant, data);
         this._experimentDataMap.updateAbsoluteRange(experiment);
     };
 
     private onExperimentClosed = (experiment: Experiment) => {
-        const data = { wrapper: JSONBig.stringify(experiment) };
+        const data = { wrapper: JSONBigUtils.stringify(experiment) };
         this._messenger.sendNotification(experimentClosed, this._webviewParticipant, data);
         this._experimentDataMap.delete(experiment);
     };

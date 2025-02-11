@@ -1,4 +1,3 @@
-import JSONBigConfig from 'json-bigint';
 import * as Messages from 'traceviewer-base/lib/message-manager';
 import { ContextMenuItemClickedSignalPayload } from 'traceviewer-base/lib/signals/context-menu-item-clicked-signal-payload';
 import { ItemPropertiesSignalPayload } from 'traceviewer-base/lib/signals/item-properties-signal-payload';
@@ -36,10 +35,7 @@ import {
     webviewReady,
     StatusNotifier
 } from 'vscode-trace-common/lib/messages/vscode-messages';
-
-const JSONBig = JSONBigConfig({
-    useNativeBigInt: true
-});
+import { JSONBigUtils } from 'tsp-typescript-client/lib/utils/jsonbig-utils';
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
@@ -88,38 +84,38 @@ export class VsCodeMessageManager extends Messages.MessageManager implements Sta
     }
 
     reOpenTrace(experiment: Experiment, _receiver?: MessageParticipant | undefined): void {
-        const wrapper: string = JSONBig.stringify(experiment);
+        const wrapper = JSONBigUtils.stringify(experiment);
         this._messenger.sendNotification(reOpenTrace, _receiver ?? HOST_EXTENSION, { wrapper });
     }
 
     closeTrace(experiment: Experiment, _receiver?: MessageParticipant | undefined): void {
-        const wrapper: string = JSONBig.stringify(experiment);
+        const wrapper = JSONBigUtils.stringify(experiment);
         this._messenger.sendNotification(closeTrace, _receiver ?? HOST_EXTENSION, { wrapper });
     }
 
     deleteTrace(experiment: Experiment, _receiver?: MessageParticipant | undefined): void {
-        const wrapper: string = JSONBig.stringify(experiment);
+        const wrapper = JSONBigUtils.stringify(experiment);
         this._messenger.sendNotification(deleteTrace, _receiver ?? HOST_EXTENSION, { wrapper });
     }
 
     experimentSelected(experiment?: Experiment | undefined, _receiver?: MessageParticipant | undefined): void {
-        const wrapper = experiment ? JSONBig.stringify(experiment) : undefined;
+        const wrapper = experiment ? JSONBigUtils.stringify(experiment) : undefined;
         this._messenger.sendNotification(experimentSelected, _receiver ?? HOST_EXTENSION, { wrapper });
     }
 
     experimentUpdated(experiment: Experiment, _receiver?: MessageParticipant | undefined): void {
-        const data = JSONBig.stringify(experiment);
+        const data = JSONBigUtils.stringify(experiment);
         this._messenger.sendNotification(experimentUpdated, _receiver ?? HOST_EXTENSION, data);
     }
 
     experimentClosed(experiment: Experiment, _receiver?: MessageParticipant | undefined): void {
-        const data = JSONBig.stringify(experiment);
+        const data = JSONBigUtils.stringify(experiment);
         this._messenger.sendNotification(experimentClosed, _receiver ?? HOST_EXTENSION, data);
     }
 
     outputAdded(payload: OutputAddedSignalPayload, _receiver?: MessageParticipant | undefined): void {
-        const expWrapper = JSONBig.stringify(payload.getExperiment());
-        const descWrapper = JSONBig.stringify(payload.getOutputDescriptor());
+        const expWrapper = JSONBigUtils.stringify(payload.getExperiment());
+        const descWrapper = JSONBigUtils.stringify(payload.getOutputDescriptor());
         this._messenger.sendNotification(outputAdded, _receiver ?? HOST_EXTENSION, {
             data: expWrapper,
             descriptor: descWrapper
@@ -131,17 +127,17 @@ export class VsCodeMessageManager extends Messages.MessageManager implements Sta
     }
 
     viewRangeUpdated(payload: TimeRangeUpdatePayload, _receiver?: MessageParticipant | undefined): void {
-        const data = JSONBig.stringify(payload);
+        const data = JSONBigUtils.stringify(payload);
         this._messenger.sendNotification(viewRangeUpdated, _receiver ?? HOST_EXTENSION, data);
     }
 
     selectionRangeUpdated(payload: TimeRangeUpdatePayload, _receiver?: MessageParticipant | undefined): void {
-        const data = JSONBig.stringify(payload);
+        const data = JSONBigUtils.stringify(payload);
         this._messenger.sendNotification(selectionRangeUpdated, _receiver ?? HOST_EXTENSION, data);
     }
 
     requestSelectionRangeChange(payload: TimeRangeUpdatePayload, _receiver?: MessageParticipant | undefined): void {
-        const data = JSONBig.stringify(payload);
+        const data = JSONBigUtils.stringify(payload);
         this._messenger.sendNotification(requestSelectionChange, _receiver ?? HOST_EXTENSION, data);
     }
 

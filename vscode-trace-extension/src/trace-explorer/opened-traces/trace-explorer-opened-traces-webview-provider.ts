@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import JSONBigConfig from 'json-bigint';
 import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
+import { JSONBigUtils } from 'tsp-typescript-client/lib/utils/jsonbig-utils';
 import * as vscode from 'vscode';
-import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import { TraceViewerPanel } from '../../trace-viewer-panel/trace-viewer-webview-panel';
 import { ClientType, getTspClientUrl, updateNoExperimentsContext } from '../../utils/backend-tsp-client-provider';
 import {
@@ -20,10 +19,6 @@ import {
     experimentOpened
 } from 'vscode-trace-common/lib/messages/vscode-messages';
 import { AbstractTraceExplorerProvider } from '../abstract-trace-explorer-provider';
-
-const JSONBig = JSONBigConfig({
-    useNativeBigInt: true
-});
 
 export class TraceExplorerOpenedTracesViewProvider extends AbstractTraceExplorerProvider {
     public static readonly viewType = 'traceExplorer.openedTracesView';
@@ -67,7 +62,7 @@ export class TraceExplorerOpenedTracesViewProvider extends AbstractTraceExplorer
 
     private _onVscodeReOpenTrace = (data: any): void => {
         if (data?.wrapper) {
-            const experiment = convertSignalExperiment(JSONBig.parse(data.wrapper));
+            const experiment: Experiment = JSONBigUtils.parse(data.wrapper, Experiment);
             const existingPanel = TraceViewerPanel.getExistingPanel(experiment.name);
             const panel = TraceViewerPanel.createOrShow(
                 this._extensionUri,
@@ -85,7 +80,8 @@ export class TraceExplorerOpenedTracesViewProvider extends AbstractTraceExplorer
     private _onVscodeCloseTrace = (data: any): void => {
         if (data?.wrapper) {
             // just remove the panel here
-            TraceViewerPanel.disposePanel(this._extensionUri, JSONBig.parse(data.wrapper).name);
+            const experiment: Experiment = JSONBigUtils.parse(data.wrapper, Experiment);
+            TraceViewerPanel.disposePanel(this._extensionUri, experiment.name);
             signalManager().emit('EXPERIMENT_SELECTED', undefined);
         }
     };
@@ -97,7 +93,7 @@ export class TraceExplorerOpenedTracesViewProvider extends AbstractTraceExplorer
     private _onVscodeExperimentSelected = (data: any): void => {
         let experiment: Experiment | undefined;
         if (data?.wrapper) {
-            experiment = convertSignalExperiment(JSONBig.parse(data.wrapper));
+            experiment = JSONBigUtils.parse(data.wrapper, Experiment);
         } else {
             experiment = undefined;
         }
@@ -106,7 +102,7 @@ export class TraceExplorerOpenedTracesViewProvider extends AbstractTraceExplorer
 
     protected doHandleExperimentOpenedSignal(experiment: Experiment): void {
         if (this._view && experiment) {
-            const wrapper: string = JSONBig.stringify(experiment);
+            const wrapper = JSONBigUtils.stringify(experiment);
             this._messenger.sendNotification(experimentOpened, this._webviewParticipant, wrapper);
         }
     }
@@ -117,7 +113,7 @@ export class TraceExplorerOpenedTracesViewProvider extends AbstractTraceExplorer
         }
         if (this._view) {
             this._selectedExperiment = experiment;
-            const wrapper: string = JSONBig.stringify(experiment);
+            const wrapper = JSONBigUtils.stringify(experiment);
             this._messenger.sendNotification(traceViewerTabActivated, this._webviewParticipant, wrapper);
 
             if (!this._view.visible) {

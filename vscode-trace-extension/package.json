@@ -298,7 +298,6 @@
         "@vscode/vsce": "2.25.0",
         "vscode-messenger": "^0.5.0",
         "chart.js": "^2.8.0",
-        "json-bigint": "sidorares/json-bigint#2c0a5f896d7888e68e5f4ae3c7ea5cd42fd54473",
         "lodash": "^4.17.15",
         "terser": "4.8.1",
         "traceviewer-base": "^0.7.2",
@@ -308,7 +307,6 @@
     "devDependencies": {
         "@playwright/test": "^1.32.3",
         "@types/jest": "^23.3.13",
-        "@types/json-bigint": "^1.0.1",
         "@types/node": "^10.1.2",
         "@types/vscode": "^1.52.0",
         "@typescript-eslint/eslint-plugin": "^6.0.0",
