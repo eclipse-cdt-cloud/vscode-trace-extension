@@ -1,13 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as fs from 'fs';
-import JSONBigConfig from 'json-bigint';
 import * as path from 'path';
 import { ItemPropertiesSignalPayload } from 'traceviewer-base/lib/signals/item-properties-signal-payload';
 import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
-import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
-import { MarkerSet } from 'tsp-typescript-client/lib/models/markerset';
-import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
 import * as vscode from 'vscode';
 import type { Messenger } from 'vscode-messenger';
 import { NotificationType, WebviewIdMessageParticipant } from 'vscode-messenger-common';
@@ -42,15 +38,14 @@ import {
     updateMarkerCategoryState,
     updateMarkerSetState
 } from 'vscode-trace-common/lib/messages/vscode-messages';
-import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
+import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
+import { MarkerSet } from 'tsp-typescript-client/lib/models/markerset';
+import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
+import { JSONBigUtils } from 'tsp-typescript-client/lib/utils/jsonbig-utils';
 import { handleRemoveMessage, handleStatusMessage, setStatusFromPanel } from '../common/trace-message';
 import { traceExtensionWebviewManager } from '../extension';
 import { ClientType, getTraceServerUrl, getTspClientUrl } from '../utils/backend-tsp-client-provider';
 import { TraceServerConnectionStatusService } from '../utils/trace-server-status';
-
-const JSONBig = JSONBigConfig({
-    useNativeBigInt: true
-});
 
 interface QuickPickItem extends vscode.QuickPickItem {
     id: string;
@@ -415,7 +410,7 @@ export class TraceViewerPanel {
 
     protected doHandleExperimentSelectedSignal(experiment: Experiment | undefined): void {
         if (this._experiment && experiment && this._experiment.UUID === experiment.UUID) {
-            const wrapper: string = JSONBig.stringify(experiment);
+            const wrapper = JSONBigUtils.stringify(experiment);
             const data = { wrapper };
             this._messenger.sendNotification(experimentSelected, this._webviewParticipant, data);
         }
@@ -426,11 +421,11 @@ export class TraceViewerPanel {
     }
 
     protected doHandleRequestSelectionRangeChange(payload: TimeRangeUpdatePayload): void {
-        this._messenger.sendNotification(experimentSelected, this._webviewParticipant, JSONBig.stringify(payload));
+        this._messenger.sendNotification(experimentSelected, this._webviewParticipant, JSONBigUtils.stringify(payload));
     }
     setExperiment(experiment: Experiment): void {
         this._experiment = experiment;
-        const wrapper: string = JSONBig.stringify(experiment);
+        const wrapper = JSONBigUtils.stringify(experiment);
         const data = { wrapper };
         this._messenger.sendNotification(setExperiment, this._webviewParticipant, data);
         signalManager().emit('EXPERIMENT_OPENED', experiment);
@@ -438,7 +433,7 @@ export class TraceViewerPanel {
     }
 
     addOutput(descriptor: OutputDescriptor): void {
-        const wrapper: string = JSONBig.stringify(descriptor);
+        const wrapper = JSONBigUtils.stringify(descriptor);
         const data = { wrapper };
         this._messenger.sendNotification(addOutput, this._webviewParticipant, data);
     }
@@ -550,7 +545,7 @@ export class TraceViewerPanel {
     private doHandleVscodeWebViewReady(): void {
         // Post the tspTypescriptClient
         if (this._experiment) {
-            const wrapper: string = JSONBig.stringify(this._experiment);
+            const wrapper = JSONBigUtils.stringify(this._experiment);
             const data = { data: getTspClientUrl(ClientType.FRONTEND), experiment: wrapper };
             this._messenger.sendNotification(setTspClient, this._webviewParticipant, data);
         } else {
@@ -628,20 +623,20 @@ export class TraceViewerPanel {
 
     private doHandleVscodeViewRangeUpdated(data: any): void {
         if (data) {
-            signalManager().emit('VIEW_RANGE_UPDATED', JSONBig.parse(data));
+            const result = JSONBigUtils.parse<TimeRangeUpdatePayload>(data);
+            signalManager().emit('VIEW_RANGE_UPDATED', result);
         }
     }
 
     private doHandleVscodeSelectionRangeUpdated(data: any): void {
         if (data) {
-            signalManager().emit('SELECTION_RANGE_UPDATED', JSONBig.parse(data));
+            signalManager().emit('SELECTION_RANGE_UPDATED', JSONBigUtils.parse<TimeRangeUpdatePayload>(data));
         }
     }
 
     private doHandleExperimentUpdated(data: any): void {
         if (data) {
-            const experiment = convertSignalExperiment(JSONBig.parse(data));
-            signalManager().emit('EXPERIMENT_UPDATED', experiment);
+            signalManager().emit('EXPERIMENT_UPDATED', JSONBigUtils.parse(data, Experiment));
         }
     }
 

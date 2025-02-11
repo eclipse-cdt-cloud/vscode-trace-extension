@@ -3,7 +3,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-balham.css';
-import JSONBigConfig from 'json-bigint';
 import * as React from 'react';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -18,10 +17,6 @@ import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
 import { TraceContextComponent } from 'traceviewer-react-components/lib/components/trace-context-component';
 import 'traceviewer-react-components/style/trace-context-style.css';
-import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
-import { MarkerSet } from 'tsp-typescript-client/lib/models/markerset';
-import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
-import { TspClientProvider } from 'vscode-trace-common/lib/client/tsp-client-provider-impl';
 import {
     setTspClient,
     traceServerUrlChanged,
@@ -43,14 +38,14 @@ import {
     connectionStatus
 } from 'vscode-trace-common/lib/messages/vscode-messages';
 import { VsCodeMessageManager } from '../common/vscode-message-manager';
-import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import { messenger } from '.';
+import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
+import { MarkerSet } from 'tsp-typescript-client/lib/models/markerset';
+import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
+import { JSONBigUtils } from 'tsp-typescript-client/lib/utils/jsonbig-utils';
+import { TspClientProvider } from 'vscode-trace-common/lib/client/tsp-client-provider-impl';
 import '../style/trace-viewer.css';
-
-const JSONBig = JSONBigConfig({
-    useNativeBigInt: true
-});
-
+import { array } from 'tsp-typescript-client/lib/protocol/serialization';
 interface VscodeAppState {
     experiment: Experiment | undefined;
     tspClientProvider: TspClientProvider | undefined;
@@ -116,7 +111,7 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
             },
             () => {
                 if (data.experiment) {
-                    this.doHandleExperimentSetSignal(convertSignalExperiment(JSONBig.parse(data.experiment)), true);
+                    this.doHandleExperimentSetSignal(JSONBigUtils.parse(data.experiment, Experiment), true);
                 }
             }
         );
@@ -124,7 +119,7 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
 
     private _onVscodeExperimentSelected = (data: any): void => {
         if (data?.wrapper) {
-            this.doHandleExperimentSelectedSignal(convertSignalExperiment(JSONBig.parse(data.wrapper)));
+            this.doHandleExperimentSelectedSignal(JSONBigUtils.parse(data.wrapper, Experiment));
         }
     };
 
@@ -136,22 +131,20 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
 
     private _onVscodeSetExperiment = (data: any): void => {
         if (data?.wrapper) {
-            this.doHandleExperimentSetSignal(convertSignalExperiment(JSONBig.parse(data.wrapper)), false);
+            this.doHandleExperimentSetSignal(JSONBigUtils.parse(data.wrapper, Experiment), false);
         }
     };
 
     private _onVscodeAddOutput = (data: any): void => {
         if (data?.wrapper) {
-            // FIXME: JSONBig.parse() create bigint if numbers are small
-            // Not an issue right now for output descriptors.
-            const descriptor: OutputDescriptor = JSONBig.parse(data.wrapper);
+            const descriptor: OutputDescriptor = JSONBigUtils.parse(data.wrapper, OutputDescriptor);
             this.doHandleOutputAddedMessage(descriptor);
         }
     };
 
     private _onVscodeOutputDataChanged = (data: any): void => {
         if (data) {
-            const descriptors: OutputDescriptor[] = JSONBig.parse(data);
+            const descriptors: OutputDescriptor[] = JSONBigUtils.parse(data, array(OutputDescriptor));
             this.doHandleOutputDataChanged(descriptors);
         }
     };
@@ -178,7 +171,8 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
 
     private _onVscodeUpdateZoom = (data: any): void => {
         this.updateZoom(data);
-        signalManager().emit('VIEW_RANGE_UPDATED', JSONBig.parse(data));
+        const result = JSONBigUtils.parse<TimeRangeUpdatePayload>(data);
+        signalManager().emit('VIEW_RANGE_UPDATED', result);
     };
 
     private _onVscodeGetMarkerCategories = (): void => {
@@ -214,7 +208,7 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
 
     private _onVscodeConnectionStatus = (data: any): void => {
         if (data) {
-            const serverStatus: boolean = JSONBig.parse(data);
+            const serverStatus: boolean = JSONBigUtils.parse(data);
             this.setState({ serverStatus });
         }
     };

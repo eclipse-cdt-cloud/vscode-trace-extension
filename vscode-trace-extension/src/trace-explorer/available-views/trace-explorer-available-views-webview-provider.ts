@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import JSONBigConfig from 'json-bigint';
 import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
+import { JSONBigUtils } from 'tsp-typescript-client/lib/utils/jsonbig-utils';
 import * as vscode from 'vscode';
 import {
     webviewReady,
@@ -11,15 +11,9 @@ import {
     experimentSelected,
     setTspClient
 } from 'vscode-trace-common/lib/messages/vscode-messages';
-import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
+import { ClientType, getTspClientUrl } from 'vscode-trace-extension/src/utils/backend-tsp-client-provider';
 import { TraceViewerPanel } from '../../trace-viewer-panel/trace-viewer-webview-panel';
 import { AbstractTraceExplorerProvider } from '../abstract-trace-explorer-provider';
-import { ClientType, getTspClientUrl } from 'vscode-trace-extension/src/utils/backend-tsp-client-provider';
-
-const JSONBig = JSONBigConfig({
-    useNativeBigInt: true
-});
-
 export class TraceExplorerAvailableViewsProvider extends AbstractTraceExplorerProvider {
     public static readonly viewType = 'traceExplorer.availableViews';
     public readonly _webviewScript = 'analysisPanel.js';
@@ -52,9 +46,7 @@ export class TraceExplorerAvailableViewsProvider extends AbstractTraceExplorerPr
 
     private _onVscodeOutputAdded = (data: any): void => {
         if (data?.descriptor) {
-            // FIXME: JSONBig.parse() created bigint if numbers are small.
-            // Not an issue right now for output descriptors.
-            const descriptor = JSONBig.parse(data.descriptor) as OutputDescriptor;
+            const descriptor: OutputDescriptor = JSONBigUtils.parse(data.descriptor, OutputDescriptor);
             TraceViewerPanel.addOutputToCurrent(descriptor);
         }
     };
@@ -64,7 +56,7 @@ export class TraceExplorerAvailableViewsProvider extends AbstractTraceExplorerPr
             this._selectionOngoing = true;
             if (data?.wrapper) {
                 // Avoid endless forwarding of signal
-                this._selectedExperiment = convertSignalExperiment(JSONBig.parse(data.wrapper));
+                this._selectedExperiment = JSONBigUtils.parse(data.wrapper, Experiment);
             } else {
                 this._selectedExperiment = undefined;
             }
@@ -105,7 +97,7 @@ export class TraceExplorerAvailableViewsProvider extends AbstractTraceExplorerPr
     protected doHandleExperimentSelectedSignal(experiment: Experiment | undefined): void {
         if (!this._selectionOngoing && this._view) {
             this._selectedExperiment = experiment;
-            const wrapper = experiment ? JSONBig.stringify(experiment) : undefined;
+            const wrapper = experiment ? JSONBigUtils.stringify(experiment) : undefined;
             this._messenger.sendNotification(experimentSelected, this._webviewParticipant, { wrapper });
         }
     }

@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import JSONBigConfig from 'json-bigint';
 import * as React from 'react';
 import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
@@ -17,19 +16,31 @@ import {
     traceViewerTabClosed,
     viewRangeUpdated
 } from 'vscode-trace-common/lib/messages/vscode-messages';
-import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import { messenger } from '.';
 import { VsCodeMessageManager } from '../../common/vscode-message-manager';
+import { Experiment } from 'tsp-typescript-client';
+import { JSONBigUtils } from 'tsp-typescript-client/lib/utils/jsonbig-utils';
 import '../../style/react-contextify.css';
 import '../../style/trace-viewer.css';
-
-const JSONBig = JSONBigConfig({
-    useNativeBigInt: true
-});
+import { createNormalizer, array } from 'tsp-typescript-client/lib/protocol/serialization';
 
 interface TimeRangeDataWidgetProps {
     data: boolean;
 }
+
+const ExperimentTimeRangeDataNormalizer = createNormalizer<ExperimentTimeRangeData>({
+    absoluteRange: { start: BigInt, end: BigInt },
+    viewRange: { start: BigInt, end: BigInt },
+    selectionRange: { start: BigInt, end: BigInt }
+});
+
+const RestoreViewNormalizer = createNormalizer<{
+    mapArray: ExperimentTimeRangeData[];
+    activeData: ExperimentTimeRangeData;
+}>({
+    mapArray: array(ExperimentTimeRangeDataNormalizer),
+    activeData: ExperimentTimeRangeDataNormalizer
+});
 
 class TimeRangeDataWidget extends React.Component {
     private _signalHandler: VsCodeMessageManager;
@@ -42,19 +53,19 @@ class TimeRangeDataWidget extends React.Component {
     private _onVscodeExperimentSelected = (data: any): void => {
         signalManager().emit(
             'EXPERIMENT_SELECTED',
-            data?.wrapper ? convertSignalExperiment(JSONBig.parse(data.wrapper)) : undefined
+            data?.wrapper ? JSONBigUtils.parse(data.wrapper, Experiment) : undefined
         );
     };
 
     private _onVscodeExperimentUpdated = (data: any): void => {
         if (data?.wrapper) {
-            signalManager().emit('EXPERIMENT_UPDATED', convertSignalExperiment(JSONBig.parse(data.wrapper)));
+            signalManager().emit('EXPERIMENT_UPDATED', JSONBigUtils.parse(data.wrapper, Experiment));
         }
     };
 
     private _onVscodeExperimentClosed = (data: any): void => {
         if (data?.wrapper) {
-            signalManager().emit('EXPERIMENT_CLOSED', convertSignalExperiment(JSONBig.parse(data.wrapper)));
+            signalManager().emit('EXPERIMENT_CLOSED', JSONBigUtils.parse(data.wrapper, Experiment));
         }
     };
 
@@ -66,20 +77,19 @@ class TimeRangeDataWidget extends React.Component {
 
     private _onVscodeSelectionRangeUpdated = (data: any): void => {
         if (data) {
-            const result = JSONBig.parse(data);
-            signalManager().emit('SELECTION_RANGE_UPDATED', result);
+            signalManager().emit('SELECTION_RANGE_UPDATED', JSONBigUtils.parse(data));
         }
     };
 
     private _onVscodeViewRangeUpdated = (data: any): void => {
         if (data) {
-            signalManager().emit('VIEW_RANGE_UPDATED', JSONBig.parse(data));
+            signalManager().emit('VIEW_RANGE_UPDATED', JSONBigUtils.parse(data));
         }
     };
 
     private _onVscodeRestoreView = (data: any): void => {
         if (data) {
-            const { mapArray, activeData } = JSONBig.parse(data);
+            const { mapArray, activeData } = JSONBigUtils.parse(data, RestoreViewNormalizer);
             this.restoreState(mapArray, activeData);
         }
     };

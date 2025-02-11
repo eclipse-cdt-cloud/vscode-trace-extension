@@ -10,7 +10,6 @@
         "@fortawesome/free-solid-svg-icons": "^5.8.1",
         "@fortawesome/react-fontawesome": "^0.1.4",
         "@mui/material": "^5.10.14",
-        "json-bigint": "sidorares/json-bigint#2c0a5f896d7888e68e5f4ae3c7ea5cd42fd54473",
         "lodash": "^4.17.15",
         "lodash.debounce": "^4.0.8",
         "react": "^18.0.0",
@@ -27,14 +26,12 @@
     },
     "devDependencies": {
         "@types/jest": "^23.3.13",
-        "@types/json-bigint": "^1.0.1",
         "@types/node": "^10.1.2",
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",
         "@typescript-eslint/eslint-plugin": "^6.0.0",
         "@typescript-eslint/parser": "^6.0.0",
         "css-loader": "^5.0.1",
-        
         "style-loader": "^2.0.0",
         "svg-url-loader": "^7.1.1",
         "ts-loader": "^8.0.14",
