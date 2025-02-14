@@ -331,10 +331,12 @@ const experiment = importedApi.getActiveExperiment();
 
 The API provides getters to retrieve the active webviews and panels. This can be useful for scenarios when webviews/panels were created before the adopter extension was activated but the adopter extension still wants to handle messages from them.
 
+`Note`: The the command key was changed from `message.command` to `method.method` after version `0.4.0`. Please update your code for that.
+
 ```javascript
 for (const webview of importedApi.getActiveWebviews()) {
     webview.webview.onDidReceiveMessage((message) => {
-        switch (message.command) {
+        switch (message.method) {
             case "webviewReady":
             console.log("From adopter extension - webviewReady signal received");
             break;
@@ -347,11 +349,13 @@ for (const webview of importedApi.getActiveWebviews()) {
 
 The API also provides a way to attach a listener for when webview or webview panel is created. Note that this listener will not be called for webviews and panels created before the registration of the listener. It is recommended to register the listeners during the activation of the adopter extensions.
 
+`Note`: The key for the command key was changed from `message.command` to `method.method` after version `0.4.0`. Please update your code for that.
+
 ```javascript
 importedApi.onWebviewPanelCreated(_panel => {
     // For newly created panel, handle messages from webviews
     _panel.webview.onDidReceiveMessage((message) => {
-        switch (message.command) {
+        switch (message.method) {
             case "webviewReady":
             console.log("From adopter extension - webviewReady signal received");
             break;

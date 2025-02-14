@@ -1,9 +1,9 @@
-import { TspClient } from 'tsp-typescript-client/lib/protocol/tsp-client';
-import { RestClient } from 'tsp-typescript-client/lib/protocol/rest-client';
 import { ExperimentManager } from 'traceviewer-base/lib/experiment-manager';
 import { TraceManager } from 'traceviewer-base/lib/trace-manager';
 import { ITspClientProvider } from 'traceviewer-base/lib/tsp-client-provider';
-import { VsCodeMessageManager } from '../messages/vscode-message-manager';
+import { RestClient } from 'tsp-typescript-client/lib/protocol/rest-client';
+import { TspClient } from 'tsp-typescript-client/lib/protocol/tsp-client';
+import { StatusNotifier } from '../messages/vscode-messages';
 
 export class TspClientProvider implements ITspClientProvider {
     private _tspClient: TspClient;
@@ -14,7 +14,7 @@ export class TspClientProvider implements ITspClientProvider {
 
     constructor(
         private _url: string,
-        private _signalHandler: VsCodeMessageManager | undefined
+        private _signalHandler: StatusNotifier | undefined
     ) {
         this.updateClients();
 
