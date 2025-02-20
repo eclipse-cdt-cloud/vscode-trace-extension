@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "serverUrl": {
+      "enum": [
+        "localhost:3000",
+        "localhost:3002",
+        "localhost:8080"
+      ],
+      "description": "The server URL for the application \n  Type: string \n [ 'localhost:3000' 'localhost:8080' ]",
+      "default": "localhost:3000"
+    },
+    "maxConnections": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "Maximum number of concurrent connections",
+      "default": 10
+    },
+    "timeout": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Timeout in milliseconds",
+      "default": 5000
+    },
+    "features": {
+      "type": "object",
+      "properties": {
+        "enableLogging": {
+          "type": "boolean",
+          "description": "Enable detailed logging",
+          "default": false
+        },
+        "enableCache": {
+          "type": "boolean",
+          "description": "Enable response caching",
+          "default": false
+        }
+      },
+      "required": [
+        "enableLogging",
+        "enableCache"
+      ]
+    },
+    "wildcard": {
+      "type": "string",
+      "description": "Anything you want.",
+      "default": "Good Hearted Woman - Waylon Jennings"
+    }
+  },
+  "required": [
+    "serverUrl",
+    "maxConnections",
+    "timeout",
+    "features"
+  ]
+}

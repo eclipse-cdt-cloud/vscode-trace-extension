@@ -1,0 +1,10 @@
+{
+  "serverUrl": "localhost:8080",
+  "maxConnections": 100,
+  "timeout": 5000,
+  "features": {
+    "enableLogging": false,
+    "enableCache": false
+  },
+  "wildcard": "I sent you this in an email."
+}
