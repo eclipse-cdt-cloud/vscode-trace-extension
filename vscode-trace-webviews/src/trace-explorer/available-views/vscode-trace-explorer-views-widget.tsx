@@ -1,26 +1,21 @@
 /* eslint-disable @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any */
-import JSONBigConfig from 'json-bigint';
 import * as React from 'react';
 import { OutputAddedSignalPayload } from 'traceviewer-base/lib/signals/output-added-signal-payload';
 import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { ReactAvailableViewsWidget } from 'traceviewer-react-components/lib/trace-explorer/trace-explorer-views-widget';
 import 'traceviewer-react-components/style/trace-explorer.css';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
+import { JSONBigUtils } from 'tsp-typescript-client/lib/utils/jsonbig-utils';
 import { TspClientProvider } from 'vscode-trace-common/lib/client/tsp-client-provider-impl';
 import {
     experimentSelected,
     setTspClient,
     traceServerUrlChanged
 } from 'vscode-trace-common/lib/messages/vscode-messages';
-import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import { messenger } from '.';
 import { VsCodeMessageManager } from '../../common/vscode-message-manager';
 import '../../style/react-contextify.css';
 import '../../style/trace-viewer.css';
-
-const JSONBig = JSONBigConfig({
-    useNativeBigInt: true
-});
 
 interface AvailableViewsAppState {
     tspClientProvider: TspClientProvider | undefined;
@@ -44,7 +39,7 @@ class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppStat
     private _onVscodeExperimentSelected = (data: any): void => {
         let experiment: Experiment | undefined = undefined;
         if (data?.wrapper) {
-            experiment = convertSignalExperiment(JSONBig.parse(data.wrapper));
+            experiment = JSONBigUtils.parse(data.wrapper, Experiment);
         }
         signalManager().emit('EXPERIMENT_SELECTED', experiment);
     };

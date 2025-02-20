@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any */
-import JSONBigConfig from 'json-bigint';
 import * as React from 'react';
 import { Item, ItemParams, Menu, useContextMenu } from 'react-contexify';
 import { OpenedTracesUpdatedSignalPayload } from 'traceviewer-base/lib/signals/opened-traces-updated-signal-payload';
@@ -7,22 +6,18 @@ import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { ReactOpenTracesWidget } from 'traceviewer-react-components/lib/trace-explorer/trace-explorer-opened-traces-widget';
 import 'traceviewer-react-components/style/trace-explorer.css';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
+import { JSONBigUtils } from 'tsp-typescript-client/lib/utils/jsonbig-utils';
 import { TspClientProvider } from 'vscode-trace-common/lib/client/tsp-client-provider-impl';
 import {
     experimentOpened,
     setTspClient,
-    traceViewerTabActivated,
-    traceServerUrlChanged
+    traceServerUrlChanged,
+    traceViewerTabActivated
 } from 'vscode-trace-common/lib/messages/vscode-messages';
-import { convertSignalExperiment } from 'vscode-trace-common/lib/signals/vscode-signal-converter';
 import { messenger } from '.';
 import { VsCodeMessageManager } from '../../common/vscode-message-manager';
 import '../../style/react-contextify.css';
 import '../../style/trace-viewer.css';
-
-const JSONBig = JSONBigConfig({
-    useNativeBigInt: true
-});
 
 interface OpenedTracesAppState {
     tspClientProvider: TspClientProvider | undefined;
@@ -72,15 +67,13 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
 
     private _onVscodeExperimentOpened = (data: any): void => {
         if (data) {
-            const experiment = convertSignalExperiment(JSONBig.parse(data));
-            signalManager().emit('EXPERIMENT_OPENED', experiment);
+            signalManager().emit('EXPERIMENT_OPENED', JSONBigUtils.parse(data, Experiment));
         }
     };
 
     private _onVscodeUrlTraceViewerTabActivated = (data: any): void => {
         if (data) {
-            const experiment = convertSignalExperiment(JSONBig.parse(data));
-            signalManager().emit('TRACEVIEWERTAB_ACTIVATED', experiment);
+            signalManager().emit('TRACEVIEWERTAB_ACTIVATED', JSONBigUtils.parse(data, Experiment));
         }
     };
 
