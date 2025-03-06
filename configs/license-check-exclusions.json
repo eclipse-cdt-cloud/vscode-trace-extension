@@ -1,3 +1,4 @@
 {
-    "npm/npmjs/-/playwright-core/1.46.1": "Believed to be license-compatible but still under IP review: https://gitlab.eclipse.org/eclipsefdn/emo-team/iplab/-/issues/15964"
+    "npm/npmjs/-/playwright-core/1.46.1": "Believed to be license-compatible but still under IP review: https://gitlab.eclipse.org/eclipsefdn/emo-team/iplab/-/issues/15964",
+    "npm/npmjs/-/tsp-typescript-client/0.6.0": "Believed to be license-compatible but still under IP review: https://gitlab.eclipse.org/eclipsefdn/emo-team/iplab/-/issues/19938"
 }
