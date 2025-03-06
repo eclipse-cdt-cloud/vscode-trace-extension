@@ -7740,17 +7740,17 @@ tr46@~0.0.3:
   resolved "https://registry.yarnpkg.com/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
   integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
 
-traceviewer-base@0.7.1, traceviewer-base@^0.7.1:
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/traceviewer-base/-/traceviewer-base-0.7.1.tgz#ec85b3dfc7b799a689f67451aa53a139e8b21827"
-  integrity sha512-eZvm8N10RAYazZ7/O6jNtzlbkMENC8Is2Mn7O0/nWUrvxjQAx7fmt8nvj/C15ux1fnTKwmg3OyelSJR0yzeQFg==
+traceviewer-base@0.7.2, traceviewer-base@^0.7.2:
+  version "0.7.2"
+  resolved "https://registry.npmjs.org/traceviewer-base/-/traceviewer-base-0.7.2.tgz#ab0b59734b5f01b82e2c03e608cca64d35b96b0c"
+  integrity sha512-dKTJPZgYHpK7Ub/IuhzwX86fMRMaD3n75DRjp28+zYRK7brb+NgKCWPwJ1hG0kyaDuntExcOw+LCnEoTaaC5ew==
   dependencies:
-    tsp-typescript-client "^0.5.1"
+    tsp-typescript-client "^0.6.0"
 
-traceviewer-react-components@^0.7.1:
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/traceviewer-react-components/-/traceviewer-react-components-0.7.1.tgz#98fd80f97f1322c15288a6834193738b7b558f9a"
-  integrity sha512-OYFmCihfL/y/3mJEQRnRi8KFuBAJiN4txKU0mL7JRVmRrJPkzeb1Ii09g75nQOAOZnodkMZbEpG8AVWdySSfXw==
+traceviewer-react-components@^0.7.2:
+  version "0.7.2"
+  resolved "https://registry.npmjs.org/traceviewer-react-components/-/traceviewer-react-components-0.7.2.tgz#f799a968ee5e731aec52691406a60f9ab30dfd85"
+  integrity sha512-99E6SO3qllr3oD80bWP2tor+W4TusrxAsWtojwG4CAGbgiNwNCsDYz41vekN4xs9Pou6I4AIxDMK0X+B48AuHw==
   dependencies:
     "@ag-grid-community/core" "^32.0.1"
     "@ag-grid-community/infinite-row-model" "^32.0.0"
@@ -7771,8 +7771,8 @@ traceviewer-react-components@^0.7.1:
     react-tooltip "4.2.14"
     react-virtualized "^9.21.0"
     timeline-chart "^0.4.1"
-    traceviewer-base "0.7.1"
-    tsp-typescript-client "^0.5.1"
+    traceviewer-base "0.7.2"
+    tsp-typescript-client "^0.6.0"
 
 treeverse@^3.0.0:
   version "3.0.0"
@@ -7824,10 +7824,10 @@ tslib@^2.1.0, tslib@^2.3.0, tslib@^2.4.0:
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.8.1.tgz#612efe4ed235d567e8aba5f2a5fab70280ade83f"
   integrity sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==
 
-tsp-typescript-client@^0.5.1:
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/tsp-typescript-client/-/tsp-typescript-client-0.5.1.tgz#248ef5d0aab0c90a7066a1f8a9ebb62b3ccf2c54"
-  integrity sha512-GaE2YQLx4NmqU3aNjvZlFaEDzviKYqw1TnswW73e1NgIaeRoub9a2FmzIxMvajP+lt5dehA5TXMCDiDE6fYawA==
+tsp-typescript-client@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.npmjs.org/tsp-typescript-client/-/tsp-typescript-client-0.6.0.tgz#59d53a76dcb7759f8f16eb9e798320a9a790b7b1"
+  integrity sha512-K6tl773Nq7lo2XAexHBtVDKiFGUlrwFbzKL6aZkf33iHRyAM80xBc0cAoXXTgsSLb3pBodLQRVzw8sBTGWGwOA==
   dependencies:
     json-bigint sidorares/json-bigint#2c0a5f896d7888e68e5f4ae3c7ea5cd42fd54473
     node-fetch "^2.5.0"
@@ -8084,11 +8084,6 @@ validate-npm-package-name@5.0.1, validate-npm-package-name@^5.0.0:
   resolved "https://registry.yarnpkg.com/validate-npm-package-name/-/validate-npm-package-name-5.0.1.tgz#a316573e9b49f3ccd90dbb6eb52b3f06c6d604e8"
   integrity sha512-OljLrQ9SQdOUqTaQxqL5dEfZWrXExyyWsozYlAWFawPVNuD83igl7uJD2RTkNMbniIYgt8l81eCJGIdQF7avLQ==
 
-walk-up-path@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.npmjs.org/walk-up-path/-/walk-up-path-3.0.1.tgz#c8d78d5375b4966c717eb17ada73dbd41490e886"
-  integrity sha512-9YlCL/ynK3CTlrSRrDxZvUauLzAswPCrsaCgilqFevUYpeEW0/3ScEjaa3kbW/T0ghhkEr7mv+fpjqn1Y1YuTA==
-
 vscode-messenger-common@^0.5:
   version "0.5.1"
   resolved "https://registry.npmjs.org/vscode-messenger-common/-/vscode-messenger-common-0.5.1.tgz#2fdb41df2b0e2c7b92196a6b1687444b05b3b698"
@@ -8107,6 +8102,11 @@ vscode-messenger@^0.5.0:
   integrity sha512-pHexyKLr6FgVkdXi9NcCgygikVkFsbpk9PoObT4JXSQfnosNLTWS2NTdGJ+nv/xhUw5OodmVId/oJwNU7HxoQw==
   dependencies:
     vscode-messenger-common "^0.5"
+
+walk-up-path@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.npmjs.org/walk-up-path/-/walk-up-path-3.0.1.tgz#c8d78d5375b4966c717eb17ada73dbd41490e886"
+  integrity sha512-9YlCL/ynK3CTlrSRrDxZvUauLzAswPCrsaCgilqFevUYpeEW0/3ScEjaa3kbW/T0ghhkEr7mv+fpjqn1Y1YuTA==
 
 warning@^4.0.3:
   version "4.0.3"

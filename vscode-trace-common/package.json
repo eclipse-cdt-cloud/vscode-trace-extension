@@ -10,8 +10,8 @@
     ],
     "dependencies": {
         "json-bigint": "sidorares/json-bigint#2c0a5f896d7888e68e5f4ae3c7ea5cd42fd54473",
-        "traceviewer-base": "^0.7.1",
-        "tsp-typescript-client": "^0.5.1",
+        "traceviewer-base": "^0.7.2",
+        "tsp-typescript-client": "^0.6.0",
         "vscode-messenger": "^0.5.0"
     },
     "devDependencies": {
