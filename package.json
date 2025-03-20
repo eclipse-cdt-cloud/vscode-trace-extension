@@ -1,7 +1,10 @@
 {
     "private": true,
     "scripts": {
-        "prepare": "lerna run prepare",
+        "prepare": "yarn build",
+        "build": "yarn -s tsref && yarn -s tsbuild",
+        "tsref": "node scripts/typescript-references.js",
+        "tsbuild": "tsc -b",
         "watch": "lerna exec --stream --parallel -- \"yarn run watch\"",
         "clean": "lerna run clean",
         "vsce:package": "lerna run vsce:package",
@@ -35,11 +38,16 @@
         "webpack-cli": "^4.5.0"
     },
     "workspaces": [
+        "packages/base",
+        "packages/react-components",
         "vscode-trace-common",
         "vscode-trace-webviews",
         "vscode-trace-extension"
+        
     ],
     "resolutions": {
-        "@vscode/vsce": "2.25.0"
+        "@vscode/vsce": "2.25.0",
+        "@types/react": "18.3.8",
+        "@types/lodash": "4.17.14"
     }
 }
