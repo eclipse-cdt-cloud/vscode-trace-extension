@@ -1,7 +1,8 @@
 {
     "private": true,
     "scripts": {
-        "prepare": "lerna run prepare",
+        "prepare": "yarn tsref && lerna run prepare",
+        "tsref": "node scripts/typescript-references.js",
         "watch": "lerna exec --stream --parallel -- \"yarn run watch\"",
         "clean": "lerna run clean",
         "vsce:package": "lerna run vsce:package",
@@ -22,6 +23,7 @@
     },
     "devDependencies": {
         "@eclipse-dash/nodejs-wrapper": "^0.0.1",
+        "concurrently": "^9.1.2",
         "copy-webpack-plugin": "^12.0.0",
         "eslint": "^8.43.0",
         "eslint-config-prettier": "^9.0.0",
