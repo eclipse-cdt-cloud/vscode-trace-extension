@@ -80,6 +80,7 @@ export class TraceExplorerItemPropertiesProvider extends AbstractTraceExplorerPr
         signalManager().off('EXPERIMENT_SELECTED', this.handleExperimentChanged);
         signalManager().off('CLOSE_TRACEVIEWERTAB', this.handleTabClosed);
         this._disposables.forEach(disposable => disposable.dispose());
+        super.dispose();
     }
 
     handleTabClosed = (expUUID: string) => {
