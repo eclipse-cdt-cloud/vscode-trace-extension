@@ -60,6 +60,20 @@ export abstract class AbstractTraceExplorerProvider implements vscode.WebviewVie
         _context: vscode.WebviewViewResolveContext,
         _token: vscode.CancellationToken
     ): void {
+        if (this._view) {
+            // The initialization of webview views can be tricky. There are the 4 trace
+            // explorer views and also welcome view, one set of which should be displayed
+            // at any given moment, depending on context variables. However it can be
+            // possible to have jitter initally if the context variables change value
+            // quickly, which can result in webview views being resolved again without
+            // the "onDispose" event being sent. We can detect and correct for this
+            // condition, in case a change in the code brings it back again
+            console.warn(
+                'AbstractTraceExplorerProvider#resolveWebviewView(): unexpectedly called again without first disposing of old webview view: ' +
+                    this.constructor.name
+            );
+            this.dispose();
+        }
         this._view = webviewView;
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 

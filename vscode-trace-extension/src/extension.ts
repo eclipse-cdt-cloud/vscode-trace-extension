@@ -39,6 +39,10 @@ export const messenger = new Messenger({ ignoreHiddenViews: false });
 export async function activate(context: vscode.ExtensionContext): Promise<ExternalAPI> {
     traceLogger = new TraceExtensionLogger('Trace Extension');
 
+    // Initialize noExperiments/serverUp in a way to avoid WebviewViews creation jitter
+    vscode.commands.executeCommand('setContext', 'trace-explorer.noExperiments', true);
+    vscode.commands.executeCommand('setContext', 'traceViewer.serverUp', false);
+
     const resourceTypeHandler: TraceExplorerResourceTypeHandler = TraceExplorerResourceTypeHandler.getInstance();
 
     await updateTspClientUrl();
@@ -239,10 +243,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
 
     vscode.commands.executeCommand('setContext', 'traceViewer.markerSetsPresent', false);
     vscode.commands.executeCommand('setContext', 'traceViewer.markerCategoriesPresent', false);
-
-    // Initialize noExperiments/serverUp in a way so that trace explorer webviews are initialized
-    vscode.commands.executeCommand('setContext', 'trace-explorer.noExperiments', false);
-    vscode.commands.executeCommand('setContext', 'traceViewer.serverUp', true);
 
     // Refresh to trigger rendering trace explorer or welcome page
     vscode.commands.executeCommand('trace-explorer.refreshContext');
