@@ -1,0 +1,143 @@
+{
+    // Use IntelliSense to learn about possible Node.js debug attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.3.0",
+    "configurations": [
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Start in Chrome",
+            "port": 9222,
+            "sourceMaps": true,
+            "webRoot": "${workspaceRoot}/examples/browser",
+            "url": "http://localhost:3000"
+        },
+        // Start chrome with option: --remote-debugging-port=9222
+        {
+            "type": "chrome",
+            "request": "attach",
+            "name": "Attach to Chrome",
+            "port": 9222,
+            "sourceMaps": true,
+            "webRoot": "${workspaceRoot}/examples/browser",
+            "urlFilter": "http://localhost:3000/*"
+        },
+        {
+            "type": "firefox",
+            "request": "launch",
+            "name": "Start in Firefox",
+            "reAttach": true,
+            "webRoot": "${workspaceRoot}",
+            "url": "http://localhost:3000",
+            "pathMappings": [
+                {
+                    "url": "webpack:///packages/react-components/src",
+                    "path": "${workspaceFolder}/packages/react-components/src"
+                },
+                {
+                    "url": "webpack:///packages/base",
+                    "path": "${workspaceFolder}/packages/base"
+                },
+                {
+                    "url": "webpack:///theia-extensions",
+                    "path": "${workspaceFolder}/theia-extensions"
+                }
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Start Browser Backend",
+            "program": "${workspaceRoot}/examples/browser/src-gen/backend/main.js",
+            "cwd": "${workspaceFolder}/examples/browser",
+            "args": [
+                "--loglevel=debug",
+                "--port=3000",
+                "--no-cluster"
+            ],
+            "env": {
+                "NODE_ENV": "development"
+            },
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceRoot}/node_modules/@theia/*/lib/**/*.js",
+                "${workspaceRoot}/packages/*/lib/**/*.js",
+                "${workspaceRoot}/theia-extensions/*/lib/**/*.js",
+                "${workspaceRoot}/examples/browser/lib/**/*.js",
+                "${workspaceRoot}/examples/browser/src-gen/**/*.js"
+            ],
+            "smartStep": true,
+            "internalConsoleOptions": "openOnSessionStart",
+            "outputCapture": "std"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Start Electron Backend",
+            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron",
+            "windows": {
+                "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.cmd"
+            },
+            "program": "${workspaceRoot}/examples/electron/src-gen/backend/electron-main.js",
+            "cwd": "${workspaceFolder}/examples/electron",
+            "protocol": "inspector",
+            "args": [
+                "--loglevel=debug",
+                "--hostname=localhost",
+                "--no-cluster"
+            ],
+            "env": {
+                "NODE_ENV": "development"
+            },
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceRoot}/node_modules/@theia/*/lib/**/*.js",
+                "${workspaceRoot}/packages/*/lib/**/*.js",
+                "${workspaceRoot}/theia-extensions/*/lib/**/*.js",
+                "${workspaceRoot}/examples/electron/lib/**/*.js",
+                "${workspaceRoot}/examples/electron/src-gen/**/*.js"
+            ],
+            "smartStep": true,
+            "internalConsoleOptions": "openOnSessionStart",
+            "outputCapture": "std"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Jest Current File",
+            "program": "${workspaceFolder}/node_modules/.bin/jest",
+            "cwd": "${workspaceFolder}/packages/react-components",
+            "args": [
+                "${fileBasenameNoExtension}",
+                "--config",
+                "jest.config.json"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "windows": {
+                "program": "${workspaceFolder}/node_modules/jest/bin/jest"
+            }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Jest All Tests",
+            "runtimeExecutable": "yarn",
+            "program": "test",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Apollo Server (GraphQL ADR)",
+            "cwd": "${workspaceFolder}/doc/adr/0002/graphql-server-prototype",
+            "args": [
+                "index.js"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+        }
+    ]
+}
