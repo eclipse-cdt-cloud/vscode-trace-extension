@@ -9,6 +9,12 @@
     ],
     "references": [
         {
+            "path": "../packages/packages/base"
+        },
+        {
+            "path": "../packages/packages/react-components"
+        },
+        {
             "path": "../vscode-trace-common"
         }
     ]
