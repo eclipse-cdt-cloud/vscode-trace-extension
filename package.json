@@ -40,6 +40,7 @@
         "vscode-trace-extension"
     ],
     "resolutions": {
-        "@vscode/vsce": "2.25.0"
+        "@vscode/vsce": "2.25.0",
+        "**/@types/react": "18.3.20"
     }
 }

@@ -12,7 +12,8 @@ import {
     resetZoomHandler,
     undoRedoHandler,
     zoomHandler,
-    keyboardShortcutsHandler
+    keyboardShortcutsHandler,
+    customViewHandler
 } from './trace-explorer/trace-utils';
 import { TraceServerConnectionStatusService } from './utils/trace-server-status';
 import {
@@ -209,6 +210,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
     context.subscriptions.push(
         vscode.commands.registerCommand('traceViewer.shortcuts', () => {
             keyboardShortcutsHandler(context.extensionUri);
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('traceViewer.customViewer', () => {
+            customViewHandler(context.extensionUri);
         })
     );
 

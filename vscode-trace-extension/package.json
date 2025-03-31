@@ -100,6 +100,11 @@
                 "icon": "$(info)"
             },
             {
+                "command": "traceViewer.customViewer",
+                "title": "Open Custom Viewer",
+                "icon": "$(wrench)"
+            },
+            {
                 "command": "serverStatus.started",
                 "title": "Trace Server: started"
             },
@@ -238,6 +243,11 @@
                 {
                     "when": "activeWebviewPanelId == 'react'",
                     "command": "traceViewer.shortcuts",
+                    "group": "navigation@9"
+                },
+                {
+                    "when": "activeWebviewPanelId == 'react'",
+                    "command": "traceViewer.customViewer",
                     "group": "navigation@9"
                 }
             ],

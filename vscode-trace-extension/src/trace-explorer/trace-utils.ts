@@ -6,6 +6,7 @@ import { getExperimentManager, getTraceManager } from '../utils/backend-tsp-clie
 import { updateNoExperimentsContext } from '../utils/backend-tsp-client-provider';
 import { messenger, traceLogger } from '../extension';
 import { KeyboardShortcutsPanel } from '../trace-viewer-panel/keyboard-shortcuts-panel';
+import { CustomViewerPanel } from '../trace-viewer-panel/custom-viewer-webview-panel';
 
 // eslint-disable-next-line no-shadow
 export enum ProgressMessages {
@@ -26,6 +27,10 @@ export const resetZoomHandler = () => (): void => {
 
 export const keyboardShortcutsHandler = (extensionUri: vscode.Uri): void => {
     KeyboardShortcutsPanel.createOrShow(extensionUri, 'Trace Viewer Shortcuts');
+};
+
+export const customViewHandler = (extensionUri: vscode.Uri): void => {
+    CustomViewerPanel.createOrShow(extensionUri, 'Custom Viewer Shortcuts');
 };
 
 export const undoRedoHandler = (undo: boolean): void => {
