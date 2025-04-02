@@ -1,5 +1,5 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import type { MessageParticipant, NotificationType } from 'vscode-messenger-common';
+import type { MessageParticipant, NotificationType, RequestType } from 'vscode-messenger-common';
 export const VSCODE_MESSAGES = {
     ADD_OUTPUT: 'add-output',
     ALERT: 'alert',
@@ -49,7 +49,8 @@ export const VSCODE_MESSAGES = {
     OUTPUT_DATA_CHANGED: 'outputDataChanged',
     CONTRIBUTE_CONTEXT_MENU: 'contributeContextMenu',
     CONTEXT_MENU_ITEM_CLICKED: 'contextMenuItemClicked',
-    SOURCE_LOOKUP: 'sourceLookup'
+    SOURCE_LOOKUP: 'sourceLookup',
+    USER_CUSTOMIZATION_JSON_INPUT: 'userCustomizationJsonInput',
 };
 
 export interface StatusNotifier {
@@ -111,3 +112,5 @@ export const restoreView: NotificationType<any> = { method: VSCODE_MESSAGES.REST
 export const sourceCodeLookup: NotificationType<{ path: string; line: number }> = {
     method: VSCODE_MESSAGES.SOURCE_LOOKUP
 };
+
+export const userCustomizedOutput: RequestType<{ schemas: Object[] }, { userConfig: Object }> = { method: VSCODE_MESSAGES.USER_CUSTOMIZATION_JSON_INPUT };
