@@ -1,0 +1,23 @@
+{
+    "include": [],
+    "compilerOptions": {
+        "composite": true
+    },
+    "references": [
+        {
+            "path": "packages/base"
+        },
+        {
+            "path": "packages/react-components"
+        },
+        {
+            "path": "vscode-trace-common"
+        },
+        {
+            "path": "vscode-trace-extension"
+        },
+        {
+            "path": "vscode-trace-webviews"
+        }
+    ]
+}
