@@ -1,0 +1,166 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../timeline-chart"
+		},
+		{
+			"path": "../theia-trace-extension"
+		},
+		{
+			"path": "../tsp-typescript-client"
+		}
+	],
+	"tasks": {
+		"version": "2.0.0",
+		"tasks": [
+			{
+				"label": "Watch all trace libraries Workspaces",
+				"type": "shell",
+				"problemMatcher": [],
+				"dependsOn": [
+					// not needed in local repo - tsconfig enough so that these will be watched
+					// "Watch vscode-trace-extension", 
+					"Watch theia-trace-extension - base",
+					"Watch theia-trace-extension - react-components",
+					"Watch tsp-typescript-client",
+					"Watch timeline-chart"
+				]
+			},
+			// {
+			// 	"label": "Watch vscode-trace-extension",
+			// 	"type": "shell",
+			// 	"command": "yarn watch",
+			// 	"problemMatcher": "$tsc-watch",
+			// 	"options": {
+			// 		"cwd": "${workspaceFolder:vscode-trace-extension}"
+			// 	},
+			// 	"isBackground": true
+			// },
+			{
+				"label": "Watch theia-trace-extension - base",
+				"type": "shell",
+				"command": "yarn watch",
+				"problemMatcher": {
+					"base": "$tsc-watch",
+					"fileLocation": [
+						"relative",
+						"${workspaceFolder:theia-trace-extension}/packages/base"
+					]
+				},
+				"options": {
+					"cwd": "${workspaceFolder:theia-trace-extension}/packages/base"
+				},
+				"isBackground": true
+			},
+			{
+				"label": "Watch theia-trace-extension - react-components",
+				"type": "shell",
+				"command": "yarn  watch",
+				"problemMatcher": {
+					"base": "$tsc-watch",
+					"fileLocation": [
+						"relative",
+						"${workspaceFolder:theia-trace-extension}/packages/react-components"
+					]
+				},
+				"options": {
+					"cwd": "${workspaceFolder:theia-trace-extension}/packages/react-components"
+				},
+				"isBackground": true
+			},
+			{
+				"label": "Watch tsp-typescript-client",
+				"type": "shell",
+				// "command": "yarn watch", // no watch scripts entry yet
+				"command": "yarn tsc --watch",
+				"problemMatcher": {
+					"base": "$tsc-watch",
+					"fileLocation": [
+						"relative",
+						"${workspaceFolder:tsp-typescript-client}/tsp-typescript-client"
+					]
+				},
+				"options": {
+					"cwd": "${workspaceFolder:tsp-typescript-client}/tsp-typescript-client"
+				},
+				"isBackground": true
+			},
+			{
+				"label": "Watch timeline-chart",
+				"type": "shell",
+				"command": "yarn watch",
+				"problemMatcher": {
+					"base": "$tsc-watch",
+					"fileLocation": [
+						"relative",
+						"${workspaceFolder:timeline-chart}/timeline-chart"
+					]
+				},
+				"options": {
+					"cwd": "${workspaceFolder:timeline-chart}/timeline-chart"
+				},
+				"isBackground": true
+			},
+
+			//  yarn build of all dependent repos
+
+			{
+				"label": "Build all trace repositories",
+				"problemMatcher": [],
+				"dependsOrder": "sequence",
+				"dependsOn": [
+					"Build tsp-typescript-client",
+					"Build timeline-chart",
+					"Build theia-trace-extension",
+					"Build vscode-trace-extension"
+				],
+				"runOptions": {
+					// Task runs when multi-root workspace opened
+					"runOn": "folderOpen"
+				}
+			},
+			{
+				"label": "Build tsp-typescript-client",
+				"type": "shell",
+				"command": "yarn",
+				"problemMatcher": ["$tsc"],
+				"options": {
+					"cwd": "${workspaceFolder:tsp-typescript-client}"
+				}
+			},
+			{
+				"label": "Build timeline-chart",
+				"type": "shell",
+				"command": "yarn",
+				"problemMatcher": ["$tsc"],
+				"options": {
+					"cwd": "${workspaceFolder:timeline-chart}"
+				}
+			},
+			{
+				"label": "Build theia-trace-extension",
+				"type": "shell",
+				"command": "yarn",
+				"problemMatcher": ["$tsc"],
+				"options": {
+					"cwd": "${workspaceFolder:theia-trace-extension}"
+				}
+			},
+			{
+				"label": "Build vscode-trace-extension",
+				"type": "shell",
+				// running "yarn --ignore-scripts" refreshes the "node_modules"
+				// entries for the Trace libraries, while "yarn" alone does not
+				"command": "yarn --ignore-scripts && yarn",
+				"problemMatcher": ["$tsc"],
+				"options": {
+					"cwd": "${workspaceFolder:vscode-trace-extension}"
+				}
+			}
+		]
+	},
+	"settings": {}
+}
