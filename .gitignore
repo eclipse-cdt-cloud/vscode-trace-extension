@@ -41,3 +41,6 @@ lerna-error.log*
 *.tsbuildinfo
 
 license-check-summary.txt*
+
+# packages (git subtrees)
+packages/packages/**/package.json

@@ -1,0 +1,28 @@
+image:
+  file: .gitpod.dockerfile
+ports:
+- port: 3000 # Trace viewer example application
+- port: 9229 # Node.js debug port
+  onOpen: ignore
+- port: 9339 # Node.js debug port
+  onOpen: ignore
+- port: 6080 # VNC server
+  onOpen: ignore
+- port: 5900
+  onOpen: ignore
+- port: 8080 # Trace Compass server
+  onOpen: ignore
+  visibility: public
+tasks:
+- init: >
+    yarn download:server
+- init: >
+    yarn download:sample-traces &&
+    yarn
+  command: >
+    export GITPOD_URL=$(gp url 8080) &&
+    export TRACE_SERVER_URL=$(echo "$GITPOD_URL/tsp/api") &&
+    yarn start:browser ../../TraceCompassTutorialTraces/ --hostname=0.0.0.0
+github:
+  prebuilds:
+    pullRequestsFromForks: true

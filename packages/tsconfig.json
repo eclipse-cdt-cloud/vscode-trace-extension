@@ -1,0 +1,20 @@
+{
+    "include": [],
+    "compilerOptions": {
+        "composite": true
+    },
+    "references": [
+        {
+            "path": "playwright-tests"
+        },
+        {
+            "path": "theia-extensions/viewer-prototype"
+        },
+        {
+            "path": "packages/base"
+        },
+        {
+            "path": "packages/react-components"
+        }
+    ]
+}

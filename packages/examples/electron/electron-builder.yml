@@ -1,0 +1,30 @@
+electronVersion: 30.3.1
+electronDist: ../../node_modules/electron/dist
+productName: Theia Trace Example Application
+appId: theia-trace-example
+
+asar: false
+nodeGypRebuild: false
+npmRebuild: false
+
+directories:
+  buildResources: resources
+files:
+  - src-gen
+  - lib
+  - scripts
+  - package.json
+  - "!**node_modules/electron/**"
+extraResources:
+  - from: ../../trace-compass-server
+    to: trace-compass-server
+
+linux:
+  target:
+    - deb
+    - AppImage
+  category: Development
+  icon: resources/icons
+
+appImage:
+  artifactName: ${productName}-${version}.${ext}

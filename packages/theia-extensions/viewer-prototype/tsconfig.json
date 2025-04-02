@@ -1,0 +1,44 @@
+{
+    "compilerOptions": {
+        "composite": true,
+        "strict": true,
+        "experimentalDecorators": true,
+        "noUnusedLocals": true,
+        "emitDecoratorMetadata": true,
+        "downlevelIteration": true,
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "target": "ES2017",
+        "jsx": "react",
+        "lib": [
+            "es6",
+            "dom"
+        ],
+        "sourceMap": true,
+        "rootDir": "src",
+        "outDir": "lib",
+        "types": [
+            "node",
+            "jest"
+        ],
+        "strictPropertyInitialization": false
+    },
+    "include": [
+        "src"
+    ],
+    "exclude": [
+        "**/__tests__",
+        "**/*.spec.ts",
+        "**/*.test.ts"
+    ],
+    "references": [
+        {
+            "path": "../../packages/base"
+        },
+        {
+            "path": "../../packages/react-components"
+        }
+    ]
+}

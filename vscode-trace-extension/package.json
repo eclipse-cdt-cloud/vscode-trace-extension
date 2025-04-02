@@ -335,7 +335,7 @@
         "vsce:package": "vsce package --yarn",
         "vsce:ls": "vsce ls --yarn",
         "tswatch": "tsc -w -p tsconfig.json",
-        "watch": "yarn run webpack-dev",
+        "watch": "concurrently 'yarn run webpack-dev' 'yarn tswatch'",
         "lint": "eslint .",
         "format:write": "prettier --write ./src",
         "format:check": "prettier --check ./src"

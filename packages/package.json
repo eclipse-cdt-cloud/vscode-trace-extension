@@ -1,0 +1,80 @@
+{
+    "private": true,
+    "scripts": {
+        "prepare": "yarn build",
+        "build": "yarn -s clean && yarn -s tsref && yarn -s tsbuild && yarn -s build:examples",
+        "tsref": "node scripts/typescript-references.js",
+        "tsbuild": "tsc -b",
+        "tswatch": "tsc -b -w",
+        "clean": "lerna run clean",
+        "build:examples": "yarn browser build && yarn electron build",
+        "start:browser": "yarn browser rebuild && yarn browser start",
+        "start:electron": "yarn electron rebuild && yarn electron start",
+        "download:sample-traces": "curl -o TraceCompassTutorialTraces.tgz https://raw.githubusercontent.com/tuxology/tracevizlab/master/labs/TraceCompassTutorialTraces.tgz; tar -xf TraceCompassTutorialTraces.tgz",
+        "download:server": "curl -o trace-compass-server.tar.gz https://download.eclipse.org/tracecompass.incubator/trace-server/rcp/trace-compass-server-latest-linux.gtk.x86_64.tar.gz; tar -xf trace-compass-server.tar.gz",
+        "start:server": "./trace-compass-server/tracecompass-server",
+        "start-all:browser": "concurrently --kill-others -n trace-server,browser-app \"yarn start:server\" \"yarn start:browser\"",
+        "start-all:electron": "concurrently --kill-others -n trace-server,electron-app \"yarn start:server\" \"yarn start:electron\"",
+        "lint": "lerna run lint",
+        "lint:fix": "lerna run lint:fix",
+        "test": "lerna run test --",
+        "test:browser-app": "yarn playwright ui-tests",
+        "playwright": "yarn --cwd playwright-tests",
+        "publish:latest": "lerna publish from-git --registry=https://registry.npmjs.org/ --exact --no-push --yes",
+        "publish:next": "lerna publish --registry=https://registry.npmjs.org/ --exact --canary minor --preid=next.$(date -u '+%Y%m%d%H%M%S').$(git rev-parse --short HEAD) --dist-tag=next --no-git-tag-version --no-push --yes",
+        "version:major": "lerna version major --exact --no-push --git-tag-command /usr/bin/true --yes -m \"Release %s (Major)\"",
+        "version:minor": "lerna version minor --exact --no-push --git-tag-command /usr/bin/true --yes -m \"Release %s (Minor)\"",
+        "version:patch": "lerna version patch --exact --no-push --git-tag-command /usr/bin/true --yes -m \"Release %s (Patch)\"",
+        "format:write": "lerna run format:write",
+        "format:check": "lerna run format:check",
+        "browser": "yarn -s --cwd examples/browser",
+        "electron": "yarn -s --cwd examples/electron",
+        "license:check": "npx dash-licenses-wrapper  --configFile=./configs/license-check-config.json",
+        "license:check:review": "npx dash-licenses-wrapper  --configFile=./configs/license-check-config.json --review"
+    },
+    "keywords": [
+        "theia-extension",
+        "trace-viewer",
+        "trace-analysis",
+        "tracing",
+        "trace"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/eclipse-cdt-cloud/theia-trace-extension"
+    },
+    "bugs": {
+        "url": "https://github.com/eclipse-cdt-cloud/theia-trace-extension/issues"
+    },
+    "homepage": "https://github.com/eclipse-cdt-cloud/theia-trace-extension",
+    "resolutions": {
+        "**/nan": "2.20.0",
+        "@types/react": "18.3.8",
+        "inversify": "6.0.2"
+    },
+    "devDependencies": {
+        "@eclipse-dash/nodejs-wrapper": "^0.0.1",
+        "@theia/cli": "1.55.0",
+        "concurrently": "^8.2.1",
+        "jsonc-parser": "^3.0.0",
+        "lerna": "^7.0.0",
+        "prettier": "2.8.8",
+        "typescript": "4.9.5"
+    },
+    "workspaces": [
+        "examples/browser",
+        "examples/electron",
+        "packages/*",
+        "theia-extensions/*",
+        "playwright-tests"
+    ],
+    "dependencies": {
+        "@emotion/react": "^11.10.5",
+        "@emotion/styled": "^11.10.5",
+        "@types/react": "^18.0.15",
+        "@types/react-dom": "^18.0.6",
+        "msgpackr": "^1.10.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0"
+    }
+}

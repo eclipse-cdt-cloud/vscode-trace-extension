@@ -1,5 +1,5 @@
 {
-    "extends": "../common-tsconfig.json",
+    "extends": "../tsconfig.json",
     "compilerOptions": {
         "rootDir": "src",
         "outDir": "lib"
@@ -10,5 +10,16 @@
     "exclude": [
         "node_modules",
         "lib"
+    ],
+    "references": [
+        {
+            "path": "../packages/packages/base"
+        },
+        {
+            "path": "../packages/packages/react-components"
+        },
+        {
+            "path": "../vscode-trace-common"
+        }
     ]
 }

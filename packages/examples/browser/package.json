@@ -1,0 +1,38 @@
+{
+    "private": true,
+    "name": "browser-theia-trace-example-app",
+    "version": "0.7.2",
+    "theia": {
+        "target": "browser",
+        "frontend": {
+            "config": {
+                "applicationName": "Theia-Trace Example Application",
+                "preferences": {
+                    "editor.autoSave": "on",
+                    "trace-viewer.port": 8080
+                }
+            }
+        }
+    },
+    "dependencies": {
+        "@theia/core": "1.55.0",
+        "@theia/navigator": "1.55.0",
+        "@theia/preferences": "1.55.0",
+        "@theia/terminal": "1.55.0",
+        "theia-traceviewer": "0.7.2"
+    },
+    "devDependencies": {
+        "@theia/cli": "1.55.0"
+    },
+    "scripts": {
+        "prepare": "yarn build",
+        "build": "theia build --mode development",
+        "rebuild": "theia rebuild:browser --cacheRoot ../..",
+        "start": "TRACE_SERVER_PATH=../../trace-compass-server/tracecompass-server theia start",
+        "watch": "theia build --watch --mode development"
+    },
+    "engines": {
+        "yarn": ">=1.7.0 <2",
+        "node": ">=18 <23"
+    }
+}
