@@ -529,8 +529,8 @@ export class TimegraphOutputComponent extends AbstractTreeOutputComponent<Timegr
         return this.state.markerCategoryEntries.length <= 1
             ? 0
             : this.state.collapsedMarkerNodes.length
-            ? rowHeight
-            : this.state.markerCategoryEntries.length * rowHeight + scrollbarHeight;
+              ? rowHeight
+              : this.state.markerCategoryEntries.length * rowHeight + scrollbarHeight;
     }
 
     renderTree(): React.ReactNode {
