@@ -1,0 +1,18 @@
+{
+    "extends": "./configs/common-tsconfig.json",
+    "include": [],
+    "compilerOptions": {
+        "composite": true
+    },
+    "references": [
+        {
+            "path": "vscode-trace-common"
+        },
+        {
+            "path": "vscode-trace-extension"
+        },
+        {
+            "path": "vscode-trace-webviews"
+        }
+    ]
+}
