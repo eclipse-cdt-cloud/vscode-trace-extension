@@ -26,11 +26,15 @@ export const resetZoomHandler = () => (): void => {
 };
 
 export const keyboardShortcutsHandler = (extensionUri: vscode.Uri): void => {
-    KeyboardShortcutsPanel.createOrShow(extensionUri, 'Trace Viewer Shortcuts');
+    KeyboardShortcutsPanel.createOrShow(extensionUri, 'Trace Viewer Shortcuts',);
 };
 
 export const customViewHandler = (extensionUri: vscode.Uri): void => {
-    CustomViewerPanel.createOrShow(extensionUri, 'Custom Viewer Shortcuts');
+    const experiment = TraceViewerPanel.getCurrentExperiment();
+    if (experiment) {
+        const panel = CustomViewerPanel.createOrShow(extensionUri, experiment, undefined, messenger);
+        panel.setExperiment(experiment);
+    }
 };
 
 export const undoRedoHandler = (undo: boolean): void => {
