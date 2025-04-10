@@ -10,5 +10,16 @@
     "exclude": [
         "node_modules",
         "lib"
+    ],
+    "references": [
+        {
+            "path": "../packages/base"
+        },
+        {
+            "path": "../packages/react-components"
+        },
+        {
+            "path": "../vscode-trace-common"
+        }
     ]
 }
