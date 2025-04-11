@@ -26,7 +26,7 @@ export class TspClientProvider implements ITspClientProvider {
             }
             this._signalHandler?.notifyConnection(status);
         });
-        this._tspClient.checkHealth(); // When this is called in the remote use-case, it will block the port-forwarding service-worker.
+        // this._tspClient.checkHealth(); // When this is called in the remote use-case, it will block the port-forwarding service-worker.
     }
 
     public getTspClient(): TspClient {
