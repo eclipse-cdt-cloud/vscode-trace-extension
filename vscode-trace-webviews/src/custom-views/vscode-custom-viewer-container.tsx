@@ -5,7 +5,7 @@ import * as React from 'react';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { JSONBigUtils } from 'tsp-typescript-client/lib/utils/jsonbig-utils';
 import { TspClientProvider } from 'vscode-trace-common/lib/client/tsp-client-provider-impl';
-import { Vega } from 'react-vega';
+import { Vega, ViewListener } from 'react-vega';
 
 import {
   connectionStatus,
@@ -19,6 +19,7 @@ import { messenger } from '.';
 import { VsCodeMessageManager } from '../common/vscode-message-manager';
 import '../style/trace-viewer.css';
 import { Entry, QueryHelper, ResponseStatus, XYSeries } from 'tsp-typescript-client';
+import { View } from 'vega';
 interface VscodeAppState {
   experiment: Experiment | undefined;
   tspClientProvider: TspClientProvider | undefined;
@@ -46,6 +47,11 @@ class CustomViewerContainer extends React.Component<{}, VscodeAppState> {
       this.resizeHandlers.splice(index, 1);
     }
   };
+
+  private _onNewView: ViewListener = (view: View) => {
+     const svgString = view.toSVG();
+     console.log(svgString);
+  }
 
   // VSCODE message handlers
   private _onVscodeSetTspClient = (data: any): void => {
@@ -364,7 +370,7 @@ class CustomViewerContainer extends React.Component<{}, VscodeAppState> {
       <div>
         <h1>{ "Trace: " + name } </h1>
         <h2>CPU Usage distribution</h2>
-        <Vega spec={spec} />
+        <Vega spec={spec} onNewView={ this._onNewView } />
       </div>
       );
     }
