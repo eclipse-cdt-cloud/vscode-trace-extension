@@ -58,6 +58,7 @@ export class JsonConfigEditor {
                 return { userConfig };
             } catch (error) {
                 const errorMessage = error instanceof Error ? error.message : String(error);
+                if (errorMessage === 'Configuration was not submitted') return; // Manual user close of editor.  Do not display error msg.
                 vscode.window.showErrorMessage(`Error processing schema: ${errorMessage}`);
                 console.error(error);
                 return undefined;
@@ -310,7 +311,7 @@ export class JsonConfigEditor {
 
                 return undefined; // User chose not to submit
             } else if (validation.errors) {
-                await this.displayValidationErrorDialogue(
+                this.displayValidationErrorDialogue(
                     `Your configuration was not submitted because it had errors`,
                     validation.errors
                 );
@@ -333,17 +334,12 @@ export class JsonConfigEditor {
     }
 
     private async displayValidationErrorDialogue(message: string, errors: string[]): Promise<void> {
-        const viewDetails = 'View Details';
-        const response = await vscode.window.showErrorMessage(message, viewDetails);
-
-        if (response === viewDetails) {
-            // Show errors in new document
-            const errorDoc = await vscode.workspace.openTextDocument({
-                content: `Validation Errors:\n\n${errors.join('\n')}`,
-                language: 'text'
-            });
-            await vscode.window.showTextDocument(errorDoc, { viewColumn: vscode.ViewColumn.Beside });
-        }
+        const errorDetails = errors.join('\n');
+        
+        await vscode.window.showErrorMessage(
+            `${message}\n\n${errorDetails}`,
+            { modal: true }
+        );
     }
 
     /**
