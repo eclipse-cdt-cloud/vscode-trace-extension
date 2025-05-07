@@ -109,6 +109,7 @@ export class JsonConfigEditor {
             });
             await this.schemaService.setOpenFileSchema(this.tempFileUri, this.schema);
 
+            vscode.commands.executeCommand('workbench.panel.markers.view.show');
             // Return a promise that resolves when the editor is closed
             return new Promise<CustomizationSubmission>((resolve, reject) => {
                 this.closeSubscription = vscode.window.onDidChangeVisibleTextEditors(async editors => {
@@ -264,6 +265,7 @@ export class JsonConfigEditor {
             }
 
             await this.fileService.loadJSONConfigFile(this.tempFileUri, json);
+            vscode.commands.executeCommand('workbench.panel.markers.view.show');
         } catch (error) {
             vscode.window.showErrorMessage(
                 error instanceof Error
