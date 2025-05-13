@@ -19,14 +19,15 @@ export class FileService {
     }
 
     /**
-     * Creates a configuration file from the provided config object
+     * Creates a configuration file from the provided config object.
+     * If there is a file open, it modifies the content instead.
      *
      * This is the physical file that is displayed in the editor
-     * @param filePath The file path to write over or create the temp config file
+     * @param fileUri The file path to write over or create the temp config file
      * @param json The json object to add to the file
      * @param meta Optional metadata for the file header
      */
-    public async loadJSONConfigFile(filePath: vscode.Uri, json: DefaultValue): Promise<void> {
+    public async loadJSONConfigFile(fileUri: vscode.Uri, json: DefaultValue): Promise<void> {
         const fileContent = [
             '/**',
             '* A toolbar is located in the top-right',
@@ -38,11 +39,33 @@ export class FileService {
             '*/',
             JSON.stringify(json, undefined, 2)
         ].join('\n');
-
-        await vscode.workspace.fs.writeFile(filePath, Buffer.from(fileContent, 'utf-8'));
+    
+        // First, find the editor that's showing this document
+        const editor = vscode.window.visibleTextEditors.find(
+            editor => editor.document.uri.toString() === fileUri.toString()
+        );
+    
+        if (editor) {
+            // If the editor is open, update its content using edit
+            await editor.edit(editBuilder => {
+                // Replace the entire content
+                const fullRange = new vscode.Range(
+                    0, 0,
+                    editor.document.lineCount - 1,
+                    editor.document.lineAt(editor.document.lineCount - 1).text.length
+                );
+                editBuilder.replace(fullRange, fileContent);
+            });
+        } else {
+            // If no editor is open for this file, just write to the file
+            await vscode.workspace.fs.writeFile(fileUri, Buffer.from(fileContent, 'utf-8'));
+        }
+    
+        const document = await vscode.workspace.openTextDocument(fileUri);
+        await document.save();
         
         // Setup watcher for this file
-        this.watchConfigFile(filePath);
+        this.watchConfigFile(fileUri);
     }
 
     /**
