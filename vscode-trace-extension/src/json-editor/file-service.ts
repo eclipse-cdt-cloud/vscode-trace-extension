@@ -35,20 +35,21 @@ export class FileService {
             '*/',
             JSON.stringify(json, undefined, 2)
         ].join('\n');
-    
+
         // First, find the editor that's showing this document
-        const editor = vscode.window.visibleTextEditors.find(
+        const openConfigEditor = vscode.window.visibleTextEditors.find(
             editor => editor.document.uri.toString() === fileUri.toString()
         );
-    
-        if (editor) {
+
+        if (openConfigEditor) {
             // If the editor is open, update its content using edit
-            await editor.edit(editBuilder => {
+            await openConfigEditor.edit(editBuilder => {
                 // Replace the entire content
                 const fullRange = new vscode.Range(
-                    0, 0,
-                    editor.document.lineCount - 1,
-                    editor.document.lineAt(editor.document.lineCount - 1).text.length
+                    0,
+                    0,
+                    openConfigEditor.document.lineCount - 1,
+                    openConfigEditor.document.lineAt(openConfigEditor.document.lineCount - 1).text.length
                 );
                 editBuilder.replace(fullRange, fileContent);
             });
@@ -56,10 +57,10 @@ export class FileService {
             // If no editor is open for this file, just write to the file
             await vscode.workspace.fs.writeFile(fileUri, Buffer.from(fileContent, 'utf-8'));
         }
-    
+
         const document = await vscode.workspace.openTextDocument(fileUri);
         await document.save();
-        
+
         // Setup watcher for this file
         this.watchConfigFile(fileUri);
     }
@@ -69,21 +70,22 @@ export class FileService {
      */
     private watchConfigFile(fileUri: vscode.Uri): void {
         const key = fileUri.toString();
-        
+
         if (this.fileWatchers.has(key)) {
             this.fileWatchers.get(key)?.dispose();
         }
-        
+
         const watcher = vscode.workspace.createFileSystemWatcher(
-            new vscode.RelativePattern(vscode.workspace.getWorkspaceFolder(fileUri)?.uri || fileUri, 
-                vscode.workspace.asRelativePath(fileUri))
+            new vscode.RelativePattern(
+                vscode.workspace.getWorkspaceFolder(fileUri)?.uri || fileUri,
+                vscode.workspace.asRelativePath(fileUri)
+            )
         );
 
-        
         this.fileWatchers.set(key, watcher);
         this.setupAutoSaveForFile(fileUri);
     }
-    
+
     /**
      * Sets up auto-save functionality for a specific file
      * @param fileUri The URI of the file to auto-save
@@ -92,23 +94,23 @@ export class FileService {
      */
     private async setupAutoSaveForFile(fileUri: vscode.Uri, delayMs: number = 250): Promise<void> {
         const key = fileUri.toString();
-        
+
         if (this.autoSaveListeners.has(key)) {
             this.autoSaveListeners.get(key)?.dispose();
             this.autoSaveListeners.delete(key);
         }
-        
+
         let saveTimeout: NodeJS.Timeout | undefined;
-        
+
         try {
             const document = await vscode.workspace.openTextDocument(fileUri);
-            
+
             const changeListener = vscode.workspace.onDidChangeTextDocument(event => {
                 if (event.document.uri.toString() === document.uri.toString()) {
                     if (saveTimeout) {
                         clearTimeout(saveTimeout);
                     }
-                    
+
                     saveTimeout = setTimeout(async () => {
                         try {
                             await document.save();
@@ -118,7 +120,7 @@ export class FileService {
                     }, delayMs);
                 }
             });
-            
+
             // Store the listener
             this.autoSaveListeners.set(key, changeListener);
         } catch (error) {
@@ -133,17 +135,17 @@ export class FileService {
     public cleanupTempFile(filePath: string): void {
         const fileUri = vscode.Uri.file(filePath);
         const key = fileUri.toString();
-        
+
         if (this.fileWatchers.has(key)) {
             this.fileWatchers.get(key)?.dispose();
             this.fileWatchers.delete(key);
         }
-        
+
         if (this.autoSaveListeners.has(key)) {
             this.autoSaveListeners.get(key)?.dispose();
             this.autoSaveListeners.delete(key);
         }
-        
+
         if (fs.existsSync(filePath)) {
             try {
                 fs.unlinkSync(filePath);
@@ -152,7 +154,7 @@ export class FileService {
             }
         }
     }
-    
+
     /**
      * Dispose all resources
      */
@@ -161,7 +163,7 @@ export class FileService {
             watcher.dispose();
         }
         this.fileWatchers.clear();
-        
+
         for (const listener of this.autoSaveListeners.values()) {
             listener.dispose();
         }

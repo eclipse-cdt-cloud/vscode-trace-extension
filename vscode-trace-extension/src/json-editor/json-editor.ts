@@ -73,10 +73,7 @@ export class JsonConfigEditor {
      * @returns Promise resolving to the edited and validated JSON
      * @throws Error if a config editing session is already active or if the schema is invalid
      */
-    public async openJsonEditor(
-        configObject: CustomizationConfigObject,
-        options: { sourceFile?: vscode.Uri } = {}
-    ): Promise<CustomizationSubmission> {
+    public async openJsonEditor(configObject: CustomizationConfigObject): Promise<CustomizationSubmission> {
         if (this.isEditing) {
             const errorMsg = 'A config editing session is already active';
             vscode.window.showInformationMessage(errorMsg);
@@ -335,11 +332,8 @@ export class JsonConfigEditor {
 
     private async displayValidationErrorDialogue(message: string, errors: string[]): Promise<void> {
         const errorDetails = errors.join('\n');
-        
-        await vscode.window.showErrorMessage(
-            `${message}\n\n${errorDetails}`,
-            { modal: true }
-        );
+
+        await vscode.window.showErrorMessage(`${message}\n\n${errorDetails}`, { modal: true });
     }
 
     /**

@@ -1,7 +1,12 @@
 import * as vscode from 'vscode';
 import Ajv from 'ajv/dist/2020';
 import * as jsoncParser from 'jsonc-parser';
-import { Schema, DefaultValue, ValidationResult, CustomizationSubmission } from 'vscode-trace-common/lib/types/customization';
+import {
+    Schema,
+    DefaultValue,
+    ValidationResult,
+    CustomizationSubmission
+} from 'vscode-trace-common/lib/types/customization';
 
 /**
  * Service for handling JSON schema operations
