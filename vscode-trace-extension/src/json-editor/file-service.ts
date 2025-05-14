@@ -1,19 +1,15 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import * as jsoncParser from 'jsonc-parser';
-import { CustomizationSubmission, DefaultValue, Schema, ValidationResult } from 'vscode-trace-common/lib/types/customization';
-import { SchemaService } from './schema-service';
+import { DefaultValue } from 'vscode-trace-common/lib/types/customization';
 
 /**
  * Service for handling file operations related to JSON configurations
  */
 export class FileService {
-    private schemaService: SchemaService;
     private fileWatchers: Map<string, vscode.Disposable>;
     private autoSaveListeners: Map<string, vscode.Disposable>;
 
     constructor() {
-        this.schemaService = new SchemaService();
         this.fileWatchers = new Map();
         this.autoSaveListeners = new Map();
     }
@@ -66,38 +62,6 @@ export class FileService {
         
         // Setup watcher for this file
         this.watchConfigFile(fileUri);
-    }
-
-    /**
-     * Validates a JSON file against a schema, using current editor content
-     * @param fileUri Path to the JSON file
-     * @param schema JSON schema to validate against
-     * @returns Validation result object
-     */
-    public async validateJsonFile(fileUri: vscode.Uri, schema: Schema): Promise<ValidationResult> {
-        try {
-            // Get the TextDocument for the file - this gets current content including unsaved changes
-            const document = await vscode.workspace.openTextDocument(fileUri);
-            const text = document.getText();
-
-            // Strip comments and parse the JSONC content
-            const strippedContent = jsoncParser.stripComments(text);
-            const jsonContent = JSON.parse(strippedContent);
-
-            // Create a new validator for this schema to avoid ID conflicts
-            const validator = this.schemaService.getValidator(schema);
-            if (validator(jsonContent)) {
-                return { isValid: true, content: jsonContent as CustomizationSubmission };
-            } else {
-                const errors = validator.errors?.map(error => `${error.instancePath} ${error.message}`) || [];
-                return { isValid: false, errors };
-            }
-        } catch (error) {
-            if (error instanceof Error) {
-                return { isValid: false, errors: [error.message] };
-            }
-            return { isValid: false, errors: ['Unknown error occurred while validating JSON file'] };
-        }
     }
 
     /**

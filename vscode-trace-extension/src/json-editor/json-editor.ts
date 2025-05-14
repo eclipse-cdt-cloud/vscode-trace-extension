@@ -109,7 +109,6 @@ export class JsonConfigEditor {
             });
             await this.schemaService.setOpenFileSchema(this.tempFileUri, this.schema);
 
-            vscode.commands.executeCommand('workbench.panel.markers.view.show');
             // Return a promise that resolves when the editor is closed
             return new Promise<CustomizationSubmission>((resolve, reject) => {
                 this.closeSubscription = vscode.window.onDidChangeVisibleTextEditors(async editors => {
@@ -150,7 +149,7 @@ export class JsonConfigEditor {
             throw new Error('No active editor to close');
         }
 
-        const validation = await this.fileService.validateJsonFile(this.tempFileUri, this.selectedConfig.schema);
+        const validation = await this.schemaService.validateJsonFile(this.tempFileUri, this.selectedConfig.schema);
 
         if (!validation.isValid && validation.errors) {
             await this.displayValidationErrorDialogue(
@@ -174,7 +173,7 @@ export class JsonConfigEditor {
             throw new Error('No active editor to save');
         }
 
-        const validation = await this.fileService.validateJsonFile(this.tempFileUri, this.selectedConfig.schema);
+        const validation = await this.schemaService.validateJsonFile(this.tempFileUri, this.selectedConfig.schema);
 
         if (!validation.isValid && validation.errors) {
             await this.displayValidationErrorDialogue(
@@ -246,7 +245,7 @@ export class JsonConfigEditor {
                 this.selectedConfig = matchingConfig;
             }
 
-            const validation = await this.fileService.validateJsonFile(uri, this.selectedConfig.schema);
+            const validation = await this.schemaService.validateJsonFile(uri, this.selectedConfig.schema);
 
             if (validation.isValid && validation.content) {
                 await this.fileService.loadJSONConfigFile(this.tempFileUri, validation.content);
@@ -265,7 +264,6 @@ export class JsonConfigEditor {
             }
 
             await this.fileService.loadJSONConfigFile(this.tempFileUri, json);
-            vscode.commands.executeCommand('workbench.panel.markers.view.show');
         } catch (error) {
             vscode.window.showErrorMessage(
                 error instanceof Error
@@ -295,7 +293,7 @@ export class JsonConfigEditor {
                 throw new Error('Temporary file not found');
             }
 
-            const validation = await this.fileService.validateJsonFile(this.tempFileUri, schema);
+            const validation = await this.schemaService.validateJsonFile(this.tempFileUri, schema);
 
             if (validation.isValid && validation.content) {
                 const submit = this.userClickedSubmit

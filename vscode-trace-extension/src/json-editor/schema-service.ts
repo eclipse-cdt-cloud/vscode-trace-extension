@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import Ajv from 'ajv/dist/2020';
-import { Schema, DefaultValue } from 'vscode-trace-common/lib/types/customization';
+import * as jsoncParser from 'jsonc-parser';
+import { Schema, DefaultValue, ValidationResult, CustomizationSubmission } from 'vscode-trace-common/lib/types/customization';
 
 /**
  * Service for handling JSON schema operations
@@ -84,4 +85,36 @@ export class SchemaService {
 
         return schema.default !== undefined ? schema.default : undefinedValue;
     };
+
+    /**
+     * Validates a JSON file against a schema, using current editor content
+     * @param fileUri Path to the JSON file
+     * @param schema JSON schema to validate against
+     * @returns Validation result object
+     */
+    public async validateJsonFile(fileUri: vscode.Uri, schema: Schema): Promise<ValidationResult> {
+        try {
+            // Get the TextDocument for the file - this gets current content including unsaved changes
+            const document = await vscode.workspace.openTextDocument(fileUri);
+            const text = document.getText();
+
+            // Strip comments and parse the JSONC content
+            const strippedContent = jsoncParser.stripComments(text);
+            const jsonContent = JSON.parse(strippedContent);
+
+            // Create a new validator for this schema to avoid ID conflicts
+            const validator = this.getValidator(schema);
+            if (validator(jsonContent)) {
+                return { isValid: true, content: jsonContent as CustomizationSubmission };
+            } else {
+                const errors = validator.errors?.map(error => `${error.instancePath} ${error.message}`) || [];
+                return { isValid: false, errors };
+            }
+        } catch (error) {
+            if (error instanceof Error) {
+                return { isValid: false, errors: [error.message] };
+            }
+            return { isValid: false, errors: ['Unknown error occurred while validating JSON file'] };
+        }
+    }
 }
