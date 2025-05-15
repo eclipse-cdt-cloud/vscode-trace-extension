@@ -20,6 +20,7 @@ import { FileService } from './file-service';
 export class JsonConfigEditor {
     private _tempFilePath: string = '';
     private isEditing: boolean = false;
+    private isAwaitingUserSubmit: boolean = false;
     private availableConfigurations: CustomizationConfigObject[] = [];
     private userClickedSubmit: boolean = false;
     private trackedEditor?: vscode.TextEditor;
@@ -47,19 +48,29 @@ export class JsonConfigEditor {
     private registerMessageHandlers(): void {
         this._messenger.onRequest(userCustomizedOutput, async ({ configs }) => {
             try {
+
+                if (this.isEditing) {
+                    const errorMsg = 'a config editing session is already active - Please close the active editor and try again.';
+                    throw Error(errorMsg);
+                }
+        
+                if (this.isAwaitingUserSubmit) {
+                    const errorMsg = 'awaiting prompt response - Please chose to if you want to submit then try again.';
+                    throw Error(errorMsg);
+                }
+
                 this.availableConfigurations = configs;
                 const selectedConfig = await this.promptUserSchemaSelection(configs);
                 if (!selectedConfig) {
                     return;
                 }
 
-                vscode.window.showInformationMessage(`Selected: ${selectedConfig.name || 'Unnamed schema'}`);
                 const userConfig = await this.openJsonEditor(selectedConfig);
                 return { userConfig };
             } catch (error) {
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 if (errorMessage === 'Configuration was not submitted') return; // Manual user close of editor.  Do not display error msg.
-                vscode.window.showErrorMessage(`Error processing schema: ${errorMessage}`);
+                vscode.window.showErrorMessage(`Error: ${errorMessage}`);
                 console.error(error);
                 return undefined;
             }
@@ -74,12 +85,6 @@ export class JsonConfigEditor {
      * @throws Error if a config editing session is already active or if the schema is invalid
      */
     public async openJsonEditor(configObject: CustomizationConfigObject): Promise<CustomizationSubmission> {
-        if (this.isEditing) {
-            const errorMsg = 'A config editing session is already active';
-            vscode.window.showInformationMessage(errorMsg);
-            return Promise.reject(new Error(errorMsg));
-        }
-
         this.selectedConfig = configObject;
 
         if (!this.selectedConfig || !this.selectedConfig.schema) {
@@ -283,6 +288,8 @@ export class JsonConfigEditor {
         }
 
         try {
+            this.isEditing = false;
+            this.isAwaitingUserSubmit = true;
             // Write content to temp file for validation
             if (fs.existsSync(this.tempFilePath)) {
                 fs.writeFileSync(this.tempFilePath, document.getText(), 'utf8');
@@ -316,17 +323,23 @@ export class JsonConfigEditor {
             }
         } catch (error) {
             if (error instanceof Error) {
-                vscode.window.showErrorMessage(`Error processing configuration: ${error.message}`);
+                vscode.window.showErrorMessage(`Error: ${error.message}`);
             }
             return undefined;
         } finally {
-            this.fileService.cleanupTempFile(this.tempFilePath);
-            this.userClickedSubmit = false;
-            this.isEditing = false;
-            this.tempFilePath = '';
-            if (this.closeSubscription) {
-                this.closeSubscription.dispose();
-            }
+            this.resetState()
+        }
+    }
+
+    private resetState = () => {
+        this.fileService.cleanupTempFile(this.tempFilePath);
+        this.userClickedSubmit = false;
+        this.isAwaitingUserSubmit = false;
+        this.isEditing = false;
+        this.trackedEditor = undefined;
+        this.tempFilePath = '';
+        if (this.closeSubscription) {
+            this.closeSubscription.dispose();
         }
     }
 

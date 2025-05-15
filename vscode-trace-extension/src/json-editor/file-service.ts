@@ -100,7 +100,7 @@ export class FileService {
             this.autoSaveListeners.delete(key);
         }
 
-        let saveTimeout: NodeJS.Timeout | undefined;
+        let saveTimeout: ReturnType<typeof setTimeout>;
 
         try {
             const document = await vscode.workspace.openTextDocument(fileUri);
