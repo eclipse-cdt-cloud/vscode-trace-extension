@@ -61,9 +61,9 @@ export interface ValidationResult {
 
 export interface CustomizationSubmission {
     name: string;
-    id: string;
+    sourceTypeId: string;
     description: string;
-    options: {
+    parameters: {
         [key: string]: any;
     };
 }

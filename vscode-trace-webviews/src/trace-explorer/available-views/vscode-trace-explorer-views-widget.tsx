@@ -107,10 +107,10 @@ class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppStat
             return;
         }
 
-        const { name, description, id, options } = userConfig;
+        const { name, description, sourceTypeId, parameters } = userConfig;
 
-        const parameters = new OutputConfigurationQuery(name, description, id, options);
-        await tsp.createDerivedOutput(experiment.UUID, output.id, parameters);
+        const options = new OutputConfigurationQuery(name, description, sourceTypeId, parameters);
+        await tsp.createDerivedOutput(experiment.UUID, output.id, options);
         return;
     };
 

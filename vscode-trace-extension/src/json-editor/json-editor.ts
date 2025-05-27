@@ -38,7 +38,6 @@ export class JsonConfigEditor {
     constructor(private readonly _messenger: Messenger) {
         this.schemaService = new SchemaService();
         this.fileService = new FileService();
-
         this.registerMessageHandlers();
     }
 
@@ -49,15 +48,8 @@ export class JsonConfigEditor {
         this._messenger.onRequest(userCustomizedOutput, async ({ configs }) => {
             try {
 
-                if (this.isEditing) {
-                    const errorMsg = 'a config editing session is already active - Please close the active editor and try again.';
-                    throw Error(errorMsg);
-                }
-        
-                if (this.isAwaitingUserSubmit) {
-                    const errorMsg = 'awaiting prompt response - Please chose to if you want to submit then try again.';
-                    throw Error(errorMsg);
-                }
+                if (this.isEditing) throw Error('a config editing session is already active - Please close the active editor and try again.');        
+                if (this.isAwaitingUserSubmit) throw Error('awaiting prompt response - Please chose to if you want to submit then try again.');
 
                 this.availableConfigurations = configs;
                 const selectedConfig = await this.promptUserSchemaSelection(configs);
@@ -69,10 +61,9 @@ export class JsonConfigEditor {
                 return { userConfig };
             } catch (error) {
                 const errorMessage = error instanceof Error ? error.message : String(error);
-                if (errorMessage === 'Configuration was not submitted') return; // Manual user close of editor.  Do not display error msg.
+                if (errorMessage === 'User chose not to submit configuration') return; // Manual user close of editor.  Do not display error msg.
                 vscode.window.showErrorMessage(`Error: ${errorMessage}`);
-                console.error(error);
-                return undefined;
+                return;
             }
         });
     }
@@ -115,24 +106,17 @@ export class JsonConfigEditor {
             return new Promise<CustomizationSubmission>((resolve, reject) => {
                 this.closeSubscription = vscode.window.onDidChangeVisibleTextEditors(async editors => {
                     if (this.trackedEditor && !editors.some(e => e.document.uri.fsPath === this.tempFilePath)) {
-                        if (this.closeSubscription) {
-                            this.closeSubscription.dispose();
-                        }
-
                         try {
                             const result = await this.handleDocumentClose();
                             if (result) {
                                 resolve(result);
                             } else {
-                                reject(new Error('Configuration was not submitted'));
+                                reject(new Error('User chose not to submit configuration'));
                             }
                         } catch (error) {
                             reject(error);
                         } finally {
-                            this.trackedEditor = undefined;
-                            this.isEditing = false;
-                            this.fileService.cleanupTempFile(this.tempFilePath);
-                            this.tempFilePath = '';
+                            this.resetState();
                         }
                     }
                 });
