@@ -47,9 +47,12 @@ export class JsonConfigEditor {
     private registerMessageHandlers(): void {
         this._messenger.onRequest(userCustomizedOutput, async ({ configs }) => {
             try {
-
-                if (this.isEditing) throw Error('a config editing session is already active - Please close the active editor and try again.');        
-                if (this.isAwaitingUserSubmit) throw Error('awaiting prompt response - Please chose to if you want to submit then try again.');
+                if (this.isEditing)
+                    throw Error(
+                        'a config editing session is already active - Please close the active editor and try again.'
+                    );
+                if (this.isAwaitingUserSubmit)
+                    throw Error('awaiting prompt response - Please chose to if you want to submit then try again.');
 
                 this.availableConfigurations = configs;
                 const selectedConfig = await this.promptUserSchemaSelection(configs);
@@ -311,7 +314,7 @@ export class JsonConfigEditor {
             }
             return undefined;
         } finally {
-            this.resetState()
+            this.resetState();
         }
     }
 
@@ -325,7 +328,7 @@ export class JsonConfigEditor {
         if (this.closeSubscription) {
             this.closeSubscription.dispose();
         }
-    }
+    };
 
     private async displayValidationErrorDialogue(message: string, errors: string[]): Promise<void> {
         const errorDetails = errors.join('\n');
