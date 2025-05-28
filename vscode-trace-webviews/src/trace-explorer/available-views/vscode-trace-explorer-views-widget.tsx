@@ -97,8 +97,6 @@ class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppStat
             return;
         }
 
-        console.dir(configSourceArray);
-
         const payload = await this._signalHandler.userCustomizedOutput({ configs: configSourceArray }); // TODO fix typing
 
         const userConfig = payload.userConfig as CustomizationSubmission;

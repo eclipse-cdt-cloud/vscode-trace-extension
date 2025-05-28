@@ -46,8 +46,6 @@ export class SchemaService {
             schema: schema
         };
 
-        console.dir(schemaConfig);
-
         // Add the new schema
         const schemas = [schemaConfig];
 
