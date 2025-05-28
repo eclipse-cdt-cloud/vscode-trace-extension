@@ -37,12 +37,12 @@
             {
                 "command": "traceViewer.customization.submitConfig",
                 "title": "Submit",
-                "icon": "assets/media/submit.svg"
+                "icon": "$(pass)"
             },
             {
                 "command": "traceViewer.customization.loadConfig",
                 "title": "Load",
-                "icon": "assets/media/folders.svg"
+                "icon": "$(file-submodule)"
             },
             {
                 "command": "traceViewer.customization.saveConfig",
