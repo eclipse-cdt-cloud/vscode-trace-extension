@@ -396,7 +396,7 @@ export class JsonConfigEditor {
             type: 'object',
             // Create the new properties structure
             properties: {
-                id: {
+                sourceTypeId: {
                     const: configObject.id,
                     description: 'The configuration type.  This determines the schema that is used.',
                     default: configObject.id
@@ -411,9 +411,9 @@ export class JsonConfigEditor {
                     description: 'Provide a description for how the analysis is modified',
                     default: configObject.description
                 },
-                options: {
+                parameters: {
                     type: 'object',
-                    description: 'Configuration options',
+                    description: 'Configuration properties',
                     // Copy all the original properties
                     properties: inputSchema.properties || {},
                     // Move the validation rules to the options object
@@ -423,7 +423,7 @@ export class JsonConfigEditor {
                 }
             },
             // Make name required at the top level
-            required: ['name', 'id']
+            required: ['name', 'sourceTypeId']
         };
 
         const transformedConfig = { ...configObject };
