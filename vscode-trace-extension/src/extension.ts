@@ -13,7 +13,8 @@ import {
     resetZoomHandler,
     undoRedoHandler,
     zoomHandler,
-    keyboardShortcutsHandler
+    keyboardShortcutsHandler,
+    deleteExperiment
 } from './trace-explorer/trace-utils';
 import { TraceServerConnectionStatusService } from './utils/trace-server-status';
 import {
@@ -30,6 +31,7 @@ import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message
 import { TraceViewerPanel } from './trace-viewer-panel/trace-viewer-webview-panel';
 import { TraceServerManager } from './utils/trace-server-manager';
 import { ResourceType, TraceExplorerResourceTypeHandler } from './utils/trace-explorer-resource-type-handler';
+import { Experiment } from 'tsp-typescript-client';
 
 export let traceLogger: TraceExtensionLogger;
 export const traceExtensionWebviewManager: TraceExtensionWebviewManager = new TraceExtensionWebviewManager();
@@ -96,13 +98,25 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
     const fileOpenHandler = fileHandler();
     context.subscriptions.push(
         vscode.commands.registerCommand('traces.openTraceFile', async (file: vscode.Uri) => {
+            let result = undefined;
             await startTraceServerIfAvailable(file.fsPath);
             if (await isTraceServerUp()) {
-                await fileOpenHandler(context, file);
+                result = await fileOpenHandler(context, file);
                 vscode.commands.executeCommand('trace-explorer.refreshContext');
+            }
+            return result;
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('traces.removeTraceFile', async (exp : Experiment | undefined) => {
+            if (exp) {
+                deleteExperiment(exp);
             }
         })
     );
+
+
 
     context.subscriptions.push(
         vscode.commands.registerCommand('traceViewer.customization.submitConfig', async () => {
