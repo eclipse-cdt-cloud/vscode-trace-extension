@@ -13,7 +13,8 @@ import {
     resetZoomHandler,
     undoRedoHandler,
     zoomHandler,
-    keyboardShortcutsHandler
+    keyboardShortcutsHandler,
+    deleteExperiment
 } from './trace-explorer/trace-utils';
 import { TraceServerConnectionStatusService } from './utils/trace-server-status';
 import {
@@ -96,9 +97,23 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
     const fileOpenHandler = fileHandler();
     context.subscriptions.push(
         vscode.commands.registerCommand('traces.openTraceFile', async (file: vscode.Uri) => {
+            let result = undefined;
             await startTraceServerIfAvailable(file.fsPath);
             if (await isTraceServerUp()) {
-                await fileOpenHandler(context, file);
+                const experiment = await fileOpenHandler(context, file);
+                if (experiment) {
+                    result = experiment.UUID;
+                }
+                vscode.commands.executeCommand('trace-explorer.refreshContext');
+            }
+            return result;
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('traces.removeTrace', async (uuid: string | undefined) => {
+            if (uuid) {
+                await deleteExperiment(context.extensionUri, uuid);
                 vscode.commands.executeCommand('trace-explorer.refreshContext');
             }
         })
