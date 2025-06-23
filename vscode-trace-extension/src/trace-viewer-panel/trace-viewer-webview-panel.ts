@@ -431,6 +431,9 @@ export class TraceViewerPanel {
         signalManager().emit('EXPERIMENT_OPENED', experiment);
         signalManager().emit('TRACEVIEWERTAB_ACTIVATED', experiment);
     }
+    getExperiment(): Experiment | undefined {
+        return this._experiment;
+    }
 
     addOutput(descriptor: OutputDescriptor): void {
         const wrapper = JSONBigUtils.stringify(descriptor);
