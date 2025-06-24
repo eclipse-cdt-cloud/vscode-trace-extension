@@ -165,10 +165,10 @@ export const fileHandler =
         );
     };
 
-export const deleteExperiment = async (uuid : string) => {
+export const deleteExperiment = async (uuid: string) => {
     const experimentManager = getManagers().experimentManager;
     experimentManager.deleteExperiment(uuid);
-}
+};
 
 const rollbackTraces = async (
     traces: Array<TspTrace>,
