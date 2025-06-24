@@ -165,9 +165,9 @@ export const fileHandler =
         );
     };
 
-export const deleteExperiment = async (exp : Experiment) => {
+export const deleteExperiment = async (uuid : string) => {
     const experimentManager = getManagers().experimentManager;
-    experimentManager.deleteExperiment(exp.UUID);
+    experimentManager.deleteExperiment(uuid);
 }
 
 const rollbackTraces = async (

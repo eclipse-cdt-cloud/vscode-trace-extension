@@ -31,7 +31,6 @@ import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message
 import { TraceViewerPanel } from './trace-viewer-panel/trace-viewer-webview-panel';
 import { TraceServerManager } from './utils/trace-server-manager';
 import { ResourceType, TraceExplorerResourceTypeHandler } from './utils/trace-explorer-resource-type-handler';
-import { Experiment } from 'tsp-typescript-client';
 
 export let traceLogger: TraceExtensionLogger;
 export const traceExtensionWebviewManager: TraceExtensionWebviewManager = new TraceExtensionWebviewManager();
@@ -109,9 +108,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('traces.removeTraceFile', async (exp : Experiment | undefined) => {
-            if (exp) {
-                deleteExperiment(exp);
+        vscode.commands.registerCommand('traces.removeTraceFile', async (uuid : string | undefined) => {
+            if (uuid) {
+                deleteExperiment(uuid);
             }
         })
     );
