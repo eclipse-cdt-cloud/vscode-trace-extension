@@ -100,7 +100,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
             let result = undefined;
             await startTraceServerIfAvailable(file.fsPath);
             if (await isTraceServerUp()) {
-                result = await fileOpenHandler(context, file);
+                const experiment = await fileOpenHandler(context, file);
+                if (experiment) {
+                    result = experiment.UUID;
+                }
                 vscode.commands.executeCommand('trace-explorer.refreshContext');
             }
             return result;
