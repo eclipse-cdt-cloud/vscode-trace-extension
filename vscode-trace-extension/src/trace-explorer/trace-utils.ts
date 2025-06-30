@@ -165,7 +165,7 @@ export const fileHandler =
         );
     };
 
-export const deleteExperiment = async (extensionUri : vscode.Uri, uuid: string) => {
+export const deleteExperiment = async (extensionUri: vscode.Uri, uuid: string) => {
     // dispose any open panels associated with the experiment
     for (const key of Object.keys(TraceViewerPanel.activePanels)) {
         const panel = TraceViewerPanel.activePanels[key];

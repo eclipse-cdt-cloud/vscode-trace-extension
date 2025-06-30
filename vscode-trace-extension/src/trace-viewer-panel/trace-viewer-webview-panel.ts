@@ -431,7 +431,7 @@ export class TraceViewerPanel {
         signalManager().emit('EXPERIMENT_OPENED', experiment);
         signalManager().emit('TRACEVIEWERTAB_ACTIVATED', experiment);
     }
-    getExperiment() : Experiment | undefined {
+    getExperiment(): Experiment | undefined {
         return this._experiment;
     }
 
