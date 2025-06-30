@@ -113,7 +113,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
     context.subscriptions.push(
         vscode.commands.registerCommand('traces.removeTraceFile', async (uuid: string | undefined) => {
             if (uuid) {
-                deleteExperiment(uuid);
+                deleteExperiment(context.extensionUri, uuid);
             }
         })
     );

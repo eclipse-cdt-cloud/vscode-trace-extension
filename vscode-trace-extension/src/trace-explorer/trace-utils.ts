@@ -165,7 +165,18 @@ export const fileHandler =
         );
     };
 
-export const deleteExperiment = async (uuid: string) => {
+export const deleteExperiment = async (extensionUri : vscode.Uri, uuid: string) => {
+    // dispose any open panels associated with the experiment
+    for (const key in TraceViewerPanel.activePanels) {
+        if (TraceViewerPanel.activePanels.hasOwnProperty(key)) {
+            const panel = TraceViewerPanel.activePanels[key];
+            const experimentUuid = panel?.getExperiment()?.UUID;
+            if (experimentUuid === uuid) {
+                TraceViewerPanel.disposePanel(extensionUri, key);
+            }
+        }
+    }
+    // remove experiment from the experiment manager
     const experimentManager = getManagers().experimentManager;
     experimentManager.deleteExperiment(uuid);
 };
