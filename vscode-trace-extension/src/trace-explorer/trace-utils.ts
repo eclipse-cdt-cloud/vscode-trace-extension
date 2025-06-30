@@ -6,6 +6,7 @@ import { getExperimentManager, getTraceManager } from '../utils/backend-tsp-clie
 import { updateNoExperimentsContext } from '../utils/backend-tsp-client-provider';
 import { messenger, traceLogger } from '../extension';
 import { KeyboardShortcutsPanel } from '../trace-viewer-panel/keyboard-shortcuts-panel';
+import { Experiment } from 'tsp-typescript-client';
 
 // eslint-disable-next-line no-shadow
 export enum ProgressMessages {
@@ -53,7 +54,7 @@ export const openDialog = async (selectFiles = false): Promise<vscode.Uri | unde
 
 export const fileHandler =
     () =>
-    async (context: vscode.ExtensionContext, traceUri: vscode.Uri): Promise<void> => {
+    async (context: vscode.ExtensionContext, traceUri: vscode.Uri): Promise<Experiment | undefined> => {
         const resolvedTraceURI: vscode.Uri = traceUri;
         const { traceManager, experimentManager } = getManagers();
         return vscode.window.withProgress(
@@ -66,7 +67,7 @@ export const fileHandler =
                 try {
                     if (token.isCancellationRequested) {
                         progress.report({ message: ProgressMessages.COMPLETE, increment: 100 });
-                        return;
+                        return undefined;
                     }
 
                     const filePath: string = resolvedTraceURI.fsPath;
@@ -74,7 +75,7 @@ export const fileHandler =
                         traceLogger.showError(
                             'Cannot open trace: could not retrieve path from URI for trace ' + resolvedTraceURI
                         );
-                        return;
+                        return undefined;
                     }
 
                     const name = path.basename(filePath);
@@ -153,15 +154,30 @@ export const fileHandler =
                         rollbackTraces(traces, 20, progress);
                         progress.report({ message: ProgressMessages.COMPLETE, increment: 10 });
                         panel.dispose();
-                        return;
+                        return undefined;
                     }
                     progress.report({ message: ProgressMessages.COMPLETE, increment: 30 });
+                    return experiment;
                 } finally {
                     updateNoExperimentsContext();
                 }
             }
         );
     };
+
+export const deleteExperiment = async (extensionUri: vscode.Uri, uuid: string) => {
+    // dispose any open panels associated with the experiment
+    for (const key of Object.keys(TraceViewerPanel.activePanels)) {
+        const panel = TraceViewerPanel.activePanels[key];
+        const experimentUuid = panel?.getExperiment()?.UUID;
+        if (experimentUuid === uuid) {
+            TraceViewerPanel.disposePanel(extensionUri, key);
+        }
+    }
+    // remove experiment from the experiment manager
+    const experimentManager = getManagers().experimentManager;
+    experimentManager.deleteExperiment(uuid);
+};
 
 const rollbackTraces = async (
     traces: Array<TspTrace>,
