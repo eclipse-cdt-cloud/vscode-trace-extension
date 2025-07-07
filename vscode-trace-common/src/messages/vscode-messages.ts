@@ -75,6 +75,7 @@ export const viewRangeUpdated: NotificationType<any> = { method: VSCODE_MESSAGES
 export const selectionRangeUpdated: NotificationType<any> = { method: VSCODE_MESSAGES.SELECTION_RANGE_UPDATED };
 export const experimentUpdated: NotificationType<any> = { method: VSCODE_MESSAGES.EXPERIMENT_UPDATED };
 export const setTheme: NotificationType<any> = { method: VSCODE_MESSAGES.SET_THEME };
+export const traceServerStarted: NotificationType<void> = { method: VSCODE_MESSAGES.TRACE_SERVER_STARTED };
 export const traceServerUrlChanged: NotificationType<string> = { method: VSCODE_MESSAGES.TRACE_SERVER_URL_CHANGED };
 export const experimentSelected: NotificationType<any> = { method: VSCODE_MESSAGES.EXPERIMENT_SELECTED };
 export const requestSelectionChange: NotificationType<any> = { method: VSCODE_MESSAGES.REQUEST_SELECTION_RANGE_CHANGE };
