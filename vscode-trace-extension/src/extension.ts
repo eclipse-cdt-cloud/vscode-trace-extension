@@ -257,6 +257,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
             await serverStatusService.updateServerStatus(isUp);
             if (isUp) {
                 await updateNoExperimentsContext();
+                if (tracesProvider) {
+                    // Trigger webview refresh
+                    tracesProvider.postMessagetoWebview(VSCODE_MESSAGES.TRACE_SERVER_STARTED, undefined);
+                }
             }
         })
     );
