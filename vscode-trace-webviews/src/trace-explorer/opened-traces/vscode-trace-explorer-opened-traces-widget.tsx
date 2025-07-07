@@ -11,6 +11,7 @@ import { TspClientProvider } from 'vscode-trace-common/lib/client/tsp-client-pro
 import {
     experimentOpened,
     setTspClient,
+    traceServerStarted,
     traceServerUrlChanged,
     traceViewerTabActivated
 } from 'vscode-trace-common/lib/messages/vscode-messages';
@@ -65,6 +66,10 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
         }
     };
 
+    private _onVscodeServerStarted = (): void => {
+        signalManager().emit('TRACE_SERVER_STARTED');
+    };
+
     private _onVscodeExperimentOpened = (data: any): void => {
         if (data) {
             signalManager().emit('EXPERIMENT_OPENED', JSONBigUtils.parse(data, Experiment));
@@ -86,6 +91,7 @@ class TraceExplorerOpenedTraces extends React.Component<{}, OpenedTracesAppState
         this._signalHandler = new VsCodeMessageManager(messenger);
 
         messenger.onNotification(setTspClient, this._onVscodeSetTspClient);
+        messenger.onNotification(traceServerStarted, this._onVscodeServerStarted);
         messenger.onNotification(traceServerUrlChanged, this._onVscodeUrlChanged);
         messenger.onNotification(experimentOpened, this._onVscodeExperimentOpened);
         messenger.onNotification(traceViewerTabActivated, this._onVscodeUrlTraceViewerTabActivated);
