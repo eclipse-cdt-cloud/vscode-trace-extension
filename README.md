@@ -1,6 +1,10 @@
 # VSCode Trace Extension
 
-This document contains information that may be useful for developers that want to build, modify, enhance and/or debug this extension. If you only intend to consume the extension, it might be easier to get it from the [public OpenVSX registry][tc-open-vsx],
+🆕 Development has been made easier for features that require changes to the `traceviewer-base` and/or `traceviewer-react-components` libraries! These are now present locally in the form of a git subtree, which means that you can make changes to them directly here, along with changes to the VSCode extension. See below, and this [PR][PR-traceviewer-libs-as-subtree] for more information
+
+---
+
+This document contains information that may prove useful for developers that want to build, modify, enhance and/or debug this extension. If you only intend to consume the extension, it might be easier to get it from the [public OpenVSX registry][tc-open-vsx],
 
 This project started from the [VSCode webview react project][vscode-webview-react]. It works this way, with the extension itself being in the `vscode-trace-extension` directory and the react application being in the `vscode-trace-webapps` directory.
 
@@ -13,11 +17,11 @@ First, you need Node.js and yarn:
 It's suggested to install [nvm](https://github.com/nvm-sh/nvm#installing-and-updating) to manage node on your machine. Once that's done, install the required version:
 
 ```bash
-   nvm install 18
+   nvm install 20
    # optional: make it the default version
    nvm alias default
    # or set it every time like so
-   nvm use 18
+   nvm use 20
 ```
 
 Then install `yarn`:
@@ -28,12 +32,14 @@ npm i -g yarn  # the default version should be ok
 
 ## Installation Instructions
 
-It depends on the trace viewer plugins (traceviewer_base and traceviewer_react_components) from the [theia trace extension package][theia-trace] and the [tsp typescript client][tsp-client], as well as the [timeline chart][timeline-chart]. They are all available from the NPM package registry.
+The Trace Viewer for VSCode extension depends on several "trace-related" libraries. The [tsp-typescript-client library][tsp-client], as well as the [timeline-chart library][timeline-chart] are pulled from the NPM package registry. 
 
-- timeline-chart
-- traceviewer-base
-- traceviewer-react-components
-- tsp-typescript-client
+The `traceviewer` libraries (traceviewer-base and traceviewer-react-components) are originally from the [theia-trace-extension repository][theia-trace], and are now present locally in this repository, in the form of a "git subtree". Look under folder `local-libs` and `local-libs/traceviewer-libs` for README.MD files that contain more information. TL;DR: as a contributor to this repository, you may consider that these libraries are local, modify them as needed and include those changes as part of your Pull Requests. The maintainers will manage the subtrees: keep them in-sync with their upstream as needed (both directions). The other trace-related libraries might eventually be added as subtrees too.
+
+- timeline-chart (npm)
+- tsp-typescript-client (npm)
+- traceviewer-base (local subtree)
+- traceviewer-react-components (local subtree)
 
 To build the VSCode extension, run the `yarn` command:
 
@@ -42,12 +48,15 @@ yarn
 ```
 ### Building from local sources
 
-To build local changes in the above libraries you need to build the libaries from source code and link them to the vscode-trace-extension repository. Follow instructions on the above repositories to clone and build the libraries.
+As a contributor to the Trace Viewer for VSCode extension, you may have to change code in the external trace-related libraries (`tsp-typescript-client`, `timeline-chart`), along with changes in the code contained in this repo here. For the time being, changes to these dependent libraries need to be done and upstreamed separately. Once new `npm` packages are published, they can be consumed by stepping the requested versions in the `package.json` where they are pulled. 
 
-After cloing the libraries, you need to link each library so that a local build can be used. Using command `yarn link` a reference link into the user's home directory is created under `~/.config/yarn/link`. 
-The `yarn link` command makes sure that the libraries are available locally and can be linked from the `vscode-trace-extension`. This also avoids conflicts caused by different versions of the librares and their dependencies used in the corresponding repositories.
+However, for easier local development and tests, it's possible to set things up such that the repo here will use a local version of those libraries, where you have performed the necessary changes and built. Follow the README instructions for each library, to clone and build them. 
 
-Make sure that you don't have links in `~/.config/yarn/link` from other repositories than relevant for the trace viewer. The `yarn link` command won't override exising links. For example, if there is a link to `react` with the wrong version, then there will be runtime exection problems. Remove links beforehand.
+After that's done, you need to link each using command `yarn link`, which creates a symbolic link into the user's home, under directory `~/.config/yarn/link`. 
+
+The `yarn link` command makes sure that the libraries are available locally and can be linked from the `vscode-trace-extension`. 
+
+First, make sure that you don't have existing links in `~/.config/yarn/link` from other repositories than relevant for the Trace Viewer for VSCode. If there are, remove them beforehand.
 
 Assuming all repositories are stored in your home directory under the `rootDir=~/git`
 
@@ -65,28 +74,12 @@ cd timeline-chart
 yarn link
 ```
 
-```bash
-cd $rootDir/theia-trace-extension
-yarn link tsp-typescript-client
-yarn link timeline-chart
-yarn
-cd packages/base
-yarn link
-cd ../react-components
-yarn link
-cd ../../node-modules/react
-yarn link
-```
-
 To link the local dependencies to this repository, run the following commands:
 
 ```bash
 cd $rootDir/vscode-trace-extension
 yarn link tsp-typescript-client
 yarn link timeline-chart
-yarn link traceviewer-base
-yarn link traceviewer-react-components
-yarn link react
 ```
 
 After linking the local dependencies on this repo and before running the vscode extension, run the `yarn` command:
@@ -101,15 +94,6 @@ To remove the links execute the following commands:
 
 ```bash
 cd $rootDir/vscode-trace-extension
-yarn unlink tsp-typescript-client
-yarn un link timeline-chart
-yarn unlink traceviewer-base
-yarn unlink traceviewer-react-components
-yarn unlink react
-```
-
-```bash
-cd $rootDir/theia-trace-extension
 yarn unlink tsp-typescript-client
 yarn unlink timeline-chart
 ```
@@ -464,7 +448,7 @@ git add RELEASE && git commit --amend
 
 Finally, push the branch to the main repository (not a fork!) and use it to create a PR. When the PR is merged, a GitHub release should be created with auto-generated release notes, as well as a git tag. Then the `publish-*` CI jobs should trigger, and if everything goes well, publish the new version of the extension to both registries.
 
-## Intital contribution
+## Initial contribution
 The code was migrated from the [PR in theia-trace-extension][init-contrib].
 
 [init-contrib]: https://github.com/eclipse-cdt-cloud/theia-trace-extension/pull/124
@@ -484,3 +468,4 @@ The code was migrated from the [PR in theia-trace-extension][init-contrib].
 [vscode-webview]: https://github.com/rebornix/vscode-webview-react
 [vscode-webview-react]: https://github.com/rebornix/vscode-webview-react
 [vscode-ports-tab]: https://raw.githubusercontent.com/eclipse-cdt-cloud/vscode-trace-extension/master/doc/images/vscode-ports-tab-001.png
+[PR-traceviewer-libs-as-subtree]: https://github.com/eclipse-cdt-cloud/vscode-trace-extension/pull/339
