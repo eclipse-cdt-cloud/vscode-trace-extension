@@ -6,6 +6,12 @@
     },
     "references": [
         {
+            "path": "local-libs/traceviewer-base"
+        },
+        {
+            "path": "local-libs/traceviewer-react"
+        },
+        {
             "path": "vscode-trace-common"
         },
         {

@@ -1,12 +1,13 @@
 {
     "private": true,
     "scripts": {
-        "prepare": "yarn tsref && lerna run prepare",
+        "prepare": "tsc -b && yarn tsref && lerna run prepare",
         "tsref": "node scripts/typescript-references.js",
-        "watch": "lerna exec --stream --parallel -- \"yarn run watch\"",
+        "watch": "concurrently -k -n TSC,WEBPACK -c yellow,blue \"tsc -b -w\" \"lerna run watch --parallel\"",
         "clean": "lerna run clean",
         "vsce:package": "lerna run vsce:package",
         "lint": "lerna run lint",
+        "lint:fix": "lerna run lint:fix",
         "format:write": "lerna run format:write",
         "format:check": "lerna run format:check",
         "download:server": "curl -o trace-compass-server.tar.gz https://download.eclipse.org/tracecompass.incubator/trace-server/rcp/trace-compass-server-latest-linux.gtk.x86_64.tar.gz; tar -xf trace-compass-server.tar.gz",
@@ -15,9 +16,9 @@
         "download:openvscode-server": "mkdir -p test-resources; cd test-resources; curl -L -o openvscode-server-v1.77.3-linux-x64.tar.gz https://github.com/gitpod-io/openvscode-server/releases/download/openvscode-server-v1.77.3/openvscode-server-v1.77.3-linux-x64.tar.gz; tar -xf openvscode-server-v1.77.3-linux-x64.tar.gz",
         "configure:openvscode-server": "cd test-resources/openvscode-server-v1.77.3-linux-x64/bin/; sed -i 's;\"$@\".*$;\"$@\" --without-connection-token --install-extension $ROOT/../../vscode-trace-extension/vscode-trace-extension-*.vsix --default-folder=$ROOT/../../TraceCompassTutorialTraces --start-server;g' openvscode-server",
         "start:openvscode-server": "cd test-resources/openvscode-server-v1.77.3-linux-x64/bin/; ./openvscode-server ${0}",
-        "version:major": "lerna version major --exact --no-push --git-tag-command /usr/bin/true --yes -m \"Release %s (Major)\"",
-        "version:minor": "lerna version minor --exact --no-push --git-tag-command /usr/bin/true --yes -m \"Release %s (Minor)\"",
-        "version:patch": "lerna version patch --exact --no-push --git-tag-command /usr/bin/true --yes -m \"Release %s (Patch)\"",
+        "version:major": "lerna version major --no-private --exact --no-push --git-tag-command /usr/bin/true --yes -m \"Release %s (Major)\"",
+        "version:minor": "lerna version minor --no-private --exact --no-push --git-tag-command /usr/bin/true --yes -m \"Release %s (Minor)\"",
+        "version:patch": "lerna version patch --no-private --exact --no-push --git-tag-command /usr/bin/true --yes -m \"Release %s (Patch)\"",
         "license:check": "npx dash-licenses-wrapper  --configFile=./configs/license-check-config.json",
         "license:check:review": "npx dash-licenses-wrapper  --configFile=./configs/license-check-config.json --review"
     },
@@ -39,9 +40,11 @@
     "workspaces": [
         "vscode-trace-common",
         "vscode-trace-webviews",
-        "vscode-trace-extension"
+        "vscode-trace-extension",
+        "local-libs/*"
     ],
     "resolutions": {
-        "@vscode/vsce": "2.25.0"
+        "@vscode/vsce": "2.25.0",
+        "@types/react": "18.3.8"
     }
 }
