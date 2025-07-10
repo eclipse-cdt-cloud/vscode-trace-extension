@@ -3,7 +3,7 @@
     "scripts": {
         "prepare": "tsc -b && yarn tsref && lerna run prepare",
         "tsref": "node scripts/typescript-references.js",
-        "watch": "lerna exec --stream --parallel -- \"yarn run watch\"",
+        "watch": "concurrently -k -n TSC,WEBPACK -c yellow,blue \"tsc -b -w\" \"lerna run watch --parallel\"",
         "clean": "lerna run clean",
         "vsce:package": "lerna run vsce:package",
         "lint": "lerna run lint",
