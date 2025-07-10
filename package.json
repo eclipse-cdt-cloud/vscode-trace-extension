@@ -7,6 +7,7 @@
         "clean": "lerna run clean",
         "vsce:package": "lerna run vsce:package",
         "lint": "lerna run lint",
+        "lint:fix": "lerna run lint:fix",
         "format:write": "lerna run format:write",
         "format:check": "lerna run format:check",
         "download:server": "curl -o trace-compass-server.tar.gz https://download.eclipse.org/tracecompass.incubator/trace-server/rcp/trace-compass-server-latest-linux.gtk.x86_64.tar.gz; tar -xf trace-compass-server.tar.gz",
