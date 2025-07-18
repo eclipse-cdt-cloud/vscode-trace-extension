@@ -1,12 +1,13 @@
 {
     "private": true,
     "scripts": {
-        "prepare": "yarn tsref && lerna run prepare",
+        "prepare": "tsc -b && yarn tsref && lerna run prepare",
         "tsref": "node scripts/typescript-references.js",
-        "watch": "lerna exec --stream --parallel -- \"yarn run watch\"",
+        "watch": "concurrently -k -n TSC,WEBPACK -c yellow,blue \"tsc -b -w\" \"lerna run watch --parallel\"",
         "clean": "lerna run clean",
         "vsce:package": "lerna run vsce:package",
         "lint": "lerna run lint",
+        "lint:fix": "lerna run lint:fix",
         "format:write": "lerna run format:write",
         "format:check": "lerna run format:check",
         "download:server": "curl -o trace-compass-server.tar.gz https://download.eclipse.org/tracecompass.incubator/trace-server/rcp/trace-compass-server-latest-linux.gtk.x86_64.tar.gz; tar -xf trace-compass-server.tar.gz",
@@ -39,9 +40,11 @@
     "workspaces": [
         "vscode-trace-common",
         "vscode-trace-webviews",
-        "vscode-trace-extension"
+        "vscode-trace-extension",
+        "local-libs/traceviewer-libs/*"
     ],
     "resolutions": {
-        "@vscode/vsce": "2.25.0"
+        "@vscode/vsce": "2.25.0",
+        "@types/react": "18.3.8"
     }
 }
