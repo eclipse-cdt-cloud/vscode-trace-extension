@@ -368,7 +368,8 @@
         "vsce:package": "vsce package --yarn",
         "vsce:ls": "vsce ls --yarn",
         "tswatch": "tsc -w -p tsconfig.json",
-        "watch": "concurrently 'yarn run webpack-dev' 'yarn tswatch'",
+        "watch": "yarn run webpack-dev",
+        "dev": "concurrently -k -n TSC,WEBPACK -c yellow,blue \"yarn run tswatch\" \"yarn run webpack-dev\"",
         "lint": "eslint .",
         "format:write": "prettier --write ./src",
         "format:check": "prettier --check ./src"

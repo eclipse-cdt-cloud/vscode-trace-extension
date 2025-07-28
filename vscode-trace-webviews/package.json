@@ -44,7 +44,7 @@
         "webpack": "webpack --mode development",
         "vsce:package": "yarn run prepare",
         "test": "react-scripts test --env=jsdom",
-        "watch": "concurrently 'webpack --watch --mode development' 'tsc -w'",
+        "watch": "webpack --watch --mode development",
         "lint": "eslint .",
         "format:write": "prettier --write ./src",
         "format:check": "prettier --check ./src"

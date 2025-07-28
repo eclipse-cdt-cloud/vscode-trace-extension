@@ -73,5 +73,9 @@ module.exports = {
       }
     }),
     new webpack.HotModuleReplacementPlugin()
-  ]
+  ],
+  watchOptions: {
+      aggregateTimeout: 2000,
+      ignored: /node_modules/,
+  },
 };
