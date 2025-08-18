@@ -15,6 +15,7 @@ let _urlBE: string;
 let _urlFE: string;
 let _provider: TspClientProvider;
 
+// eslint-disable-next-line no-shadow
 export enum ClientType {
     BACKEND = 'backend',
     FRONTEND = 'frontend'

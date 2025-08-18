@@ -79,7 +79,11 @@ const config = {
             { from: codiconsFontPath, to: "./codicons" }
           ],
         }),
-    ]
+    ],
+    watchOptions: {
+        aggregateTimeout: 2000,
+        ignored: /node_modules/,
+    },
 }
 
 module.exports = config;
