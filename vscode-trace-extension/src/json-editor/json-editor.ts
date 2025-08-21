@@ -101,14 +101,35 @@ export class JsonConfigEditor {
             vscode.languages.setTextDocumentLanguage(document, 'jsonc');
 
             this.trackedEditor = await vscode.window.showTextDocument(document, {
-                viewColumn: vscode.ViewColumn.Beside
+                viewColumn: vscode.ViewColumn.Beside,
+                preview: false
             });
             await this.schemaService.setOpenFileSchema(this.tempFileUri, this.schema);
 
             // Return a promise that resolves when the editor is closed
             return new Promise<CustomizationSubmission>((resolve, reject) => {
-                this.closeSubscription = vscode.window.onDidChangeVisibleTextEditors(async editors => {
-                    if (this.trackedEditor && !editors.some(e => e.document.uri.fsPath === this.tempFilePath)) {
+                let tabIsBeingChanged = false;
+                this.closeSubscription = vscode.window.tabGroups.onDidChangeTabs(async event => {
+                    if (
+                        this.trackedEditor &&
+                        // @ts-expect-error "Tab" type has a lot of alternate typings.  Trying to access values makes TS compiler upset.
+                        event.opened.some(tab => tab.input && tab.input?.uri?.fsPath === this.tempFilePath)
+                    ) {
+                        tabIsBeingChanged = true;
+                        // When a tab is transfered from one panel to the next it:
+                        // 1) opens a new tab
+                        // 2) 'changes' the tab
+                        // 3) closes the old tab
+                        // This handles the edge case of if a user xfers the tab from say right to left
+                    } else if (
+                        this.trackedEditor &&
+                        // @ts-expect-error "Tab" type has a lot of alternate typings.  Trying to access values makes TS compiler upset.
+                        event.closed.some(tab => tab.input && tab.input?.uri?.fsPath === this.tempFilePath)
+                    ) {
+                        if (tabIsBeingChanged) {
+                            tabIsBeingChanged = false;
+                            return;
+                        }
                         try {
                             const result = await this.handleDocumentClose();
                             if (result) {
