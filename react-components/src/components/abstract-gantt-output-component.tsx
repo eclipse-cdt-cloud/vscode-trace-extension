@@ -537,8 +537,8 @@ export abstract class AbstractGanttOutputComponent<
         return this.state.markerCategoryEntries.length <= 1
             ? 0
             : this.state.collapsedMarkerNodes.length
-            ? rowHeight
-            : this.state.markerCategoryEntries.length * rowHeight + scrollbarHeight;
+              ? rowHeight
+              : this.state.markerCategoryEntries.length * rowHeight + scrollbarHeight;
     }
 
     abstract renderTree(): React.ReactNode;
@@ -1381,21 +1381,26 @@ export abstract class AbstractGanttOutputComponent<
             }
 
             const stateStyle = outputStyle as OutputElementStyle;
-            const elementStyle = styles[stateStyle.parentKey];
-            if (elementStyle) {
-                return {
-                    color: parseInt(elementStyle.color, 16),
-                    height: this.props.style.rowHeight * elementStyle.height,
-                    borderWidth: state.selected ? 2 : 0,
-                    borderColor: 0xeef20c
-                };
+            let parentKey = 'no-parent';
+            if (stateStyle.parentKey) {
+                parentKey = stateStyle.parentKey;
+                const elementStyle = styles[parentKey];
+                if (elementStyle) {
+                    return {
+                        color: parseInt(elementStyle.color, 16),
+                        height: this.props.style.rowHeight * elementStyle.height,
+                        borderWidth: state.selected ? 2 : 0,
+                        borderColor: 0xeef20c
+                    };
+                }
+                style = this.styleMap.get(parentKey);
             }
 
-            style = this.styleMap.get(stateStyle.parentKey);
             if (style === undefined) {
-                style = backupStyles[(Math.abs(hash(stateStyle.parentKey)) as number) % backupStyles.length];
-                this.styleMap.set(stateStyle.parentKey, style);
+                style = backupStyles[Math.abs(hash(parentKey)) % backupStyles.length];
+                this.styleMap.set(parentKey, style);
             }
+
             return {
                 color: style.color,
                 height: style.height,
