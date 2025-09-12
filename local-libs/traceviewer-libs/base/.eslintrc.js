@@ -16,7 +16,7 @@ module.exports = {
         '../../../configs/base.eslintrc.json',
         '../../../configs/warnings.eslintrc.json',
         '../../../configs/errors.eslintrc.json',
-        "prettier"
+        'prettier'
     ],
     ignorePatterns: [
         'node_modules',
