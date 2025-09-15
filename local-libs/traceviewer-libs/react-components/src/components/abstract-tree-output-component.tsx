@@ -130,7 +130,8 @@ export abstract class AbstractTreeOutputComponent<
 
     public getTreeWidth(): number {
         // Make tree thinner when chart has a y-axis
-        const yAxisWidth = this.props.outputDescriptor.type === 'TREE_TIME_XY' ? this.getYAxisWidth() : 0;
+        const type = this.props.outputDescriptor.type;
+        const yAxisWidth = type === 'TREE_TIME_XY' || type === 'TREE_GENERIC_XY' ? this.getYAxisWidth() : 0;
         return Math.max(0, this.props.style.chartOffset - this.getHandleWidth() - yAxisWidth - this.getSashWidth());
     }
 

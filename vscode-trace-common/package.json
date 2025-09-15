@@ -10,7 +10,7 @@
     ],
     "dependencies": {
         "traceviewer-base": "^0.9.1",
-        "tsp-typescript-client": "^0.7.0",
+        "tsp-typescript-client": "^0.8.0",
         "vscode-messenger": "^0.5.0"
     },
     "devDependencies": {
