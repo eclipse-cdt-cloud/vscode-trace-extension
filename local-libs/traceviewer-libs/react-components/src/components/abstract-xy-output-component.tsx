@@ -5,15 +5,11 @@ import { ResponseStatus } from 'tsp-typescript-client/lib/models/response/respon
 import { QueryHelper } from 'tsp-typescript-client/lib/models/query/query-helper';
 import { Entry } from 'tsp-typescript-client/lib/models/entry';
 import ColumnHeader from './utils/filter-tree/column-header';
-import { scaleLinear } from 'd3-scale';
-import { axisLeft } from 'd3-axis';
-import { select } from 'd3-selection';
 import { EntryTree } from './utils/filter-tree/entry-tree';
-import { XyEntry, XYSeries } from 'tsp-typescript-client/lib/models/xy';
+import { XYSeries } from 'tsp-typescript-client/lib/models/xy';
 import * as React from 'react';
 import { flushSync } from 'react-dom';
 import { TimeRange } from 'traceviewer-base/lib/utils/time-range';
-import { BIMath } from 'timeline-chart/lib/bigint-utils';
 import {
     XYChartFactoryParams,
     xyChartFactory,
@@ -24,7 +20,17 @@ import { ChartOptions } from 'chart.js';
 import { Line, Scatter } from 'react-chartjs-2';
 import { debounce } from 'lodash';
 import { isEqual } from 'lodash';
-import { getCollapsedNodesFromAutoExpandLevel, listToTree } from './utils/filter-tree/utils';
+import {
+    applyYAxis,
+    buildTreeStateFromModel,
+    ColorAllocator,
+    computeYRange,
+    getTimeForX as timeForX,
+    getXForTime as xForTime,
+    zoomRange,
+    panRange,
+    setSpinnerVisible
+} from './utils/xy-shared';
 
 export const ZOOM_IN_RATE = 0.8;
 export const ZOOM_OUT_RATE = 1.25;
@@ -148,6 +154,8 @@ export abstract class AbstractXYOutputComponent<
     };
 
     private _debouncedUpdateXY = debounce(() => this.updateXY(), 500);
+
+    private colors = new ColorAllocator();
 
     constructor(props: P) {
         super(props);
@@ -294,28 +302,15 @@ export abstract class AbstractXYOutputComponent<
         const treeResponse = tspClientResponse.getModel();
         if (tspClientResponse.isOk() && treeResponse) {
             if (treeResponse.model) {
-                const headers = treeResponse.model.headers;
-                const columns = [];
-                if (headers && headers.length > 0) {
-                    headers.forEach(header => {
-                        columns.push({ title: header.name, sortable: true, resizable: true, tooltip: header.tooltip });
-                    });
-                } else {
-                    columns.push({ title: 'Name', sortable: true });
-                }
-                const checkedSeries = this.getAllCheckedIds(treeResponse.model.entries);
-                const autoCollapsedNodes = getCollapsedNodesFromAutoExpandLevel(
-                    listToTree(treeResponse.model.entries, columns),
-                    treeResponse.model.autoExpandLevel
-                );
+                const built = buildTreeStateFromModel(treeResponse.model as any);
                 this.setState(
                     {
                         outputStatus: treeResponse.status,
-                        xyTree: treeResponse.model.entries,
-                        defaultOrderedIds: treeResponse.model.entries.map(entry => entry.id),
-                        collapsedNodes: autoCollapsedNodes,
-                        checkedSeries,
-                        columns
+                        xyTree: built.xyTree,
+                        defaultOrderedIds: built.defaultOrderedIds,
+                        collapsedNodes: built.collapsedNodes,
+                        checkedSeries: built.checkedSeries,
+                        columns: built.columns as any
                     },
                     () => {
                         this.updateXY();
@@ -334,16 +329,6 @@ export abstract class AbstractXYOutputComponent<
         });
         this.viewSpinner(false);
         return ResponseStatus.FAILED;
-    }
-
-    getAllCheckedIds(entries: Array<XyEntry>): Array<number> {
-        const checkedSeries: number[] = [];
-        for (const entry of entries) {
-            if (entry.isDefault) {
-                checkedSeries.push(entry.id);
-            }
-        }
-        return checkedSeries;
     }
 
     renderTree(): React.ReactNode | undefined {
@@ -371,34 +356,16 @@ export abstract class AbstractXYOutputComponent<
     renderYAxis(): React.ReactNode {
         // Y axis with D3
         const chartHeight = parseInt(this.props.style.height.toString());
-
-        const yScale = scaleLinear()
-            .domain([this.state.allMin, Math.max(this.state.allMax, 1)])
-            .range([chartHeight - this.margin.bottom, this.margin.top]);
+        applyYAxis(
+            this.yAxisRef,
+            chartHeight,
+            this.margin.top,
+            this.margin.bottom,
+            this.state.allMin,
+            this.state.allMax
+        );
 
         const yTransform = `translate(${this.margin.left}, 0)`;
-
-        // Abbreviate large numbers
-        const scaleYLabel = (d: number) =>
-            d >= 1000000000000
-                ? Math.round(d / 100000000000) / 10 + 'G'
-                : d >= 1000000000
-                  ? Math.round(d / 100000000) / 10 + 'B'
-                  : d >= 1000000
-                    ? Math.round(d / 100000) / 10 + 'M'
-                    : d >= 1000
-                      ? Math.round(d / 100) / 10 + 'K'
-                      : Math.round(d * 10) / 10;
-
-        if (this.state.allMax > 0) {
-            select(this.yAxisRef.current)
-                .call(axisLeft(yScale).tickSizeOuter(0).ticks(4))
-                .call(g => g.select('.domain').remove());
-            select(this.yAxisRef.current)
-                .selectAll('.tick text')
-                .style('font-size', '11px')
-                .text((d: any) => scaleYLabel(d));
-        }
 
         return (
             <React.Fragment>
@@ -492,12 +459,7 @@ export abstract class AbstractXYOutputComponent<
     }
 
     private viewSpinner(status: boolean): void {
-        if (document.getElementById(this.getOutputComponentDomId() + 'handleSpinner')) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            document.getElementById(this.getOutputComponentDomId() + 'handleSpinner')!.style.visibility = status
-                ? 'visible'
-                : 'hidden';
-        }
+        setSpinnerVisible(this.getOutputComponentDomId(), status);
     }
 
     private buildScatterData(seriesObj: XYSeries[]) {
@@ -506,7 +468,7 @@ export abstract class AbstractXYOutputComponent<
         const offset = this.props.viewRange.getOffset() ?? BigInt(0);
         seriesObj.forEach(series => {
             const color = this.getSeriesColor(series.seriesName);
-            xValues = series.xValues;
+            xValues = series.xValues as bigint[];
             const yValues: number[] = series.yValues;
             let pairs: xyPair[] = [];
 
@@ -546,7 +508,7 @@ export abstract class AbstractXYOutputComponent<
         let xValues: bigint[] = [];
         seriesObj.forEach(series => {
             const color = this.getSeriesColor(series.seriesName);
-            xValues = series.xValues;
+            xValues = series.xValues as bigint[];
             dataSetArray.push({
                 label: series.seriesName,
                 fill: false,
@@ -570,117 +532,48 @@ export abstract class AbstractXYOutputComponent<
     }
 
     private getSeriesColor(key: string): string {
-        const colors = [
-            'rgba(191, 33, 30, 1)',
-            'rgba(30, 56, 136, 1)',
-            'rgba(71, 168, 189, 1)',
-            'rgba(245, 230, 99, 1)',
-            'rgba(255, 173, 105, 1)',
-            'rgba(216, 219, 226, 1)',
-            'rgba(212, 81, 19, 1)',
-            'rgba(187, 155, 176  , 1)',
-            'rgba(6, 214, 160, 1)',
-            'rgba(239, 71, 111, 1)'
-        ];
-        let colorIndex = this.colorMap.get(key);
-        if (colorIndex === undefined) {
-            colorIndex = this.currentColorIndex % colors.length;
-            this.colorMap.set(key, colorIndex);
-            this.currentColorIndex++;
-        }
-        return colors[colorIndex];
+        return this.colors.get(key);
     }
 
     private calculateYRange() {
-        let localMax = 0;
-        let localMin = 0;
-
-        if (this.state && this.state.xyData) {
-            this.state.xyData?.datasets?.forEach((dSet: any, i: number) => {
-                let rowMax;
-                let rowMin;
-                if (this.isScatterPlot) {
-                    rowMax = Math.max(...dSet.data.map((d: any) => d.y));
-                    rowMin = Math.min(...dSet.data.map((d: any) => d.y));
-                } else {
-                    rowMax = Math.max(...dSet.data);
-                    rowMin = Math.min(...dSet.data);
-                }
-                localMax = Math.max(localMax, rowMax);
-                localMin = i === 0 ? rowMin : Math.min(localMin, rowMin);
-            });
-        }
-
+        const { min, max } = computeYRange(this.state.xyData?.datasets as any, this.isScatterPlot);
         this.setState({
-            allMax: localMax * 1.01,
-            allMin: localMin * 0.99
+            allMax: max,
+            allMin: min
         });
     }
 
     protected getTimeForX(x: number): bigint {
-        const range = this.getDisplayedRange();
-        const offset = range.getOffset() ?? BigInt(0);
-        const duration = range.getDuration();
-        const chartWidth = this.getChartWidth() === 0 ? 1 : this.getChartWidth();
-        const time = range.getStart() - offset + BIMath.round((x / chartWidth) * Number(duration));
-        return time;
+        return timeForX(this.getDisplayedRange(), this.getChartWidth() === 0 ? 1 : this.getChartWidth(), x);
     }
 
     protected getXForTime(time: bigint): number {
-        const range = this.getDisplayedRange();
-        const start = range.getStart();
-        const duration = range.getDuration();
-        const chartWidth = this.getChartWidth() === 0 ? 1 : this.getChartWidth();
-        const x = (Number(time - start) / Number(duration)) * chartWidth;
-        return x;
+        return xForTime(this.getDisplayedRange(), this.getChartWidth() === 0 ? 1 : this.getChartWidth(), time);
     }
 
     protected zoom(isZoomIn: boolean): void {
         if (this.props.unitController.viewRangeLength >= 1) {
             const zoomCenterTime = this.getZoomTime();
-            const startDistance = zoomCenterTime - this.props.unitController.viewRange.start;
-            const zoomFactor = isZoomIn ? ZOOM_IN_RATE : ZOOM_OUT_RATE;
-            const newDuration = BIMath.clamp(
-                Number(this.props.unitController.viewRangeLength) * zoomFactor,
-                BigInt(2),
-                this.props.unitController.absoluteRange
-            );
-            const newStartRange = BIMath.max(0, zoomCenterTime - BIMath.round(Number(startDistance) * zoomFactor));
-            const newEndRange = newStartRange + newDuration;
-            this.updateRange(newStartRange, newEndRange);
+            const view = this.props.unitController.viewRange;
+            const abs = this.props.unitController.absoluteRange;
+            const newRange = zoomRange(view, abs, zoomCenterTime, isZoomIn, ZOOM_IN_RATE, ZOOM_OUT_RATE);
+            this.props.unitController.viewRange = newRange;
         }
     }
 
     protected pan(panLeft: boolean): void {
-        const panFactor = 0.1;
-        const percentRange = BIMath.round(Number(this.props.unitController.viewRangeLength) * panFactor);
-        const panNumber = panLeft ? BigInt(-1) : BigInt(1);
-        const startRange = this.props.unitController.viewRange.start + panNumber * percentRange;
-        const endRange = this.props.unitController.viewRange.end + panNumber * percentRange;
-        if (startRange < 0) {
-            this.props.unitController.viewRange = {
-                start: BigInt(0),
-                end: this.props.unitController.viewRangeLength
-            };
-        } else if (endRange > this.props.unitController.absoluteRange) {
-            this.props.unitController.viewRange = {
-                start: this.props.unitController.absoluteRange - this.props.unitController.viewRangeLength,
-                end: this.props.unitController.absoluteRange
-            };
-        } else {
-            this.props.unitController.viewRange = {
-                start: startRange,
-                end: endRange
-            };
-        }
+        const view = this.props.unitController.viewRange;
+        const abs = this.props.unitController.absoluteRange;
+        const newRange = panRange(view, abs, panLeft);
+        this.props.unitController.viewRange = newRange;
     }
 
     protected tooltip(): void {
         const xPos = this.positionXMove;
-        const timeForX = this.getTimeForX(xPos);
+        const timeForXVal = this.getTimeForX(xPos);
         let timeLabel: string | undefined = timeForX.toString() + ' ns';
         if (this.props.unitController.numberTranslator) {
-            timeLabel = this.props.unitController.numberTranslator(timeForX) + ' s';
+            timeLabel = this.props.unitController.numberTranslator(timeForXVal) + ' s';
         }
         const chartWidth = this.isBarPlot ? this.getChartWidth() : this.chartRef.current.chartInstance.width;
         const chartHeight = this.isBarPlot
