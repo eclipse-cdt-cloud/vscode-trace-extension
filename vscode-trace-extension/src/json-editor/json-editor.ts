@@ -186,10 +186,10 @@ export class JsonConfigEditor {
         }
 
         try {
-            await vscode.workspace.fs.writeFile(
-                uri,
-                Buffer.from(JSON.stringify(validation.content, undefined, 2), 'utf8')
-            );
+            const jsonString = JSON.stringify(validation.content, undefined, 2);
+            const buffer = Buffer.from(jsonString);
+            const unit8Array = new Uint8Array(buffer);
+            await vscode.workspace.fs.writeFile(uri, unit8Array);
 
             vscode.window.showInformationMessage('Configuration file saved successfully');
             return true;

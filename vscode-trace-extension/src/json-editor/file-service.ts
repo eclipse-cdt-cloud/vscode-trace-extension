@@ -55,7 +55,9 @@ export class FileService {
             });
         } else {
             // If no editor is open for this file, just write to the file
-            await vscode.workspace.fs.writeFile(fileUri, Buffer.from(fileContent, 'utf-8'));
+            const buffer = Buffer.from(fileContent, 'utf-8');
+            const utf8Array = new Uint8Array(buffer);
+            await vscode.workspace.fs.writeFile(fileUri, utf8Array);
         }
 
         const document = await vscode.workspace.openTextDocument(fileUri);
