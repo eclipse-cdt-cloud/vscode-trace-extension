@@ -30,8 +30,6 @@ export class FileService {
             '* • Submit the current config',
             '* • Save this config for future use',
             '* • Load an existing config file',
-            '*',
-            '* You can also submit by simply closing the file',
             '*/',
             JSON.stringify(json, undefined, 2)
         ].join('\n');
