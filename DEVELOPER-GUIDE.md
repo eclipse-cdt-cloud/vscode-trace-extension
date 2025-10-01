@@ -819,7 +819,7 @@ This approach allows you to:
 
 ### Custom Webview with TSP Data Visualization
 
-This example shows how to create a custom webview that queries TSP data and visualizes it.
+This example shows how to create a custom webview that queries TSP data and visualizes it using the vscode-messenger library for communication.
 
 **Updated package.json**
 ```json
@@ -835,6 +835,10 @@ This example shows how to create a custom webview that queries TSP data and visu
                 "title": "Open Custom Trace View"
             }
         ]
+    },
+    "dependencies": {
+        "tsp-typescript-client": "^0.4.0",
+        "@vscode/messenger": "^0.4.5"
     }
 }
 ```
@@ -842,10 +846,27 @@ This example shows how to create a custom webview that queries TSP data and visu
 **src/webview-provider.ts**
 ```typescript
 import * as vscode from 'vscode';
+import { Messenger } from '@vscode/messenger';
 import { TspService } from './tsp-service';
+
+interface TraceDataRequest {
+    experimentUUID: string;
+}
+
+interface TimeRangeRequest {
+    experimentUUID: string;
+    startTime: number;
+    endTime: number;
+}
+
+interface AnalysisRequest {
+    experimentUUID: string;
+    analysisType: string;
+}
 
 export class CustomTraceViewProvider {
     private panel: vscode.WebviewPanel | undefined;
+    private messenger: Messenger | undefined;
     private tspService: TspService;
 
     constructor(private context: vscode.ExtensionContext, tspService: TspService) {
@@ -867,31 +888,31 @@ export class CustomTraceViewProvider {
         );
 
         this.panel.webview.html = this.getWebviewContent();
-        this.setupMessageHandling(experimentUUID);
+        this.setupMessenger(experimentUUID);
         
         // Load initial data
         await this.loadTraceData(experimentUUID);
     }
 
-    private setupMessageHandling(experimentUUID: string) {
+    private setupMessenger(experimentUUID: string) {
         if (!this.panel) return;
 
-        this.panel.webview.onDidReceiveMessage(async (message) => {
-            switch (message.command) {
-                case 'ready':
-                    await this.loadTraceData(experimentUUID);
-                    break;
-                case 'refreshData':
-                    await this.loadTraceData(experimentUUID);
-                    break;
-                case 'getTimeRange':
-                    await this.getTimeRange(experimentUUID, message.startTime, message.endTime);
-                    break;
-                case 'runAnalysis':
-                    await this.runCustomAnalysis(experimentUUID, message.analysisType);
-                    break;
-            }
+        this.messenger = new Messenger(this.panel.webview);
+
+        // Register message handlers
+        this.messenger.onRequest('loadTraceData', async () => {
+            return await this.loadTraceData(experimentUUID);
         });
+
+        this.messenger.onRequest('getTimeRange', async (request: TimeRangeRequest) => {
+            return await this.getTimeRange(request.experimentUUID, request.startTime, request.endTime);
+        });
+
+        this.messenger.onRequest('runAnalysis', async (request: AnalysisRequest) => {
+            return await this.runCustomAnalysis(request.experimentUUID, request.analysisType);
+        });
+
+        this.messenger.start();
     }
 
     private async loadTraceData(experimentUUID: string) {
@@ -899,34 +920,32 @@ export class CustomTraceViewProvider {
             // Get trace metadata
             const metadata = await this.tspService.getTraceMetadata(experimentUUID);
             
-            // Get time graph data (example endpoint)
+            // Get time graph data
             const timeGraphData = await this.getTimeGraphData(experimentUUID);
             
-            // Get XY chart data (example endpoint)
+            // Get XY chart data
             const xyData = await this.getXYData(experimentUUID);
 
-            this.panel?.webview.postMessage({
-                command: 'updateData',
-                data: {
-                    metadata,
-                    timeGraph: timeGraphData,
-                    xyChart: xyData
-                }
-            });
+            const data = {
+                metadata,
+                timeGraph: timeGraphData,
+                xyChart: xyData
+            };
+
+            // Send data to webview
+            this.messenger?.sendNotification('dataUpdated', data);
+            return data;
         } catch (error) {
-            this.panel?.webview.postMessage({
-                command: 'error',
-                message: `Failed to load data: ${error}`
-            });
+            const errorMsg = `Failed to load data: ${error}`;
+            this.messenger?.sendNotification('error', { message: errorMsg });
+            throw new Error(errorMsg);
         }
     }
 
     private async getTimeGraphData(experimentUUID: string) {
-        // Example: Get time graph tree and states
         const response = await this.tspService.client.fetchTimeGraphTree(experimentUUID, 'custom-timegraph-provider');
         if (response.isOk()) {
             const tree = response.getModel();
-            // Get states for visible entries
             const statesResponse = await this.tspService.client.fetchTimeGraphStates(
                 experimentUUID,
                 'custom-timegraph-provider',
@@ -944,7 +963,6 @@ export class CustomTraceViewProvider {
     }
 
     private async getXYData(experimentUUID: string) {
-        // Example: Get XY chart data
         const response = await this.tspService.client.fetchXY(
             experimentUUID,
             'custom-xy-provider',
@@ -967,15 +985,13 @@ export class CustomTraceViewProvider {
                 }
             );
 
-            this.panel?.webview.postMessage({
-                command: 'timeRangeData',
-                data: statesResponse.isOk() ? statesResponse.getModel() : null
-            });
+            const data = statesResponse.isOk() ? statesResponse.getModel() : null;
+            this.messenger?.sendNotification('timeRangeData', data);
+            return data;
         } catch (error) {
-            this.panel?.webview.postMessage({
-                command: 'error',
-                message: `Failed to get time range data: ${error}`
-            });
+            const errorMsg = `Failed to get time range data: ${error}`;
+            this.messenger?.sendNotification('error', { message: errorMsg });
+            throw new Error(errorMsg);
         }
     }
 
@@ -983,11 +999,10 @@ export class CustomTraceViewProvider {
         const analysisId = await this.tspService.runCustomAnalysis(experimentUUID, analysisType);
         
         if (analysisId) {
-            this.panel?.webview.postMessage({
-                command: 'analysisStarted',
-                analysisId: analysisId
-            });
+            this.messenger?.sendNotification('analysisStarted', { analysisId });
+            return { analysisId };
         }
+        throw new Error('Failed to start analysis');
     }
 
     private getWebviewContent(): string {
@@ -1057,55 +1072,74 @@ export class CustomTraceViewProvider {
         </div>
     </div>
 
-    <script>
-        const vscode = acquireVsCodeApi();
+    <script type="module">
+        import { Messenger } from 'https://unpkg.com/@vscode/messenger@0.4.5/dist/browser/index.js';
 
-        // Send ready message when webview loads
-        window.addEventListener('load', () => {
-            vscode.postMessage({ command: 'ready' });
+        const vscode = acquireVsCodeApi();
+        const messenger = new Messenger(vscode);
+
+        // Set up notification handlers
+        messenger.onNotification('dataUpdated', (data) => {
+            updateDisplay(data);
         });
 
-        // Handle messages from extension
-        window.addEventListener('message', event => {
-            const message = event.data;
-            
-            switch (message.command) {
-                case 'updateData':
-                    updateDisplay(message.data);
-                    break;
-                case 'timeRangeData':
-                    updateTimeRangeData(message.data);
-                    break;
-                case 'analysisStarted':
-                    document.getElementById('analysis-results').innerHTML = 
-                        \`Analysis started with ID: \${message.analysisId}\`;
-                    break;
-                case 'error':
-                    showError(message.message);
-                    break;
+        messenger.onNotification('timeRangeData', (data) => {
+            updateTimeRangeData(data);
+        });
+
+        messenger.onNotification('analysisStarted', (data) => {
+            document.getElementById('analysis-results').innerHTML = 
+                \`Analysis started with ID: \${data.analysisId}\`;
+        });
+
+        messenger.onNotification('error', (error) => {
+            showError(error.message);
+        });
+
+        messenger.start();
+
+        // Load initial data when webview is ready
+        window.addEventListener('load', async () => {
+            try {
+                await messenger.sendRequest('loadTraceData');
+            } catch (error) {
+                showError(\`Failed to load initial data: \${error.message}\`);
             }
         });
 
-        function refreshData() {
-            vscode.postMessage({ command: 'refreshData' });
-        }
+        window.refreshData = async function() {
+            try {
+                await messenger.sendRequest('loadTraceData');
+            } catch (error) {
+                showError(\`Failed to refresh data: \${error.message}\`);
+            }
+        };
 
-        function getTimeRange() {
+        window.getTimeRange = async function() {
             const startTime = parseInt(document.getElementById('startTime').value) || 0;
             const endTime = parseInt(document.getElementById('endTime').value) || 1000000;
-            vscode.postMessage({ 
-                command: 'getTimeRange', 
-                startTime: startTime, 
-                endTime: endTime 
-            });
-        }
+            
+            try {
+                await messenger.sendRequest('getTimeRange', {
+                    experimentUUID: 'current',
+                    startTime: startTime,
+                    endTime: endTime
+                });
+            } catch (error) {
+                showError(\`Failed to get time range: \${error.message}\`);
+            }
+        };
 
-        function runAnalysis(type) {
-            vscode.postMessage({ 
-                command: 'runAnalysis', 
-                analysisType: type 
-            });
-        }
+        window.runAnalysis = async function(type) {
+            try {
+                await messenger.sendRequest('runAnalysis', {
+                    experimentUUID: 'current',
+                    analysisType: type
+                });
+            } catch (error) {
+                showError(\`Failed to run analysis: \${error.message}\`);
+            }
+        };
 
         function updateDisplay(data) {
             // Update metadata
@@ -1131,7 +1165,6 @@ export class CustomTraceViewProvider {
             if (timeGraphData.tree && timeGraphData.states) {
                 let html = '<div style="padding: 10px;">';
                 
-                // Display tree entries
                 timeGraphData.tree.entries?.forEach(entry => {
                     html += \`<div style="margin: 5px 0;">
                         <strong>\${entry.labels[0]}</strong>
