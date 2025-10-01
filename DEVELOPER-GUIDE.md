@@ -2,6 +2,32 @@
 
 This guide provides comprehensive documentation for developers who want to build extensions that integrate with the VSCode Trace Extension using its external API.
 
+## Table of Contents
+
+- [External API Overview](#external-api-overview)
+- [API Reference](#api-reference)
+  - [Experiment Management](#experiment-management)
+  - [Webview Management](#webview-management)
+  - [Signal Management](#signal-management)
+  - [Menu Registration](#menu-registration)
+  - [Trace Server Management](#trace-server-management)
+  - [Resource Type Configuration](#resource-type-configuration)
+- [Usage Examples](#usage-examples)
+  - [Getting Started](#getting-started)
+  - [Accessing Active Experiment](#accessing-active-experiment)
+  - [Handling Webviews](#handling-webviews)
+  - [Listening for New Webviews](#listening-for-new-webviews)
+  - [Signal Management](#signal-management-1)
+  - [Custom Menu Items](#custom-menu-items)
+  - [Trace Server Contribution](#trace-server-contribution)
+  - [Resource Type Configuration](#resource-type-configuration-1)
+- [Best Practices](#best-practices)
+- [Creating a Third-Party Extension](#creating-a-third-party-extension)
+  - [Extension Setup](#extension-setup)
+  - [Key Integration Points](#key-integration-points)
+  - [Extending TSP Client with Custom Endpoints](#extending-tsp-client-with-custom-endpoints)
+  - [Custom Webview with TSP Data Visualization](#custom-webview-with-tsp-data-visualization)
+
 ## External API Overview
 
 VSCode Trace Extension provides an external API that adopter extensions can rely on for communication. The API includes the following methods:
