@@ -874,6 +874,7 @@ This example shows how to create a custom webview that queries TSP data and visu
 import * as vscode from 'vscode';
 import { Messenger } from '@vscode/messenger';
 import { TspService } from './tsp-service';
+import { SerializationUtil } from 'tsp-typescript-client/lib/protocol/serialization-util';
 
 interface TraceDataRequest {
     experimentUUID: string;
@@ -923,7 +924,12 @@ export class CustomTraceViewProvider {
     private setupMessenger(experimentUUID: string) {
         if (!this.panel) return;
 
-        this.messenger = new Messenger(this.panel.webview);
+        this.messenger = new Messenger(this.panel.webview, {
+            serializer: {
+                serialize: (obj: any) => SerializationUtil.serialize(obj),
+                deserialize: (data: string) => SerializationUtil.deserialize(data)
+            }
+        });
 
         // Register message handlers
         this.messenger.onRequest('loadTraceData', async () => {
@@ -958,7 +964,7 @@ export class CustomTraceViewProvider {
                 xyChart: xyData
             };
 
-            // Send data to webview
+            // Send serialized TSP data to webview
             this.messenger?.sendNotification('dataUpdated', data);
             return data;
         } catch (error) {
@@ -980,6 +986,8 @@ export class CustomTraceViewProvider {
                     requestedItems: tree?.entries?.map(entry => entry.id) || []
                 }
             );
+            
+            // Return TSP models that will be serialized properly
             return {
                 tree: tree,
                 states: statesResponse.isOk() ? statesResponse.getModel() : null
@@ -997,6 +1005,7 @@ export class CustomTraceViewProvider {
                 requestedItems: []
             }
         );
+        // Return TSP XY model that will be serialized properly
         return response.isOk() ? response.getModel() : null;
     }
 
@@ -1012,6 +1021,7 @@ export class CustomTraceViewProvider {
             );
 
             const data = statesResponse.isOk() ? statesResponse.getModel() : null;
+            // TSP data will be properly serialized by SerializationUtil
             this.messenger?.sendNotification('timeRangeData', data);
             return data;
         } catch (error) {
