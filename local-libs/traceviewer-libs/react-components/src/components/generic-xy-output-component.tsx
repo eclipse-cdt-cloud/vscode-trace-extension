@@ -388,7 +388,7 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
 
     private buildLabels(xValues: Sampling, unit: string): string[] {
         if (isRangeSampling(xValues)) {
-            return xValues.map(range => `[${range[0]} ${unit}, ${range[1]} ${unit}]`);
+            return xValues.map(range => `[${range.start} ${unit}, ${range.end} ${unit}]`);
         } else if (isCategorySampling(xValues)) {
             return xValues.map(val => `${val} ${unit}`);
         } else if (isTimestampSampling(xValues)) {
