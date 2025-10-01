@@ -816,3 +816,442 @@ This approach allows you to:
 - Implement custom configuration updates
 - Handle asynchronous operations with proper user feedback
 - Maintain type safety with TypeScript interfaces
+
+### Custom Webview with TSP Data Visualization
+
+This example shows how to create a custom webview that queries TSP data and visualizes it.
+
+**Updated package.json**
+```json
+{
+    "contributes": {
+        "commands": [
+            {
+                "command": "myTraceExtension.showActiveTrace",
+                "title": "Show Active Trace Info"
+            },
+            {
+                "command": "myTraceExtension.openCustomView",
+                "title": "Open Custom Trace View"
+            }
+        ]
+    }
+}
+```
+
+**src/webview-provider.ts**
+```typescript
+import * as vscode from 'vscode';
+import { TspService } from './tsp-service';
+
+export class CustomTraceViewProvider {
+    private panel: vscode.WebviewPanel | undefined;
+    private tspService: TspService;
+
+    constructor(private context: vscode.ExtensionContext, tspService: TspService) {
+        this.tspService = tspService;
+    }
+
+    public async createWebview(experimentUUID: string, experimentName: string) {
+        this.panel = vscode.window.createWebviewPanel(
+            'customTraceView',
+            `Custom View: ${experimentName}`,
+            vscode.ViewColumn.One,
+            {
+                enableScripts: true,
+                retainContextWhenHidden: true,
+                localResourceRoots: [
+                    vscode.Uri.joinPath(this.context.extensionUri, 'media')
+                ]
+            }
+        );
+
+        this.panel.webview.html = this.getWebviewContent();
+        this.setupMessageHandling(experimentUUID);
+        
+        // Load initial data
+        await this.loadTraceData(experimentUUID);
+    }
+
+    private setupMessageHandling(experimentUUID: string) {
+        if (!this.panel) return;
+
+        this.panel.webview.onDidReceiveMessage(async (message) => {
+            switch (message.command) {
+                case 'ready':
+                    await this.loadTraceData(experimentUUID);
+                    break;
+                case 'refreshData':
+                    await this.loadTraceData(experimentUUID);
+                    break;
+                case 'getTimeRange':
+                    await this.getTimeRange(experimentUUID, message.startTime, message.endTime);
+                    break;
+                case 'runAnalysis':
+                    await this.runCustomAnalysis(experimentUUID, message.analysisType);
+                    break;
+            }
+        });
+    }
+
+    private async loadTraceData(experimentUUID: string) {
+        try {
+            // Get trace metadata
+            const metadata = await this.tspService.getTraceMetadata(experimentUUID);
+            
+            // Get time graph data (example endpoint)
+            const timeGraphData = await this.getTimeGraphData(experimentUUID);
+            
+            // Get XY chart data (example endpoint)
+            const xyData = await this.getXYData(experimentUUID);
+
+            this.panel?.webview.postMessage({
+                command: 'updateData',
+                data: {
+                    metadata,
+                    timeGraph: timeGraphData,
+                    xyChart: xyData
+                }
+            });
+        } catch (error) {
+            this.panel?.webview.postMessage({
+                command: 'error',
+                message: `Failed to load data: ${error}`
+            });
+        }
+    }
+
+    private async getTimeGraphData(experimentUUID: string) {
+        // Example: Get time graph tree and states
+        const response = await this.tspService.client.fetchTimeGraphTree(experimentUUID, 'custom-timegraph-provider');
+        if (response.isOk()) {
+            const tree = response.getModel();
+            // Get states for visible entries
+            const statesResponse = await this.tspService.client.fetchTimeGraphStates(
+                experimentUUID,
+                'custom-timegraph-provider',
+                {
+                    requestedTimeRange: { start: 0, end: 1000000 },
+                    requestedItems: tree?.entries?.map(entry => entry.id) || []
+                }
+            );
+            return {
+                tree: tree,
+                states: statesResponse.isOk() ? statesResponse.getModel() : null
+            };
+        }
+        return null;
+    }
+
+    private async getXYData(experimentUUID: string) {
+        // Example: Get XY chart data
+        const response = await this.tspService.client.fetchXY(
+            experimentUUID,
+            'custom-xy-provider',
+            {
+                requestedTimeRange: { start: 0, end: 1000000 },
+                requestedItems: []
+            }
+        );
+        return response.isOk() ? response.getModel() : null;
+    }
+
+    private async getTimeRange(experimentUUID: string, startTime: number, endTime: number) {
+        try {
+            const statesResponse = await this.tspService.client.fetchTimeGraphStates(
+                experimentUUID,
+                'custom-timegraph-provider',
+                {
+                    requestedTimeRange: { start: startTime, end: endTime },
+                    requestedItems: []
+                }
+            );
+
+            this.panel?.webview.postMessage({
+                command: 'timeRangeData',
+                data: statesResponse.isOk() ? statesResponse.getModel() : null
+            });
+        } catch (error) {
+            this.panel?.webview.postMessage({
+                command: 'error',
+                message: `Failed to get time range data: ${error}`
+            });
+        }
+    }
+
+    private async runCustomAnalysis(experimentUUID: string, analysisType: string) {
+        const analysisId = await this.tspService.runCustomAnalysis(experimentUUID, analysisType);
+        
+        if (analysisId) {
+            this.panel?.webview.postMessage({
+                command: 'analysisStarted',
+                analysisId: analysisId
+            });
+        }
+    }
+
+    private getWebviewContent(): string {
+        return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Trace View</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { display: flex; flex-direction: column; gap: 20px; }
+        .section { border: 1px solid #ccc; padding: 15px; border-radius: 5px; }
+        .controls { display: flex; gap: 10px; margin-bottom: 10px; }
+        button { padding: 8px 16px; cursor: pointer; }
+        .chart-container { height: 300px; border: 1px solid #ddd; position: relative; }
+        .time-graph { background: #f9f9f9; }
+        .xy-chart { background: #f0f8ff; }
+        .metadata { background: #f5f5f5; }
+        .loading { text-align: center; color: #666; }
+        .error { color: red; }
+        .state-bar { height: 20px; margin: 2px 0; position: relative; }
+        .time-range { display: flex; gap: 10px; align-items: center; }
+        input[type="number"] { width: 100px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="section">
+            <h3>Controls</h3>
+            <div class="controls">
+                <button onclick="refreshData()">Refresh Data</button>
+                <button onclick="runAnalysis('performance')">Run Performance Analysis</button>
+                <button onclick="runAnalysis('memory')">Run Memory Analysis</button>
+            </div>
+            <div class="time-range">
+                <label>Time Range:</label>
+                <input type="number" id="startTime" placeholder="Start" value="0">
+                <input type="number" id="endTime" placeholder="End" value="1000000">
+                <button onclick="getTimeRange()">Get Range Data</button>
+            </div>
+        </div>
+
+        <div class="section metadata">
+            <h3>Trace Metadata</h3>
+            <div id="metadata-content">Loading...</div>
+        </div>
+
+        <div class="section">
+            <h3>Time Graph View</h3>
+            <div class="chart-container time-graph" id="timegraph-container">
+                <div class="loading">Loading time graph data...</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>XY Chart View</h3>
+            <div class="chart-container xy-chart" id="xy-container">
+                <div class="loading">Loading XY chart data...</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Analysis Results</h3>
+            <div id="analysis-results">No analysis running</div>
+        </div>
+    </div>
+
+    <script>
+        const vscode = acquireVsCodeApi();
+
+        // Send ready message when webview loads
+        window.addEventListener('load', () => {
+            vscode.postMessage({ command: 'ready' });
+        });
+
+        // Handle messages from extension
+        window.addEventListener('message', event => {
+            const message = event.data;
+            
+            switch (message.command) {
+                case 'updateData':
+                    updateDisplay(message.data);
+                    break;
+                case 'timeRangeData':
+                    updateTimeRangeData(message.data);
+                    break;
+                case 'analysisStarted':
+                    document.getElementById('analysis-results').innerHTML = 
+                        \`Analysis started with ID: \${message.analysisId}\`;
+                    break;
+                case 'error':
+                    showError(message.message);
+                    break;
+            }
+        });
+
+        function refreshData() {
+            vscode.postMessage({ command: 'refreshData' });
+        }
+
+        function getTimeRange() {
+            const startTime = parseInt(document.getElementById('startTime').value) || 0;
+            const endTime = parseInt(document.getElementById('endTime').value) || 1000000;
+            vscode.postMessage({ 
+                command: 'getTimeRange', 
+                startTime: startTime, 
+                endTime: endTime 
+            });
+        }
+
+        function runAnalysis(type) {
+            vscode.postMessage({ 
+                command: 'runAnalysis', 
+                analysisType: type 
+            });
+        }
+
+        function updateDisplay(data) {
+            // Update metadata
+            if (data.metadata) {
+                document.getElementById('metadata-content').innerHTML = 
+                    \`<pre>\${JSON.stringify(data.metadata, null, 2)}</pre>\`;
+            }
+
+            // Update time graph
+            if (data.timeGraph) {
+                updateTimeGraph(data.timeGraph);
+            }
+
+            // Update XY chart
+            if (data.xyChart) {
+                updateXYChart(data.xyChart);
+            }
+        }
+
+        function updateTimeGraph(timeGraphData) {
+            const container = document.getElementById('timegraph-container');
+            
+            if (timeGraphData.tree && timeGraphData.states) {
+                let html = '<div style="padding: 10px;">';
+                
+                // Display tree entries
+                timeGraphData.tree.entries?.forEach(entry => {
+                    html += \`<div style="margin: 5px 0;">
+                        <strong>\${entry.labels[0]}</strong>
+                        <div class="state-bar" style="background: linear-gradient(to right, #4CAF50 0%, #2196F3 50%, #FF9800 100%);"></div>
+                    </div>\`;
+                });
+                
+                html += '</div>';
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = '<div class="loading">No time graph data available</div>';
+            }
+        }
+
+        function updateXYChart(xyData) {
+            const container = document.getElementById('xy-container');
+            
+            if (xyData && xyData.series) {
+                let html = '<div style="padding: 10px;">';
+                html += \`<p>Series count: \${xyData.series.length}</p>\`;
+                
+                xyData.series.forEach((series, index) => {
+                    html += \`<div style="margin: 10px 0;">
+                        <strong>Series \${index + 1}:</strong> \${series.name || 'Unnamed'}
+                        <div style="height: 20px; background: linear-gradient(to right, #FF6B6B, #4ECDC4); margin: 5px 0;"></div>
+                    </div>\`;
+                });
+                
+                html += '</div>';
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = '<div class="loading">No XY chart data available</div>';
+            }
+        }
+
+        function updateTimeRangeData(data) {
+            if (data) {
+                document.getElementById('analysis-results').innerHTML = 
+                    \`<h4>Time Range Data:</h4><pre>\${JSON.stringify(data, null, 2)}</pre>\`;
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+            document.body.insertBefore(errorDiv, document.body.firstChild);
+            
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+    </script>
+</body>
+</html>`;
+    }
+}
+```
+
+**Updated src/extension.ts**
+```typescript
+import { CustomTraceViewProvider } from './webview-provider';
+
+let webviewProvider: CustomTraceViewProvider;
+
+export function activate(context: vscode.ExtensionContext) {
+    // ... existing code ...
+    
+    // Initialize webview provider
+    webviewProvider = new CustomTraceViewProvider(context, tspService);
+    
+    // Register custom webview command
+    const openCustomViewCommand = vscode.commands.registerCommand('myTraceExtension.openCustomView', () => {
+        openCustomTraceView();
+    });
+    
+    context.subscriptions.push(openCustomViewCommand);
+    
+    // ... rest of activation code ...
+}
+
+async function openCustomTraceView() {
+    if (!traceAPI) {
+        vscode.window.showErrorMessage('Trace API not available');
+        return;
+    }
+
+    const activeExperiment = traceAPI.getActiveExperiment();
+    if (!activeExperiment) {
+        vscode.window.showWarningMessage('No active trace to view');
+        return;
+    }
+
+    await webviewProvider.createWebview(activeExperiment.UUID, activeExperiment.name);
+}
+```
+
+**Updated src/tsp-service.ts**
+```typescript
+export class TspService {
+    public client: ExtendedTspClient; // Make client public for webview access
+
+    // ... existing methods ...
+}
+```
+
+**Key Features of the Custom Webview:**
+
+1. **TSP Data Integration** - Queries time graph trees, states, and XY chart data
+2. **Interactive Controls** - Buttons for refreshing data and running analysis
+3. **Time Range Selection** - Input fields for querying specific time ranges
+4. **Real-time Updates** - Receives data updates from the extension
+5. **Error Handling** - Displays errors and loading states
+6. **Multiple Visualizations** - Shows metadata, time graphs, and XY charts
+7. **Bidirectional Communication** - Webview can request data from extension
+
+**Webview Capabilities:**
+- Displays trace metadata in JSON format
+- Visualizes time graph entries with colored state bars
+- Shows XY chart series information
+- Allows custom time range queries
+- Triggers custom analysis operations
+- Provides real-time feedback and error handling
+
+This example demonstrates how to create a fully functional webview that integrates with both the trace extension API and TSP client to provide custom data visualization capabilities.
