@@ -285,7 +285,7 @@ yarn playwright test --retries <retries>
 
 ## External API
 
-VSCode Trace Extension provides an external API for adopter extensions. For comprehensive documentation on using the external API, including method references and usage examples, see the [Developer Guide](DEVELOPER-GUIDE.md).
+VSCode Trace Extension provides an external API for adopter extensions. For comprehensive documentation on using the external API, including method references and usage examples, see the [Developer Guide](doc/DEVELOPER-GUIDE.md).
 
 ### Remote SSH Support
 

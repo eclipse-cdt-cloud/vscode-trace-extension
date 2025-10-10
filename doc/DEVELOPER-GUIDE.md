@@ -1,32 +1,34 @@
 # VSCode Trace Extension - Developer Guide
 
-This guide provides comprehensive documentation for developers who want to build extensions that integrate with the VSCode Trace Extension using its external API.
+This guide provides comprehensive documentation for developers who want to build extensions that integrate with the VSCode Trace Extension using its external API. For adding a new view type (full-stack) see guide [Develop a new view type](Develop-new-view-type.md) instead.
 
 ## Table of Contents
 
-- [External API Overview](#external-api-overview)
-- [API Reference](#api-reference)
-  - [Experiment Management](#experiment-management)
-  - [Webview Management](#webview-management)
-  - [Signal Management](#signal-management)
-  - [Menu Registration](#menu-registration)
-  - [Trace Server Management](#trace-server-management)
-  - [Resource Type Configuration](#resource-type-configuration)
-- [Usage Examples](#usage-examples)
-  - [Getting Started](#getting-started)
-  - [Accessing Active Experiment](#accessing-active-experiment)
-  - [Handling Webviews](#handling-webviews)
-  - [Listening for New Webviews](#listening-for-new-webviews)
-  - [Signal Management](#signal-management-1)
-  - [Custom Menu Items](#custom-menu-items)
-  - [Trace Server Contribution](#trace-server-contribution)
-  - [Resource Type Configuration](#resource-type-configuration-1)
-- [Best Practices](#best-practices)
-- [Creating a Third-Party Extension](#creating-a-third-party-extension)
-  - [Extension Setup](#extension-setup)
-  - [Key Integration Points](#key-integration-points)
-  - [Extending TSP Client with Custom Endpoints](#extending-tsp-client-with-custom-endpoints)
-  - [Custom Webview with TSP Data Visualization](#custom-webview-with-tsp-data-visualization)
+- [VSCode Trace Extension - Developer Guide](#vscode-trace-extension---developer-guide)
+  - [Table of Contents](#table-of-contents)
+  - [External API Overview](#external-api-overview)
+  - [API Reference](#api-reference)
+    - [Experiment Management](#experiment-management)
+    - [Webview Management](#webview-management)
+    - [Signal Management](#signal-management)
+    - [Menu Registration](#menu-registration)
+    - [Trace Server Management](#trace-server-management)
+    - [Resource Type Configuration](#resource-type-configuration)
+  - [Usage Examples](#usage-examples)
+    - [Getting Started](#getting-started)
+    - [Accessing Active Experiment](#accessing-active-experiment)
+    - [Handling Webviews](#handling-webviews)
+    - [Listening for New Webviews](#listening-for-new-webviews)
+    - [Signal Management Example](#signal-management-example)
+    - [Custom Menu Items](#custom-menu-items)
+    - [Trace Server Contribution](#trace-server-contribution)
+    - [Resource Type Configuration Example](#resource-type-configuration-example)
+  - [Best Practices](#best-practices)
+  - [Creating a Third-Party Extension](#creating-a-third-party-extension)
+    - [Extension Setup](#extension-setup)
+    - [Key Integration Points](#key-integration-points)
+    - [Extending TSP Client with Custom Endpoints](#extending-tsp-client-with-custom-endpoints)
+    - [Custom Webview with TSP Data Visualization](#custom-webview-with-tsp-data-visualization)
 
 ## External API Overview
 
@@ -42,7 +44,6 @@ addTraceServerContributor(contributor: TraceServerContributor): void;
 setHandleTraceResourceType(handleFiles: boolean, handleFolders: boolean): void;
 onSignalManagerSignal(event: K extends SignalType, listener: (...args: [...SignalArgs<Signals[K]>]) => void | Promise<void>): void;
 offSignalManagerSignal(event: K extends SignalType, listener: (...args: [...SignalArgs<Signals[K]>]) => void | Promise<void>): void;
-registerTimeGraphMenuSignal(menuId: string, menuLabel: string): void;
 ```
 
 ## API Reference
@@ -50,6 +51,7 @@ registerTimeGraphMenuSignal(menuId: string, menuLabel: string): void;
 ### Experiment Management
 
 **`getActiveExperiment(): Experiment | undefined`**
+
 - Returns the currently active experiment (trace) in the Trace Viewer
 - Returns `undefined` if no experiment is currently active
 - Useful for getting information about the currently opened trace
@@ -57,21 +59,25 @@ registerTimeGraphMenuSignal(menuId: string, menuLabel: string): void;
 ### Webview Management
 
 **`getActiveWebviews(): vscode.WebviewView[]`**
+
 - Returns an array of all currently active webview views
 - Useful for handling webviews that were created before your extension was activated
 - Each webview can receive messages via `webview.webview.onDidReceiveMessage()`
 
 **`getActiveWebviewPanels(): { [key: string]: TraceViewerPanel | undefined; }`**
+
 - Returns a dictionary of active webview panels indexed by key
 - Useful for accessing existing trace viewer panels
 - Each panel can receive messages via `panel.webview.onDidReceiveMessage()`
 
 **`onWebviewCreated(listener: (data: vscode.WebviewView) => void): void`**
+
 - Registers a listener for when new webview views are created
 - The listener receives the newly created webview as a parameter
 - Register during extension activation to handle all new webviews
 
 **`onWebviewPanelCreated(listener: (data: vscode.WebviewPanel) => void): void`**
+
 - Registers a listener for when new webview panels are created
 - The listener receives the newly created panel as a parameter
 - Register during extension activation to handle all new panels
@@ -79,31 +85,70 @@ registerTimeGraphMenuSignal(menuId: string, menuLabel: string): void;
 ### Signal Management
 
 **`onSignalManagerSignal(event: K extends SignalType, listener: (...args: [...SignalArgs<Signals[K]>]) => void | Promise<void>): void`**
+
 - Adds a listener for specific signal events within the extension
 - Available signal types include:
   - `'EXPERIMENT_OPENED'` - Fired when a trace experiment is opened
-  - `'EXPERIMENT_CLOSED'` - Fired when a trace experiment is closed
+  - `'EXPERIMENT_DELETED'` - Fired when a trace experiment is deleted
   - `'EXPERIMENT_SELECTED'` - Fired when a trace experiment is selected
-  - `'TIMEGRAPH_MENU_ITEM_CLICKED'` - Fired when a custom menu item is clicked in timegraph views
+  - `'SELECTION_RANGE_UPDATED'` - Fired when a time selection changed
   - Other signal types as defined in the extension
 - Listeners can be synchronous or asynchronous functions
 
 **`offSignalManagerSignal(event: K extends SignalType, listener: (...args: [...SignalArgs<Signals[K]>]) => void | Promise<void>): void`**
+
 - Removes a previously registered signal listener
 - Must pass the exact same listener function that was registered
 - Use this to clean up listeners when your extension is deactivated
 
+Note: Only a subset of signals are forwarded to the extension. Here is the list of signals:
+
+- EXPERIMENT_OPENDED
+- EXPERIMENT_SELECTED
+- EXPERIMENT_DELETED
+- EXPERIMENT_UPDATED
+- ITEM_PROPERTIES_UPDATED
+- SELECTION_RANGE_UPDATED
+- VIEW_RANGE_UPDATED
+- TRACEVIEWERTAB_ACTIVATED
+
 ### Menu Registration
 
-**`registerTimeGraphMenuSignal(menuId: string, menuLabel: string): void`**
-- Registers a custom menu item for timegraph views
-- `menuId` - Unique identifier for the menu item
-- `menuLabel` - Display text for the menu item
-- When the menu item is clicked, a `'TIMEGRAPH_MENU_ITEM_CLICKED'` signal is emitted with the menuId
+Register custom menu items in timegraph views and handle their selection. To register a menu the vscode message `contributeContextMenu` has to be sent with payload `ContextMenuContributedSignalPayload` to the trace viewer panel instance when the corresponding time graph output is added.
+
+
+export interface MenuItem {
+    id: string;
+    label: string;
+    // Parent Menu that this item belongs to - undefined indicates root menu item
+    parentMenuId?: string;
+}
+
+```javascript
+export class ContextMenuContributedSignalPayload {
+    private outputDescriptorId: string;
+    private menuItems: ContextMenuItems;
+}
+
+export interface SubMenu {
+    id: string;
+    label: string;
+    items: MenuItem[];
+    submenu: SubMenu | undefined;
+}
+
+export interface ContextMenuItems {
+    submenus: SubMenu[];
+    items: MenuItem[];
+}
+```
+
+- When the menu item is clicked, a `'contextMenuItemClicked'` signal is emitted with the menuId, data provider ID and the properties of the selection (entry ID and parent entry ID).
 
 ### Trace Server Management
 
 **`addTraceServerContributor(contributor: TraceServerContributor): void`**
+
 - Adds a custom contributor to the trace server lifecycle
 - The contributor object must implement:
   - `startServer(): Promise<void>` - Called when server should start
@@ -114,6 +159,7 @@ registerTimeGraphMenuSignal(menuId: string, menuLabel: string): void;
 ### Resource Type Configuration
 
 **`setHandleTraceResourceType(handleFiles: boolean, handleFolders: boolean): void`**
+
 - Configures which types of trace resources the extension should handle
 - `handleFiles` - Whether to handle individual trace files
 - `handleFolders` - Whether to handle trace folders/directories
@@ -161,7 +207,7 @@ for (const webview of importedApi.getActiveWebviews()) {
 
 ### Listening for New Webviews
 
-Register listeners during extension activation to handle newly created webviews:
+Register listeners during extension activation to handle newly created webview panels:
 
 ```javascript
 importedApi.onWebviewPanelCreated(_panel => {
@@ -181,7 +227,9 @@ importedApi.onWebviewPanelCreated(_panel => {
 });
 ```
 
-### Signal Management
+Note: For other webview types similar use `importedAPI.onWebviewCreated` instead;
+
+### Signal Management Example
 
 Add and remove listeners for extension signals:
 
@@ -197,27 +245,88 @@ importedApi.onSignalManagerSignal('EXPERIMENT_OPENED', _onExperimentOpened);
 importedApi.offSignalManagerSignal('EXPERIMENT_OPENED', _onExperimentOpened);
 ```
 
+Each existing webview will use a set of messages which an adopter extension can hook into. The list of supported messages per webview are defined in the corresponding webview provider or panel source code implmentations.
+
 ### Custom Menu Items
 
-Register custom menu items in timegraph views and handle their selection:
+Register custom menu items in timegraph views and handle their selection. To register a menu the vscode message `contributeContextMenu` has to be sent to the trace viewer panel instance when the corresponding time graph output is added. Right now there is no dedicated message or signal that can be used to trigger the contribution signal. However, when a row is selected in the timegraph, selection is propagated to the corresponding webview panel using vscode message `rowSelectionsChanged`. For that add a new switch case to the `_panel.webview.onDidReceiveMessage` handler as described in [Listening for New Webviews](#listening-for-new-webviews) and execute contribution code as shown in example function `setupTimeGraphMenu` below.
 
 ```javascript
-// Register a custom menu item
-importedApi.registerTimeGraphMenuSignal('my-custom-action', 'My Custom Action');
+    // ... existing code ...
+    case 'rowSelectionsChanged':
+        outputChannel.appendLine('Panel: row selections changed');
+        // Setup time graph menu
 
-// Handle menu item clicks
-const _onMenuItemClicked = (menuId: string): void => {
-    if (menuId === 'my-custom-action') {
-        console.log('Custom menu action triggered');
-        // Perform custom action here
+        setupTimeGraphMenu(panel, message);
+        break;
+
+    // ... more of existing code
+
+function setupTimeGraphMenu(panel: vscode.WebviewPanel, message: any): void {
+   // Add custom menus. Example: Flame Graph of Trace Compass server
+    const dpId = "org.eclipse.tracecompass.internal.analysis.profiling.callstack.provider.CallStackDataProvider";
+    if (!message.params) {
+        return;
     }
-};
+    const params = JSON.parse(message.params);
+    if (params.outputDescriptorId === dpId) {
+        const viewId = message.sender.webviewId;
+        const item = panelRegistry[viewId];
+        if (item && item.panel === panel) {
+            const ctxMenu: ContextMenuItems = {
+                submenus: [ {
+                        label: "Submenu 1",
+                        id: "submenu1.id",
+                        items: [
+                            { id: "SubmenuItem1", label: "Submenu Item 1" },
+                        ],
+                        submenu: undefined
+                    }
+                ],
+                items: [
+                    { id: "menuItem2", label: "Menu Item 2" }
+                ]
+            };
+            const payload: ContextMenuContributedSignalPayload = 
+                new ContextMenuContributedSignalPayload( dpId, ctxMenu);
 
-// Add listener for menu clicks
-importedApi.onSignalManagerSignal('TIMEGRAPH_MENU_ITEM_CLICKED', _onMenuItemClicked);
+            /*
+             * Add receiver field needed because vscode-trace-extension uses the vscode-messenger library
+             * which requires the receiver field to be present in the message.
+             */
+            panel.webview.postMessage({
+                "method": "contributeContextMenu",
+                "receiver": {
+                    "type": 'webview',
+                    "webviewType": item.viewType,
+                    "webviewId": item.viewId
+                },
+                "params": payload
+            });
+        }
+    }
+}
+```
 
-// Clean up when extension deactivates
-importedApi.offSignalManagerSignal('TIMEGRAPH_MENU_ITEM_CLICKED', _onMenuItemClicked);
+Whenever a user clicks with the right mouse button on a time graph row, the menu as declared above will show. When the user clicks on a menu item the signal `contextMenuItemClicked` is propagated to the trace viewer panel. For that add a new switch case to the `_panel.webview.onDidReceiveMessage` handler as described in [Listening for New Webviews](#listening-for-new-webviews) and hanle the menu selection.
+
+```javascript
+    // ... existing code ...
+        case 'contextMenuItemClicked': 
+            const params = JSON.parse(message.params);
+            const info = 
+            Menu clicked info:
+- Data Provider: ${params.outputDescriptorId}
+- Menu ID: ${params.itemId}
+- ParentMenuId: ${params.parentMenuId || 'N/A'}
+- Props: ${JSON.stringify(params.props || '{}')}
+        ;
+                outputChannel.appendLine(`Panel: context menu item clicked: ${info}`);
+                break;
+            }
+    });
+
+    // ... rest of existing code ...
 ```
 
 ### Trace Server Contribution
@@ -245,7 +354,7 @@ const contributor: TraceServerContributor = {
 importedApi.addTraceServerContributor(contributor);
 ```
 
-### Resource Type Configuration
+### Resource Type Configuration Example
 
 Customize which trace resource types the extension should handle:
 
@@ -271,11 +380,14 @@ importedApi.setHandleTraceResourceType(handleTraceFiles, handleTraceFolders);
 
 ## Creating a Third-Party Extension
 
-This example demonstrates how to create a VSCode extension that integrates with the vscode-trace-extension.
+This example demonstrates how to create a VSCode extension that integrates with the vscode-trace-extension. The goal of the example is to have a command to open a custom webview with specific content, which is able to query a custom trace server endpoint. The view will look like as in the picture below.
+
+![Custom View](https://raw.githubusercontent.com/eclipse-cdt-cloud/vscode-trace-extension/master/doc/images/vscode-custom-view-example-001.png)
 
 ### Extension Setup
 
 **package.json**
+
 ```json
 {
     "name": "my-trace-extension",
@@ -309,12 +421,20 @@ This example demonstrates how to create a VSCode extension that integrates with 
         "@types/vscode": "^1.74.0",
         "typescript": "^4.9.4"
     }
+    "dependencies": {
+        "traceviewer-base": "^0.9.1",
+        "vscode-messenger": "^0.5.0"
+    }
 }
 ```
 
 **src/extension.ts**
+
 ```typescript
 import * as vscode from 'vscode';
+import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
+import { ContextMenuContributedSignalPayload, ContextMenuItems } from 'traceviewer-base/lib/signals/context-menu-contributed-signal-payload';
+import { json } from 'stream/consumers';
 
 interface TraceExtensionAPI {
     getActiveExperiment(): any;
@@ -324,13 +444,20 @@ interface TraceExtensionAPI {
     onWebviewPanelCreated(listener: (data: vscode.WebviewPanel) => void): void;
     onSignalManagerSignal(event: string, listener: (...args: any[]) => void): void;
     offSignalManagerSignal(event: string, listener: (...args: any[]) => void): void;
-    registerTimeGraphMenuSignal(menuId: string, menuLabel: string): void;
     addTraceServerContributor(contributor: any): void;
     setHandleTraceResourceType(handleFiles: boolean, handleFolders: boolean): void;
 }
 
+interface WebviewPanelItem {
+    panel: vscode.WebviewPanel;
+    viewId: string;
+    viewType: string;
+}
+
 let traceAPI: TraceExtensionAPI | undefined;
 let outputChannel: vscode.OutputChannel;
+let panelRegistry: { [key: string]: WebviewPanelItem } = {};
+
 
 export function activate(context: vscode.ExtensionContext) {
     outputChannel = vscode.window.createOutputChannel('My Trace Extension');
@@ -363,9 +490,6 @@ function initializeTraceAPI(api: TraceExtensionAPI) {
     traceAPI = api;
     outputChannel.appendLine('Trace API initialized');
 
-    // Register custom menu item
-    traceAPI.registerTimeGraphMenuSignal('my-custom-analysis', 'Run Custom Analysis');
-
     // Set up signal listeners
     setupSignalListeners();
 
@@ -388,21 +512,67 @@ function setupSignalListeners() {
         vscode.window.showInformationMessage(`Trace opened: ${experiment.name}`);
     };
 
-    const onExperimentClosed = (experiment: any) => {
-        outputChannel.appendLine(`Experiment closed: ${experiment.name}`);
-    };
-
-    // Listen for custom menu clicks
-    const onMenuItemClicked = (menuId: string) => {
-        if (menuId === 'my-custom-analysis') {
-            runCustomAnalysis();
+    const onSelcetionRange = (data: any) => {
+        outputChannel.appendLine('Selection Range..............');
+        outputChannel.appendLine(`Selection data: ${JSON.stringify(data)}`);
+        if (data && data.experimentUUID && data.timeRange) {
+            const experimentUUID = data.experimentUUID;
+            const start = data.timeRange.start;
+            const end = data.timeRange.end;
+            outputChannel.appendLine(`Selected range - UUID: ${experimentUUID}, Start: ${start}, End: ${end}`);
         }
     };
 
     traceAPI.onSignalManagerSignal('EXPERIMENT_OPENED', onExperimentOpened);
-    traceAPI.onSignalManagerSignal('EXPERIMENT_CLOSED', onExperimentClosed);
-    traceAPI.onSignalManagerSignal('TIMEGRAPH_MENU_ITEM_CLICKED', onMenuItemClicked);
+    traceAPI.onSignalManagerSignal('SELECTION_RANGE_UPDATED', onSelcetionRange);
 }
+
+function setupTimeGraphMenu(panel: vscode.WebviewPanel, message: any): void {
+
+    // Add custom menus. Example: Flame Graph of Trace Compass server
+    const dpId = "org.eclipse.tracecompass.internal.analysis.profiling.callstack.provider.CallStackDataProvider";
+    if (!message.params) {
+        return;
+    }
+    const params = JSON.parse(message.params);
+    if (params.outputDescriptorId === dpId) {
+        const viewId = message.sender.webviewId;
+        const item = panelRegistry[viewId];
+        if (item && item.panel === panel) {
+            const ctxMenu: ContextMenuItems = {
+                submenus: [ {
+                        label: "Submenu 1",
+                        id: "submenu1.id",
+                        items: [
+                            { id: "SubmenuItem1", label: "Submenu Item 1" },
+                        ],
+                        submenu: undefined
+                    }
+                ],
+                items: [
+                    { id: "menuItem2", label: "Menu Item 2" }
+                ]
+            };
+            const payload: ContextMenuContributedSignalPayload = 
+                new ContextMenuContributedSignalPayload( dpId, ctxMenu);
+
+            /*
+             * Add receiver field needed because vscode-trace-extension uses the vscode-messenger library
+             * which requires the receiver field to be present in the message.
+             * https://www.npmjs.com/package/vscode-messenger
+             */
+            panel.webview.postMessage({
+                "method": "contributeContextMenu",
+                "receiver": {
+                    "type": 'webview',
+                    "webviewType": item.viewType,
+                    "webviewId": item.viewId
+                },
+                "params": payload
+            });
+        }
+    }
+}    
 
 function setupWebviewListeners() {
     if (!traceAPI) return;
@@ -437,12 +607,10 @@ function setupWebviewListeners() {
 function handleWebview(webview: vscode.WebviewView) {
     webview.webview.onDidReceiveMessage((message) => {
         outputChannel.appendLine(`Webview message: ${JSON.stringify(message)}`);
-        
+        outputChannel.appendLine(`Webview title: ${webview.title}`);
         switch (message.method) {
             case 'webviewReady':
                 outputChannel.appendLine('Webview is ready');
-                break;
-            default:
                 break;
         }
     });
@@ -451,11 +619,56 @@ function handleWebview(webview: vscode.WebviewView) {
 function handleWebviewPanel(panel: vscode.WebviewPanel) {
     panel.webview.onDidReceiveMessage((message) => {
         outputChannel.appendLine(`Panel message: ${JSON.stringify(message)}`);
+        outputChannel.appendLine(`Panel title: ${panel.title} : viewType: ${panel.viewType}` );
+        switch (message.method) {
+            case 'webviewReady':
+                outputChannel.appendLine('Panel webview is ready');
+                const viewId = message.sender.webviewId;
+                registerPanel(panel, viewId);
+                break;
+            case 'rowSelectionsChanged':
+                outputChannel.appendLine('Panel: row selections changed');
+
+                // Setup time graph menu
+                setupTimeGraphMenu(panel, message);
+               break;
+            case 'contextMenuItemClicked': 
+                const params = JSON.parse(message.params);
+                const info = `
+Menu clicked info:
+- Data Provider: ${params.outputDescriptorId}
+- Menu ID: ${params.itemId}
+- ParentMenuId: ${params.parentMenuId || 'N/A'}
+- Props: ${JSON.stringify(params.props || '{}')}
+        `;
+                outputChannel.appendLine(`Panel: context menu item clicked: ${info}`);
+                break;
+            }
     });
 
     panel.onDidDispose(() => {
         outputChannel.appendLine('Panel disposed');
+        deregisterPanel(panel);
     });
+}
+
+function registerPanel(panel: vscode.WebviewPanel, messengerViewId: string) {
+    const item: WebviewPanelItem = {
+        "panel": panel,
+        "viewId": messengerViewId,
+        "viewType": panel.viewType
+    };
+    panelRegistry[messengerViewId] = item;
+}
+
+function deregisterPanel(panel: vscode.WebviewPanel) {
+    // clean-up panelRegistry
+    for (let key in panelRegistry) {
+        if (panelRegistry[key].panel === panel) {
+            delete panelRegistry[key];
+            break;
+        }
+    }
 }
 
 function addTraceServerContributor() {
@@ -518,14 +731,14 @@ function runCustomAnalysis() {
         cancellable: false
     }, async (progress) => {
         progress.report({ increment: 0, message: 'Analyzing trace data...' });
-        
+
         // Simulate analysis work
         await new Promise(resolve => setTimeout(resolve, 2000));
         progress.report({ increment: 50, message: 'Processing results...' });
-        
+
         await new Promise(resolve => setTimeout(resolve, 1000));
         progress.report({ increment: 100, message: 'Complete!' });
-        
+
         vscode.window.showInformationMessage('Custom analysis completed!');
         outputChannel.appendLine(`Analysis completed for: ${activeExperiment.name}`);
     });
@@ -540,6 +753,7 @@ export function deactivate() {
 ```
 
 **tsconfig.json**
+
 ```json
 {
     "compilerOptions": {
@@ -566,6 +780,7 @@ export function deactivate() {
 7. **Resource Configuration**: Customize which trace types to handle
 
 This example demonstrates a complete integration that:
+
 - Shows active trace information via a command
 - Adds a custom menu item to timegraph views
 - Handles trace lifecycle events
@@ -578,10 +793,11 @@ This example demonstrates a complete integration that:
 When your extension needs to call custom TSP (Trace Server Protocol) endpoints not available in the standard tsp-typescript-client, you can extend the client with additional methods.
 
 **Installing Dependencies**
+
 ```json
 {
     "dependencies": {
-        "tsp-typescript-client": "^0.4.0"
+        "tsp-typescript-client": "^0.8.0"
     }
 }
 ```
@@ -589,10 +805,12 @@ When your extension needs to call custom TSP (Trace Server Protocol) endpoints n
 **Creating Extended TSP Client**
 
 **src/extended-tsp-client.ts**
+
+See below for extended `HttpTspClient`. Note that the trace server will need to have the additional endpoints implemented to get successful replies.
+
 ```typescript
-import { TspClient } from 'tsp-typescript-client/lib/protocol/tsp-client';
-import { HttpRequest } from 'tsp-typescript-client/lib/protocol/http-request';
-import { GenericResponse } from 'tsp-typescript-client/lib/models/response/responses';
+import { RestClient, HttpTspClient, TspClientResponse } from 'tsp-typescript-client';
+import { createNormalizer } from 'tsp-typescript-client/lib/protocol/serialization';
 
 export interface CustomAnalysisRequest {
     experimentUUID: string;
@@ -606,67 +824,67 @@ export interface CustomAnalysisResponse {
     results?: any;
 }
 
-export class ExtendedTspClient extends TspClient {
-    
+export const CustomAnalysisResponse = createNormalizer<CustomAnalysisResponse>({
+    results: undefined
+});
+
+
+export class ExtendedTspClient extends HttpTspClient {
+    private baseUrl2: string;
+
+    /**
+     * Constructor
+     * @param baseUrl Base URL of the server (ex. https://localhost:8080/tsp/api)
+     */
+    public constructor(baseUrl: string) {
+        // TODO make baseUrl accessible
+        super(baseUrl);
+        this.baseUrl2 = baseUrl;
+    }
+
     /**
      * Start custom analysis on an experiment
      */
-    async startCustomAnalysis(request: CustomAnalysisRequest): Promise<GenericResponse<CustomAnalysisResponse>> {
-        const url = this.baseUrl + '/experiments/' + request.experimentUUID + '/analysis/custom';
-        const httpRequest = new HttpRequest(url, {
-            method: 'POST',
-            body: JSON.stringify({
+    async startCustomAnalysis(request: CustomAnalysisRequest): Promise<TspClientResponse<CustomAnalysisResponse>> {
+        const url = this.baseUrl2 + '/experiments/' + request.experimentUUID + '/analysis/custom';
+
+        const params = {
                 analysisType: request.analysisType,
                 parameters: request.parameters || {}
-            }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        return this.performRequest(httpRequest);
+            };
+        return RestClient.post(url, params, CustomAnalysisResponse);
     }
 
     /**
      * Get custom analysis status
      */
-    async getCustomAnalysisStatus(experimentUUID: string, analysisId: string): Promise<GenericResponse<CustomAnalysisResponse>> {
-        const url = this.baseUrl + '/experiments/' + experimentUUID + '/analysis/custom/' + analysisId;
-        const httpRequest = new HttpRequest(url, { method: 'GET' });
-        return this.performRequest(httpRequest);
+    async getCustomAnalysisStatus(experimentUUID: string, analysisId: string): Promise<TspClientResponse<CustomAnalysisResponse>> {
+        const url = this.baseUrl2 + '/experiments/' + experimentUUID + '/analysis/custom/' + analysisId;
+        return RestClient.get(url);
     }
 
     /**
      * Cancel custom analysis
      */
-    async cancelCustomAnalysis(experimentUUID: string, analysisId: string): Promise<GenericResponse<void>> {
-        const url = this.baseUrl + '/experiments/' + experimentUUID + '/analysis/custom/' + analysisId;
-        const httpRequest = new HttpRequest(url, { method: 'DELETE' });
-        return this.performRequest(httpRequest);
+    async cancelCustomAnalysis(experimentUUID: string, analysisId: string): Promise<TspClientResponse<void>> {
+        const url = this.baseUrl2 + '/experiments/' + experimentUUID + '/analysis/custom/' + analysisId;
+        return RestClient.get(url);
     }
 
     /**
      * Get custom trace metadata
      */
-    async getCustomMetadata(experimentUUID: string): Promise<GenericResponse<any>> {
-        const url = this.baseUrl + '/experiments/' + experimentUUID + '/metadata/custom';
-        const httpRequest = new HttpRequest(url, { method: 'GET' });
-        return this.performRequest(httpRequest);
+    async getCustomMetadata(experimentUUID: string): Promise<TspClientResponse<any>> {
+        const url = this.baseUrl2 + '/experiments/' + experimentUUID + '/metadata/custom';
+        return RestClient.get(url);
     }
 
     /**
      * Update experiment configuration
      */
-    async updateExperimentConfig(experimentUUID: string, config: any): Promise<GenericResponse<void>> {
-        const url = this.baseUrl + '/experiments/' + experimentUUID + '/config';
-        const httpRequest = new HttpRequest(url, {
-            method: 'PUT',
-            body: JSON.stringify(config),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        return this.performRequest(httpRequest);
+    async updateExperimentConfig(experimentUUID: string, config: any): Promise<TspClientResponse<void>> {
+        const url = this.baseUrl2 + '/experiments/' + experimentUUID + '/config';
+        return RestClient.put(url, config);
     }
 }
 ```
@@ -674,13 +892,13 @@ export class ExtendedTspClient extends TspClient {
 **Using Extended Client in Extension**
 
 **src/tsp-service.ts**
+
 ```typescript
-import { ExtendedTspClient, CustomAnalysisRequest } from './extended-tsp-client';
+import { CustomAnalysisRequest, ExtendedTspClient } from './extended-tsp-client';
 
 export class TspService {
-    private client: ExtendedTspClient;
-
-    constructor(baseUrl: string = 'http://localhost:8080/tsp/api') {
+    public client: ExtendedTspClient; // Make client public for webview access
+constructor(baseUrl: string = 'http://localhost:8080/tsp/api') {
         this.client = new ExtendedTspClient(baseUrl);
     }
 
@@ -743,6 +961,7 @@ export class TspService {
 **Integration with Main Extension**
 
 **Updated src/extension.ts**
+
 ```typescript
 import { TspService } from './tsp-service';
 
@@ -753,11 +972,7 @@ export function activate(context: vscode.ExtensionContext) {
     
     // Initialize TSP service
     tspService = new TspService();
-    
-    // ... rest of activation code ...
-}
 
-async function runCustomAnalysis() {
     if (!traceAPI || !tspService) return;
 
     const activeExperiment = traceAPI.getActiveExperiment();
@@ -823,6 +1038,7 @@ async function runCustomAnalysis() {
         vscode.window.showErrorMessage(`Analysis error: ${error}`);
         outputChannel.appendLine(`Analysis error: ${error}`);
     }
+    // ... rest of activation code ...
 }
 ```
 
@@ -837,6 +1053,7 @@ async function runCustomAnalysis() {
 7. **Integration**: Use the extended client within your extension's analysis functions
 
 This approach allows you to:
+
 - Add custom analysis endpoints
 - Extend trace metadata retrieval
 - Implement custom configuration updates
@@ -845,9 +1062,10 @@ This approach allows you to:
 
 ### Custom Webview with TSP Data Visualization
 
-This example shows how to create a custom webview that queries TSP data and visualizes it using the vscode-messenger library for communication.
+This example shows how to create a custom webview that queries TSP data and visualizes it using the vscode-messenger library for communication. The messenger library will communicate between extension and webview. Note that the instance of custom extension doesn't share the same messenger library instance and hence can't be used to communicate to the vscode-trace-extension. This is a future enhancement of the Trace Viewer API to return the messenger library instance to share its interal registry.
 
 **Updated package.json**
+
 ```json
 {
     "contributes": {
@@ -863,18 +1081,28 @@ This example shows how to create a custom webview that queries TSP data and visu
         ]
     },
     "dependencies": {
-        "tsp-typescript-client": "^0.4.0",
-        "@vscode/messenger": "^0.4.5"
+        "traceviewer-base": "^0.9.0",
+        "tsp-typescript-client": "^0.8.0"
     }
 }
 ```
 
 **src/webview-provider.ts**
+
+The webview provider below creates a simple HTML page to be rendered in the webview. It uses the static `custom-view.js` for communicate with the vscode extension.
+
+`Notes`:
+
+- To have a more sophisticated webview content, you can use other technologies, e.g. react.js. See the `vscode-trace-extension`'s webviews implementation on how to create such react application and hook into a vcode webview.
+- To send TSP queries to the trace server backend the trace server URI has to be passed to the webview code. See `vscode-trace-extension` on how to do it.
+- This exmaple below uses the Flame Chart and Histogram data provider from the Trace Compass trace server and requires a LTTng UST trace to see output data visualized.
+- To run custom analysis using the `Run Performance analysis` or `Run Memory analysis` a trace server back-end is needed that implements those custom endpoints in order to get successful replies. Otherwise an error message is show on top of the page.
+
 ```typescript
 import * as vscode from 'vscode';
-import { Messenger } from '@vscode/messenger';
 import { TspService } from './tsp-service';
-import { SerializationUtil } from 'tsp-typescript-client/lib/protocol/serialization-util';
+import { QueryHelper } from 'tsp-typescript-client';
+import { JSONBigUtils } from 'tsp-typescript-client/lib/utils/jsonbig-utils';
 
 interface TraceDataRequest {
     experimentUUID: string;
@@ -893,11 +1121,12 @@ interface AnalysisRequest {
 
 export class CustomTraceViewProvider {
     private panel: vscode.WebviewPanel | undefined;
-    private messenger: Messenger | undefined;
     private tspService: TspService;
+    private extensionUri: vscode.Uri;
 
     constructor(private context: vscode.ExtensionContext, tspService: TspService) {
         this.tspService = tspService;
+        this.extensionUri = context.extensionUri;
     }
 
     public async createWebview(experimentUUID: string, experimentName: string) {
@@ -909,14 +1138,15 @@ export class CustomTraceViewProvider {
                 enableScripts: true,
                 retainContextWhenHidden: true,
                 localResourceRoots: [
-                    vscode.Uri.joinPath(this.context.extensionUri, 'media')
+                    vscode.Uri.joinPath(this.context.extensionUri, 'media'),
+                    vscode.Uri.joinPath(this.context.extensionUri, 'src')
                 ]
             }
         );
-
-        this.panel.webview.html = this.getWebviewContent();
+        this.panel.webview.html = this.getWebviewContent(this.panel.webview);
         this.setupMessenger(experimentUUID);
-        
+
+
         // Load initial data
         await this.loadTraceData(experimentUUID);
     }
@@ -924,37 +1154,35 @@ export class CustomTraceViewProvider {
     private setupMessenger(experimentUUID: string) {
         if (!this.panel) return;
 
-        this.messenger = new Messenger(this.panel.webview, {
-            serializer: {
-                serialize: (obj: any) => SerializationUtil.serialize(obj),
-                deserialize: (data: string) => SerializationUtil.deserialize(data)
+        this.panel.webview.onDidReceiveMessage(async (message) => {
+            switch (message.method) {
+                case 'loadTraceData':
+                    await this.loadTraceData(experimentUUID);
+                    break;
+                case 'getTimeRange':
+                    await this.getTimeRange(experimentUUID, message.params.startTime, message.params.endTime);
+                    break;
+
+                case 'runAnalysis':
+                    await this.runCustomAnalysis(experimentUUID, message.params.analysisType);
+                    break;
+
             }
         });
-
-        // Register message handlers
-        this.messenger.onRequest('loadTraceData', async () => {
-            return await this.loadTraceData(experimentUUID);
-        });
-
-        this.messenger.onRequest('getTimeRange', async (request: TimeRangeRequest) => {
-            return await this.getTimeRange(request.experimentUUID, request.startTime, request.endTime);
-        });
-
-        this.messenger.onRequest('runAnalysis', async (request: AnalysisRequest) => {
-            return await this.runCustomAnalysis(request.experimentUUID, request.analysisType);
-        });
-
-        this.messenger.start();
     }
 
     private async loadTraceData(experimentUUID: string) {
+        if (!this.panel) {
+            return;
+        }
+
         try {
             // Get trace metadata
             const metadata = await this.tspService.getTraceMetadata(experimentUUID);
-            
+
             // Get time graph data
             const timeGraphData = await this.getTimeGraphData(experimentUUID);
-            
+
             // Get XY chart data
             const xyData = await this.getXYData(experimentUUID);
 
@@ -963,30 +1191,46 @@ export class CustomTraceViewProvider {
                 timeGraph: timeGraphData,
                 xyChart: xyData
             };
-
-            // Send serialized TSP data to webview
-            this.messenger?.sendNotification('dataUpdated', data);
-            return data;
+            // Send serialized TSP data to webview (Use JSONBigUtils due BigInts in data)
+            this.panel.webview.postMessage({ method: "dataUpdated", data: JSONBigUtils.stringify(data) });
         } catch (error) {
-            const errorMsg = `Failed to load data: ${error}`;
-            this.messenger?.sendNotification('error', { message: errorMsg });
-            throw new Error(errorMsg);
+            const errorInfo = `Failed to load data: ${error}`;
+            if (this.panel) {
+                this.panel.webview.postMessage({ method: "errorMsg", message: errorInfo });
+            }
+            throw new Error(errorInfo);
         }
     }
 
     private async getTimeGraphData(experimentUUID: string) {
-        const response = await this.tspService.client.fetchTimeGraphTree(experimentUUID, 'custom-timegraph-provider');
+        // Data provider ID of interest
+        const dpId = 'org.eclipse.tracecompass.internal.analysis.profiling.callstack.provider.CallStackDataProvider';
+        const parameters = QueryHelper.timeRangeQuery(BigInt(0), BigInt(1000000));
+
+        // Query the tree end point to get the row IDs (entry IDs) for the state query
+        const response = await this.tspService.client.fetchTimeGraphTree(experimentUUID, dpId, parameters);
         if (response.isOk()) {
             const tree = response.getModel();
+            if (tree?.model?.entries && tree?.model?.entries.length < 3) {
+                return;
+            }
+            const items: number[] = [];
+            items.push(tree?.model.entries[0].id ?? 0);
+            items.push(tree?.model.entries[1].id ?? 1);
+            items.push(tree?.model.entries[2].id ?? 2);
+
+            const stateDataParameters = QueryHelper.selectionTimeRangeQuery(
+                BigInt(0),
+                BigInt(1000000),
+                100,
+                items
+            );
             const statesResponse = await this.tspService.client.fetchTimeGraphStates(
                 experimentUUID,
-                'custom-timegraph-provider',
-                {
-                    requestedTimeRange: { start: 0, end: 1000000 },
-                    requestedItems: tree?.entries?.map(entry => entry.id) || []
-                }
+                dpId,
+                stateDataParameters
             );
-            
+
             // Return TSP models that will be serialized properly
             return {
                 tree: tree,
@@ -997,51 +1241,94 @@ export class CustomTraceViewProvider {
     }
 
     private async getXYData(experimentUUID: string) {
-        const response = await this.tspService.client.fetchXY(
-            experimentUUID,
-            'custom-xy-provider',
-            {
-                requestedTimeRange: { start: 0, end: 1000000 },
-                requestedItems: []
+        // Data provider ID of interest
+        const dpId = "org.eclipse.tracecompass.internal.tmf.core.histogram.HistogramDataProvider";
+        const parameters = QueryHelper.timeRangeQuery(BigInt(0), BigInt(1000000));
+
+        // Query the tree end point to get the row IDs (entry IDs) for the XY series query
+        const treeResponse = await this.tspService.client.fetchXYTree(experimentUUID, dpId, parameters);
+        if (treeResponse.isOk()) {
+            const tree = treeResponse.getModel();
+            if (tree?.model?.entries && tree?.model?.entries.length < 2) {
+                return;
             }
-        );
-        // Return TSP XY model that will be serialized properly
-        return response.isOk() ? response.getModel() : null;
+            const items: number[] = [];
+            items.push(tree?.model.entries[0].id ?? 0);
+            items.push(tree?.model.entries[1].id ?? 1);
+
+            const xyDataParameters = QueryHelper.selectionTimeRangeQuery(
+                BigInt(0),
+                BigInt(1000000),
+                100,
+                items
+            );
+            const response = await this.tspService.client.fetchXY(
+                experimentUUID,
+                dpId,
+                xyDataParameters
+            );
+            // Return TSP XY model that will be serialized properly
+            return response.isOk() ? response.getModel() : null;
+        }
+        return null;
     }
 
     private async getTimeRange(experimentUUID: string, startTime: number, endTime: number) {
-        try {
+        if (!this.panel) {
+            return;
+        }
+                // Data provider ID of interest
+        const dpId = 'org.eclipse.tracecompass.internal.analysis.profiling.callstack.provider.CallStackDataProvider';
+        const parameters = QueryHelper.timeRangeQuery(BigInt(0), BigInt(1000000));
+
+        // Query the tree end point to get the row IDs (entry IDs) for the state query
+        const treeResponse = await this.tspService.client.fetchTimeGraphTree(experimentUUID, dpId, parameters);
+        if (treeResponse.isOk()) {
+            const tree = treeResponse.getModel();
+            if (tree?.model?.entries && tree?.model?.entries.length < 2) {
+                return;
+            }
+            const items: number[] = [];
+            items.push(tree?.model.entries[0].id ?? 0);
+            items.push(tree?.model.entries[1].id ?? 1);
+            items.push(tree?.model.entries[1].id ?? 2);
+
+            const stateDataParameters = QueryHelper.selectionTimeRangeQuery(
+                BigInt(startTime),
+                BigInt(endTime),
+                100,
+                items);
             const statesResponse = await this.tspService.client.fetchTimeGraphStates(
                 experimentUUID,
-                'custom-timegraph-provider',
-                {
-                    requestedTimeRange: { start: startTime, end: endTime },
-                    requestedItems: []
-                }
+                dpId,
+                stateDataParameters
             );
-
             const data = statesResponse.isOk() ? statesResponse.getModel() : null;
-            // TSP data will be properly serialized by SerializationUtil
-            this.messenger?.sendNotification('timeRangeData', data);
-            return data;
-        } catch (error) {
-            const errorMsg = `Failed to get time range data: ${error}`;
-            this.messenger?.sendNotification('error', { message: errorMsg });
-            throw new Error(errorMsg);
+            // Send serialized TSP data to webview (Use JSONBigUtils due BigInts in data)
+            this.panel.webview.postMessage({ method: "timeRangeData", data: JSONBigUtils.stringify(data) });
         }
+        return null;
     }
 
     private async runCustomAnalysis(experimentUUID: string, analysisType: string) {
-        const analysisId = await this.tspService.runCustomAnalysis(experimentUUID, analysisType);
-        
-        if (analysisId) {
-            this.messenger?.sendNotification('analysisStarted', { analysisId });
-            return { analysisId };
+        if (!this.panel) {
+            return;
         }
-        throw new Error('Failed to start analysis');
+        const analysisId = await this.tspService.runCustomAnalysis(experimentUUID, analysisType);
+        if (analysisId) {
+            // Send serialized TSP data to webview (Use JSONBigUtils due BigInts in data)
+            this.panel.webview.postMessage({ method: "analysisStarted", data: analysisId });
+            return;
+        }
+        this.panel.webview.postMessage({ method: "errorMsg", message: 'Failed to start analysis' });
     }
 
-    private getWebviewContent(): string {
+    private getWebviewContent(webview: vscode.Webview): string {
+
+        // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
+        const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'src', 'custom-view.js'));
+        const baseUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri));
+
         return `
 <!DOCTYPE html>
 <html lang="en">
@@ -1065,6 +1352,13 @@ export class CustomTraceViewProvider {
         .time-range { display: flex; gap: 10px; align-items: center; }
         input[type="number"] { width: 100px; }
     </style>
+    <meta http-equiv="Content-Security-Policy"
+		content="default-src 'none';
+		img-src ${webview.cspSource};
+        script-src 'self' ${webview.cspSource} 'unsafe-inline';
+		style-src 'self' 'unsafe-inline' ${webview.cspSource};
+		font-src ${webview.cspSource}">
+        <base href="${baseUri}/">
 </head>
 <body>
     <div class="container">
@@ -1107,196 +1401,153 @@ export class CustomTraceViewProvider {
             <div id="analysis-results">No analysis running</div>
         </div>
     </div>
-
-    <script type="module">
-        import { Messenger } from 'https://unpkg.com/@vscode/messenger@0.4.5/dist/browser/index.js';
-
-        const vscode = acquireVsCodeApi();
-        const messenger = new Messenger(vscode);
-
-        // Set up notification handlers
-        messenger.onNotification('dataUpdated', (data) => {
-            updateDisplay(data);
-        });
-
-        messenger.onNotification('timeRangeData', (data) => {
-            updateTimeRangeData(data);
-        });
-
-        messenger.onNotification('analysisStarted', (data) => {
-            document.getElementById('analysis-results').innerHTML = 
-                \`Analysis started with ID: \${data.analysisId}\`;
-        });
-
-        messenger.onNotification('error', (error) => {
-            showError(error.message);
-        });
-
-        messenger.start();
-
-        // Load initial data when webview is ready
-        window.addEventListener('load', async () => {
-            try {
-                await messenger.sendRequest('loadTraceData');
-            } catch (error) {
-                showError(\`Failed to load initial data: \${error.message}\`);
-            }
-        });
-
-        window.refreshData = async function() {
-            try {
-                await messenger.sendRequest('loadTraceData');
-            } catch (error) {
-                showError(\`Failed to refresh data: \${error.message}\`);
-            }
-        };
-
-        window.getTimeRange = async function() {
-            const startTime = parseInt(document.getElementById('startTime').value) || 0;
-            const endTime = parseInt(document.getElementById('endTime').value) || 1000000;
-            
-            try {
-                await messenger.sendRequest('getTimeRange', {
-                    experimentUUID: 'current',
-                    startTime: startTime,
-                    endTime: endTime
-                });
-            } catch (error) {
-                showError(\`Failed to get time range: \${error.message}\`);
-            }
-        };
-
-        window.runAnalysis = async function(type) {
-            try {
-                await messenger.sendRequest('runAnalysis', {
-                    experimentUUID: 'current',
-                    analysisType: type
-                });
-            } catch (error) {
-                showError(\`Failed to run analysis: \${error.message}\`);
-            }
-        };
-
-        function updateDisplay(data) {
-            // Update metadata
-            if (data.metadata) {
-                document.getElementById('metadata-content').innerHTML = 
-                    \`<pre>\${JSON.stringify(data.metadata, null, 2)}</pre>\`;
-            }
-
-            // Update time graph
-            if (data.timeGraph) {
-                updateTimeGraph(data.timeGraph);
-            }
-
-            // Update XY chart
-            if (data.xyChart) {
-                updateXYChart(data.xyChart);
-            }
-        }
-
-        function updateTimeGraph(timeGraphData) {
-            const container = document.getElementById('timegraph-container');
-            
-            if (timeGraphData.tree && timeGraphData.states) {
-                let html = '<div style="padding: 10px;">';
-                
-                timeGraphData.tree.entries?.forEach(entry => {
-                    html += \`<div style="margin: 5px 0;">
-                        <strong>\${entry.labels[0]}</strong>
-                        <div class="state-bar" style="background: linear-gradient(to right, #4CAF50 0%, #2196F3 50%, #FF9800 100%);"></div>
-                    </div>\`;
-                });
-                
-                html += '</div>';
-                container.innerHTML = html;
-            } else {
-                container.innerHTML = '<div class="loading">No time graph data available</div>';
-            }
-        }
-
-        function updateXYChart(xyData) {
-            const container = document.getElementById('xy-container');
-            
-            if (xyData && xyData.series) {
-                let html = '<div style="padding: 10px;">';
-                html += \`<p>Series count: \${xyData.series.length}</p>\`;
-                
-                xyData.series.forEach((series, index) => {
-                    html += \`<div style="margin: 10px 0;">
-                        <strong>Series \${index + 1}:</strong> \${series.name || 'Unnamed'}
-                        <div style="height: 20px; background: linear-gradient(to right, #FF6B6B, #4ECDC4); margin: 5px 0;"></div>
-                    </div>\`;
-                });
-                
-                html += '</div>';
-                container.innerHTML = html;
-            } else {
-                container.innerHTML = '<div class="loading">No XY chart data available</div>';
-            }
-        }
-
-        function updateTimeRangeData(data) {
-            if (data) {
-                document.getElementById('analysis-results').innerHTML = 
-                    \`<h4>Time Range Data:</h4><pre>\${JSON.stringify(data, null, 2)}</pre>\`;
-            }
-        }
-
-        function showError(message) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error';
-            errorDiv.textContent = message;
-            document.body.insertBefore(errorDiv, document.body.firstChild);
-            
-            setTimeout(() => errorDiv.remove(), 5000);
-        }
-    </script>
+    <script src="${scriptUri}"></script>
 </body>
 </html>`;
     }
 }
 ```
 
-**Updated src/extension.ts**
-```typescript
-import { CustomTraceViewProvider } from './webview-provider';
+**src/custom-view.js**
 
-let webviewProvider: CustomTraceViewProvider;
+```javascript
+//const vscode_messenger = require("vscode-messenger-webview");
 
-export function activate(context: vscode.ExtensionContext) {
-    // ... existing code ...
+const vscode = acquireVsCodeApi();
+
+window.addEventListener('message', event => {
+    const message = event.data; // The JSON data our extension sent
+    switch (message.method) {
+    case 'dataUpdated':
+        console.log("dataUpdated");
+        // Use JsonBigUtils.parse() instead if the data contains serialized bigint values
+        updateDisplay(JSON.parse(message.data));
+        break;
+    case 'timeRangeData':
+        console.log("timeRangeData");
+        // Use JsonBigUtils.parse() instead if the data contains serialized bigint values
+        updateTimeRangeData(JSON.parse(message.data));
+        break;
+    case 'analysisStarted':
+        console.log("analysisStarted");
+        document.getElementById('analysis-results').innerHTML =
+            `Analysis started with ID: ${data.analysisId}`;
+        break;
+    case 'errorMsg':
+        console.log("errorMsg");
+        showError(message.message);
+    }
+});
+
+window.refreshData = async function () {
+    console.log("Refresh Data called");
+    vscode.postMessage({ method: 'loadTraceData' });
+};
+
+window.getTimeRange = async function () {
+    console.log("Get Time Range Called");
     
-    // Initialize webview provider
-    webviewProvider = new CustomTraceViewProvider(context, tspService);
-    
-    // Register custom webview command
-    const openCustomViewCommand = vscode.commands.registerCommand('myTraceExtension.openCustomView', () => {
-        openCustomTraceView();
-    });
-    
-    context.subscriptions.push(openCustomViewCommand);
-    
-    // ... rest of activation code ...
+    const startTime = parseInt(document.getElementById('startTime').value) || 0;
+    const endTime = parseInt(document.getElementById('endTime').value) || 1000000;
+
+    vscode.postMessage({ method: 'getTimeRange',
+        params: {
+             startTime: startTime,
+             endTime: endTime
+        }
+     });
+};
+
+window.runAnalysis = async function(type) {
+    vscode.postMessage({ method: 'runAnalysis',
+        params: {
+             analysisType: type
+        }
+     });
 }
 
-async function openCustomTraceView() {
-    if (!traceAPI) {
-        vscode.window.showErrorMessage('Trace API not available');
-        return;
+function updateDisplay(data) {
+    // Update metadata
+    if (data.metadata) {
+        document.getElementById('metadata-content').innerHTML =
+            `<pre>${JSON.stringify(data.metadata, null, 2)}</pre>`;
+    } else {
+        document.getElementById('metadata-content').innerHTML = '<div class="loading">No metadata available</div>';
     }
 
-    const activeExperiment = traceAPI.getActiveExperiment();
-    if (!activeExperiment) {
-        vscode.window.showWarningMessage('No active trace to view');
-        return;
-    }
+    // Update time graph
+    updateTimeGraph(data.timeGraph);
+    
+    // Update XY chart
+    updateXYChart(data.xyChart);
+}
 
-    await webviewProvider.createWebview(activeExperiment.UUID, activeExperiment.name);
+function updateTimeGraph(timeGraphData) {
+    const container = document.getElementById('timegraph-container');
+
+    if (timeGraphData?.tree && timeGraphData?.tree?.model && timeGraphData.states) {
+        let html = '<div style="padding: 10px;">';
+        let cnt = 0;
+
+        for (let entry of timeGraphData?.tree?.model?.entries) {
+            html += `<div style="margin: 5px 0;">
+                        <strong>${entry.labels[0]}</strong>
+                        <div class="state-bar" style="background: linear-gradient(to right, #4CAF50 0%, #2196F3 50%, #FF9800 100%);"></div>
+                    </div>`;
+            cnt++;
+            if (cnt > 5 || cnt >= timeGraphData?.tree?.model?.entries?.length) {
+                break;
+            }
+        }
+        html += '</div>';
+        container.innerHTML = html;
+    } else {
+        container.innerHTML = '<div class="loading">No time graph data available</div>';
+    }
+}
+
+function updateXYChart(xyData) {
+    const container = document.getElementById('xy-container');
+
+    if (xyData && xyData.model?.series) {
+        let html = '<div style="padding: 10px;">';
+        html += `<p>Series count: ${xyData.model.series.length}</p>`;
+
+        xyData.model.series.forEach((series, index) => {
+            html += `<div style="margin: 10px 0;">
+                        <strong>Series ${index + 1}:</strong> ${series.seriesName || 'Unnamed'}
+                        <div style="height: 20px; background: linear-gradient(to right, #FF6B6B, #4ECDC4); margin: 5px 0;"></div>
+                    </div>`;
+        });
+
+        html += '</div>';
+        container.innerHTML = html;
+    } else {
+        container.innerHTML = '<div class="loading">No XY chart data available</div>';
+    }
+}
+
+function updateTimeRangeData(data) {
+    if (data) {
+        document.getElementById('analysis-results').innerHTML =
+            `<h4>Time Range Data:</h4><pre>${JSON.stringify(data, null, 2)}</pre>`;
+    } else {
+        document.getElementById('analysis-results').innerHTML = '<div class="loading">No time range data available</div>';
+    }
+}
+
+function showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error';
+    errorDiv.textContent = message;
+    document.body.insertBefore(errorDiv, document.body.firstChild);
+
+    setTimeout(() => errorDiv.remove(), 5000);
 }
 ```
 
 **Updated src/tsp-service.ts**
+
 ```typescript
 export class TspService {
     public client: ExtendedTspClient; // Make client public for webview access
@@ -1316,6 +1567,7 @@ export class TspService {
 7. **Bidirectional Communication** - Webview can request data from extension
 
 **Webview Capabilities:**
+
 - Displays trace metadata in JSON format
 - Visualizes time graph entries with colored state bars
 - Shows XY chart series information
