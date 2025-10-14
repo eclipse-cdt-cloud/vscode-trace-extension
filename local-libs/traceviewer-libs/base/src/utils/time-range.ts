@@ -1,13 +1,28 @@
+import { createNormalizer } from 'tsp-typescript-client/lib/protocol/serialization';
+
 export interface TimeRangeString {
     start: string;
     end: string;
     offset?: string;
 }
 
-export class TimeRange {
-    private start: bigint;
-    private end: bigint;
-    private offset: bigint | undefined;
+export const ITimeRange = createNormalizer<ITimeRange>({
+    start: BigInt,
+    end: BigInt,
+    offset: BigInt
+});
+
+export interface ITimeRange {
+    start: bigint;
+    end: bigint;
+    offset: bigint | undefined;
+    toString(): TimeRangeString;
+}
+
+export class TimeRange implements ITimeRange {
+    start: bigint;
+    end: bigint;
+    offset: bigint | undefined;
 
     /**
      * Constructor.

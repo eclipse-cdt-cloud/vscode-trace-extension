@@ -36,7 +36,8 @@ import {
     getMarkerCategories,
     getMarkerSets,
     updateMarkerCategoryState,
-    updateMarkerSetState
+    updateMarkerSetState,
+    requestSelectionRangeChange
 } from 'vscode-trace-common/lib/messages/vscode-messages';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { MarkerSet } from 'tsp-typescript-client/lib/models/markerset';
@@ -421,7 +422,11 @@ export class TraceViewerPanel {
     }
 
     protected doHandleRequestSelectionRangeChange(payload: TimeRangeUpdatePayload): void {
-        this._messenger.sendNotification(experimentSelected, this._webviewParticipant, JSONBigUtils.stringify(payload));
+        this._messenger.sendNotification(
+            requestSelectionRangeChange,
+            this._webviewParticipant,
+            JSONBigUtils.stringify(payload)
+        );
     }
     setExperiment(experiment: Experiment): void {
         this._experiment = experiment;

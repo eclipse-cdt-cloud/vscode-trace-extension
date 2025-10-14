@@ -935,8 +935,8 @@ export class TraceContextComponent extends React.Component<TraceContextProps, Tr
         const { timeRange, experimentUUID } = payload;
         if (experimentUUID === this.props.experiment.UUID && timeRange) {
             this.unitController.selectionRange = {
-                start: timeRange.getStart(),
-                end: timeRange.getEnd()
+                start: timeRange.start,
+                end: timeRange.end
             };
         }
     };
