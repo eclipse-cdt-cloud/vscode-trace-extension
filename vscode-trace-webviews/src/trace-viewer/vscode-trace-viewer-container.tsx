@@ -17,35 +17,36 @@ import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { TimeRangeUpdatePayload } from 'traceviewer-base/lib/signals/time-range-data-signal-payloads';
 import { TraceContextComponent } from 'traceviewer-react-components/lib/components/trace-context-component';
 import 'traceviewer-react-components/style/trace-context-style.css';
-import {
-    setTspClient,
-    traceServerUrlChanged,
-    experimentSelected,
-    setExperiment,
-    addOutput,
-    outputDataChanged,
-    setTheme,
-    openOverview,
-    resetZoom,
-    undo,
-    redo,
-    updateZoom,
-    getMarkerCategories,
-    getMarkerSets,
-    updateMarkerCategoryState,
-    updateMarkerSetState,
-    contributeContextMenu,
-    connectionStatus
-} from 'vscode-trace-common/lib/messages/vscode-messages';
-import { VsCodeMessageManager } from '../common/vscode-message-manager';
-import { messenger } from '.';
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { MarkerSet } from 'tsp-typescript-client/lib/models/markerset';
 import { OutputDescriptor } from 'tsp-typescript-client/lib/models/output-descriptor';
+import { array } from 'tsp-typescript-client/lib/protocol/serialization';
 import { JSONBigUtils } from 'tsp-typescript-client/lib/utils/jsonbig-utils';
 import { TspClientProvider } from 'vscode-trace-common/lib/client/tsp-client-provider-impl';
+import {
+    addOutput,
+    connectionStatus,
+    contributeContextMenu,
+    experimentSelected,
+    getMarkerCategories,
+    getMarkerSets,
+    openOverview,
+    outputDataChanged,
+    redo,
+    requestSelectionChange,
+    resetZoom,
+    setExperiment,
+    setTheme,
+    setTspClient,
+    traceServerUrlChanged,
+    undo,
+    updateMarkerCategoryState,
+    updateMarkerSetState,
+    updateZoom
+} from 'vscode-trace-common/lib/messages/vscode-messages';
+import { messenger } from '.';
+import { VsCodeMessageManager } from '../common/vscode-message-manager';
 import '../style/trace-viewer.css';
-import { array } from 'tsp-typescript-client/lib/protocol/serialization';
 interface VscodeAppState {
     experiment: Experiment | undefined;
     tspClientProvider: TspClientProvider | undefined;
@@ -213,6 +214,13 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
         }
     };
 
+    private _onRequestSelectionChanged = (data: any): void => {
+        if (data) {
+            const payload = JSONBigUtils.parse(data, TimeRangeUpdatePayload);
+            signalManager().emit('REQUEST_SELECTION_RANGE_CHANGE', payload);
+        }
+    };
+
     private markerCategoriesMap = new Map<string, string[]>();
     private toolbarMarkerCategoriesMap = new Map<string, { categoryCount: number; toggleInd: boolean }>();
     private selectedMarkerCategoriesMap = new Map<string, string[]>();
@@ -248,6 +256,7 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
         messenger.onNotification(updateMarkerSetState, this._onVscodeUpdateMarkerSetState);
         messenger.onNotification(contributeContextMenu, this._onVscodeUpdateContributeContextMenu);
         messenger.onNotification(connectionStatus, this._onVscodeConnectionStatus);
+        messenger.onNotification(requestSelectionChange, this._onRequestSelectionChanged);
 
         window.addEventListener('resize', this.onResize);
         this.onOutputRemoved = this.onOutputRemoved.bind(this);
