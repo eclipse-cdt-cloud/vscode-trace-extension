@@ -320,8 +320,7 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
 
         const style = (series[0] as any)?.style?.values?.['series-type'] as string | undefined;
         const st = style?.toLowerCase();
-        const xv = series[0].xValues as Sampling;
-        this.isTimeAxis = isTimestampSampling(xv);
+        this.isTimeAxis = !!series[0].xValues;
         this.mode = st === 'scatter' ? ChartMode.SCATTER : st === 'line' ? ChartMode.LINE : ChartMode.BAR;
 
         const xy = this.buildXYData(series, this.mode);
@@ -342,9 +341,9 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
     }
 
     private buildBarChartData(seriesObj: XYSeries[]): GenericXYData {
-        const xValues = seriesObj[0].xValues;
+        const xValues = seriesObj[0].xValues ?? seriesObj[0].xRanges ?? seriesObj[0].xCategories;
         const unit = seriesObj[0]?.xValuesDescription?.unit || '';
-        const labels = this.buildLabels(xValues, unit);
+        const labels = this.buildLabels(xValues as Sampling, unit);
         const datasets: GenericXYData['datasets'] = seriesObj.map(s => {
             const color = this.colors.get(s.seriesName);
             return {
@@ -361,9 +360,9 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
     }
 
     private buildLineOrScatterChartData(seriesObj: XYSeries[], mode: ChartMode): GenericXYData {
-        const xValues = seriesObj[0].xValues;
+        const xValues = seriesObj[0].xValues ?? seriesObj[0].xRanges ?? seriesObj[0].xCategories;
         const unit = seriesObj[0]?.xValuesDescription?.unit || '';
-        const labels = this.buildLabels(xValues, unit);
+        const labels = this.buildLabels(xValues as Sampling, unit);
 
         const datasets: GenericXYData['datasets'] = seriesObj.map(s => {
             const color = this.colors.get(s.seriesName);
