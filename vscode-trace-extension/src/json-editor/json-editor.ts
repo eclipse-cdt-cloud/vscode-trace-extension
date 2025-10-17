@@ -20,7 +20,6 @@ import { FileService } from './file-service';
 export class JsonConfigEditor {
     private _tempFilePath: string = '';
     private isEditing: boolean = false;
-    private isAwaitingUserSubmit: boolean = false;
     private availableConfigurations: CustomizationConfigObject[] = [];
     private userClickedSubmit: boolean = false;
     private trackedEditor?: vscode.TextEditor;
@@ -51,8 +50,6 @@ export class JsonConfigEditor {
                     throw Error(
                         'a config editing session is already active - Please close the active editor and try again.'
                     );
-                if (this.isAwaitingUserSubmit)
-                    throw Error('awaiting prompt response - Please chose to if you want to submit then try again.');
 
                 this.availableConfigurations = configs;
                 const selectedConfig = await this.promptUserSchemaSelection(configs);
@@ -297,7 +294,6 @@ export class JsonConfigEditor {
 
         try {
             this.isEditing = false;
-            this.isAwaitingUserSubmit = true;
             // Write content to temp file for validation
             if (fs.existsSync(this.tempFilePath)) {
                 fs.writeFileSync(this.tempFilePath, document.getText(), 'utf8');
@@ -305,23 +301,15 @@ export class JsonConfigEditor {
                 throw new Error('Temporary file not found');
             }
 
+            if (!this.userClickedSubmit) {
+                return;
+            }
+
             const validation = await this.schemaService.validateJsonFile(this.tempFileUri, schema);
 
             if (validation.isValid && validation.content) {
-                const submit = this.userClickedSubmit
-                    ? 'Yes'
-                    : await vscode.window.showInformationMessage(
-                          'Do you want to submit this configuration?',
-                          'Yes',
-                          'No'
-                      );
-
-                if (submit === 'Yes') {
-                    vscode.window.showInformationMessage('Configuration submitted successfully');
-                    return validation.content;
-                }
-
-                return undefined; // User chose not to submit
+                vscode.window.showInformationMessage('Configuration submitted successfully');
+                return validation.content;
             } else if (validation.errors) {
                 this.displayValidationErrorDialogue(
                     `Your configuration was not submitted because it had errors`,
@@ -342,7 +330,6 @@ export class JsonConfigEditor {
     private resetState = () => {
         this.fileService.cleanupTempFile(this.tempFilePath);
         this.userClickedSubmit = false;
-        this.isAwaitingUserSubmit = false;
         this.isEditing = false;
         this.trackedEditor = undefined;
         this.tempFilePath = '';
