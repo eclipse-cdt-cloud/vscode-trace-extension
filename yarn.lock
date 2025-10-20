@@ -9660,10 +9660,10 @@ through@2, "through@>=2.2.7 <3", through@^2.3.4, through@^2.3.6:
   resolved "https://registry.yarnpkg.com/through/-/through-2.3.8.tgz#0dd4c9ffaabc357960b1b724115d7e0e86a2e1f5"
   integrity sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==
 
-timeline-chart@^0.4.2:
-  version "0.4.2"
-  resolved "https://registry.npmjs.org/timeline-chart/-/timeline-chart-0.4.2.tgz#7163a911b0d3a9aa398872952aa0c1f40b3abda9"
-  integrity sha512-jzI6aDORoA0dTB7SbAJpLFvDwuXD6sy+uVB3BLW4dOwyH2uehDOSJ+uxF1XjBAd7sn2Xxq9oA+aAjiWa2pEc2A==
+timeline-chart@^0.4.3:
+  version "0.4.3"
+  resolved "https://registry.yarnpkg.com/timeline-chart/-/timeline-chart-0.4.3.tgz#5b41f32fcc9b724e6a86089b20733f1a16e42286"
+  integrity sha512-oibEqRQxNqFg3iN4d7bXSBJtZDS9I5JJoxIxKJZInGPDjb/zO7l7w9qqrbu/7oWpE0W0O+ZzcwxkV7n2m+9ZCA==
   dependencies:
     "@types/lodash.throttle" "^4.1.4"
     glob "^7.1.6"
