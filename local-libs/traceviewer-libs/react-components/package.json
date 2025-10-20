@@ -34,7 +34,7 @@
         "react-grid-layout": "1.2.0",
         "react-modal": "^3.8.1",
         "react-virtualized": "^9.21.0",
-        "timeline-chart": "^0.4.2",
+        "timeline-chart": "^0.4.3",
         "traceviewer-base": "0.9.1",
         "tsp-typescript-client": "^0.9.0"
     },
