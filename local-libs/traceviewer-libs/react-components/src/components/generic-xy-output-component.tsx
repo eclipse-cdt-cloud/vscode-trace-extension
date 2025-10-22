@@ -19,6 +19,7 @@ import { EntryTree } from './utils/filter-tree/entry-tree';
 import { TimeRange } from 'traceviewer-base/src/utils/time-range';
 import { BIMath } from 'timeline-chart/lib/bigint-utils';
 import { debounce } from 'lodash';
+import * as d3 from 'd3';
 
 import {
     applyYAxis,
@@ -68,12 +69,18 @@ interface GenericXYState extends AbstractTreeOutputState {
     allMax: number;
     allMin: number;
     cursor: string;
+    timelineUnit: string;
+    timelineUnitType: TimelineUnitType;
 }
+
+type TimelineUnitType = 'time' | 'cycles' | 'bytes' | 'calls' | 'bytes/sec' | 'iterations/sec';
 
 interface GenericXYProps extends AbstractOutputProps {
     formatX?: (x: number | bigint | string) => string;
     formatY?: (y: number) => string;
     stacked?: boolean;
+    timelineUnit?: string;
+    timelineUnitType?: TimelineUnitType;
 }
 
 enum ChartMode {
@@ -91,8 +98,10 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
     private readonly chartRef = React.createRef<any>();
     private readonly yAxisRef: any;
     private readonly divRef = React.createRef<HTMLDivElement>();
+    private readonly timelineRef = React.createRef<SVGSVGElement>();
 
     private readonly margin = { top: 15, right: 0, bottom: 6, left: this.getYAxisWidth() };
+    private readonly timelineHeight = 30;
 
     private mouseIsDown = false;
     private isPanning = false;
@@ -134,7 +143,9 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
             allMax: 0,
             allMin: 0,
             cursor: 'default',
-            showTree: true
+            showTree: true,
+            timelineUnit: this.props.timelineUnit || 'ms',
+            timelineUnitType: this.props.timelineUnitType || 'time'
         };
 
         this.addPinViewOptions(() => ({
@@ -315,6 +326,7 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
                 })
             );
             this.calculateYRange();
+            this.updateTimeline();
             return;
         }
 
@@ -326,6 +338,7 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
         const xy = this.buildXYData(series, this.mode);
         flushSync(() => this.setState({ xyData: xy, outputStatus: model.status ?? ResponseStatus.COMPLETED }));
         this.calculateYRange();
+        this.updateTimeline();
     }
 
     private buildXYData(seriesObj: XYSeries[], mode: ChartMode): GenericXYData {
@@ -439,7 +452,10 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
         const checksChanged = prevState.checkedSeries !== this.state.checkedSeries;
 
         if (sizeChanged || viewChanged || checksChanged) {
-            if (this.getChartWidth() > 0) this._debouncedUpdateXY();
+            if (this.getChartWidth() > 0) {
+                this._debouncedUpdateXY();
+                this.updateTimeline();
+            }
         }
     }
 
@@ -710,6 +726,109 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
         }
     }
 
+    private renderTimeline(): React.ReactNode {
+        if (this.state.timelineUnitType === 'time' && !this.isTimeAxis) return null;
+        
+        const chartWidth = this.getChartWidth();
+        if (chartWidth <= 0) return null;
+
+        return (
+            <svg 
+                ref={this.timelineRef}
+                width={chartWidth} 
+                height={this.timelineHeight}
+                style={{ marginLeft: this.margin.left }}
+            />
+        );
+    }
+
+    private updateTimeline(): void {
+        if (!this.timelineRef.current) return;
+        if (this.state.timelineUnitType === 'time' && !this.isTimeAxis) return;
+
+        const svg = d3.select(this.timelineRef.current);
+        svg.selectAll('*').remove();
+
+        const chartWidth = this.getChartWidth();
+        const { start, end } = this.getTimelineRange();
+        
+        const scale = d3.scaleLinear()
+            .domain([start, end])
+            .range([0, chartWidth]);
+
+        const axis = d3.axisBottom(scale)
+            .tickFormat(d => this.formatTimelineValue(Number(d)));
+
+        svg.append('g')
+            .attr('transform', `translate(0, 0)`)
+            .call(axis);
+    }
+
+    private getTimelineRange(): { start: number; end: number } {
+        switch (this.state.timelineUnitType) {
+            case 'time':
+                return {
+                    start: Number(this.props.viewRange.getStart()),
+                    end: Number(this.props.viewRange.getEnd())
+                };
+            case 'cycles':
+            case 'bytes':
+            case 'calls':
+            case 'bytes/sec':
+            case 'iterations/sec':
+                // For non-time units, use the data range
+                const labels = this.state.xyData.labels;
+                if (labels.length === 0) return { start: 0, end: 1 };
+                return { start: 0, end: labels.length - 1 };
+            default:
+                return { start: 0, end: 1 };
+        }
+    }
+
+    private formatTimelineValue(value: number): string {
+        switch (this.state.timelineUnitType) {
+            case 'time':
+                return `${d3.format('.2f')(value)} ${this.state.timelineUnit}`;
+            case 'cycles':
+            case 'calls':
+                return `${d3.format('.0f')(value)} ${this.state.timelineUnit}`;
+            case 'bytes':
+                return this.formatBytes(value);
+            case 'bytes/sec':
+                return this.formatDataRate(value, 'B/s');
+            case 'iterations/sec':
+                return `${d3.format('.1f')(value)} iter/s`;
+            default:
+                return `${value} ${this.state.timelineUnit}`;
+        }
+    }
+
+    private formatDataRate(rate: number, baseUnit: string): string {
+        const units = ['B/s', 'KB/s', 'MB/s', 'GB/s'];
+        let value = rate;
+        let unitIndex = 0;
+        
+        while (value >= 1024 && unitIndex < units.length - 1) {
+            value /= 1024;
+            unitIndex++;
+        }
+        
+        return `${d3.format('.1f')(value)} ${units[unitIndex]}`;
+    }
+
+    private formatBytes(bytes: number): string {
+        const units = ['B', 'KB', 'MB', 'GB'];
+        let value = bytes;
+        let unitIndex = 0;
+        
+        while (value >= 1024 && unitIndex < units.length - 1) {
+            value /= 1024;
+            unitIndex++;
+        }
+        
+        return `${d3.format('.1f')(value)} ${units[unitIndex]}`;
+    }
+
     renderChart(): React.ReactNode {
         const isEmpty =
             this.state.outputStatus === ResponseStatus.COMPLETED && (this.state.xyData?.datasets?.length ?? 0) === 0;
@@ -719,28 +838,31 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
         }
 
         return (
-            <div
-                id={this.getOutputComponentDomId() + 'focusContainer'}
-                className="xy-main"
-                tabIndex={0}
-                onKeyDown={e => this.onKeyDown(e)}
-                onKeyUp={e => this.onKeyUp(e)}
-                onWheel={e => this.onWheel(e)}
-                onMouseMove={e => this.onMouseMove(e)}
-                onContextMenu={e => e.preventDefault()}
-                onMouseLeave={e => this.onMouseLeave(e)}
-                onMouseDown={e => this.onMouseDown(e)}
-                style={{ height: this.props.style.height, position: 'relative', cursor: this.state.cursor }}
-                ref={this.divRef}
-            >
-                {this.chooseReactChart()}
-                {this.state.outputStatus === ResponseStatus.RUNNING && (
-                    <div className="analysis-running-overflow" style={{ width: this.getChartWidth() }}>
-                        <div>
-                            <span>Analysis running</span>
+            <div>
+                <div
+                    id={this.getOutputComponentDomId() + 'focusContainer'}
+                    className="xy-main"
+                    tabIndex={0}
+                    onKeyDown={e => this.onKeyDown(e)}
+                    onKeyUp={e => this.onKeyUp(e)}
+                    onWheel={e => this.onWheel(e)}
+                    onMouseMove={e => this.onMouseMove(e)}
+                    onContextMenu={e => e.preventDefault()}
+                    onMouseLeave={e => this.onMouseLeave(e)}
+                    onMouseDown={e => this.onMouseDown(e)}
+                    style={{ height: this.props.style.height, position: 'relative', cursor: this.state.cursor }}
+                    ref={this.divRef}
+                >
+                    {this.chooseReactChart()}
+                    {this.state.outputStatus === ResponseStatus.RUNNING && (
+                        <div className="analysis-running-overflow" style={{ width: this.getChartWidth() }}>
+                            <div>
+                                <span>Analysis running</span>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
+                {this.renderTimeline()}
             </div>
         );
     }
