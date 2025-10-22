@@ -446,6 +446,8 @@ Modify the _version tag_ in file `./RELEASE`, to match the new release. Amend th
 git add RELEASE && git commit --amend
 ```
 
+If commit message shows `%s` as version string, then replace it by the version of the vscode-trace-extension release.
+
 Finally, push the branch to the main repository (not a fork!) and use it to create a PR. When the PR is merged, a GitHub release should be created with auto-generated release notes, as well as a git tag. Then the `publish-*` CI jobs should trigger, and if everything goes well, publish the new version of the extension to both registries.
 
 ## Initial contribution
