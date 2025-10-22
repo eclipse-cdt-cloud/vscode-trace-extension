@@ -16,9 +16,10 @@ import {
 } from 'tsp-typescript-client/lib/models/sampling';
 import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { EntryTree } from './utils/filter-tree/entry-tree';
-import { TimeRange } from 'traceviewer-base/src/utils/time-range';
+import { TimeRange } from 'traceviewer-base/lib/utils/time-range';
 import { BIMath } from 'timeline-chart/lib/bigint-utils';
 import { debounce } from 'lodash';
+import * as d3 from 'd3';
 
 import {
     applyYAxis,
@@ -31,6 +32,7 @@ import {
     rowsToCsv,
     computeYRange
 } from './utils/xy-shared';
+import { parse } from '@fortawesome/fontawesome-svg-core';
 
 interface XYDataset {
     id?: number | string;
@@ -68,12 +70,20 @@ interface GenericXYState extends AbstractTreeOutputState {
     allMax: number;
     allMin: number;
     cursor: string;
+    timelineUnit: string;
+    timelineUnitType: TimelineUnitType;
+    xAxisTitle?: string;
+    range: TimeRange;
 }
+
+type TimelineUnitType = 'NUMBER' | 'DURATION' | 'TIMESTAMP' | 'STRING' | 'TIME_RANGE';
 
 interface GenericXYProps extends AbstractOutputProps {
     formatX?: (x: number | bigint | string) => string;
     formatY?: (y: number) => string;
     stacked?: boolean;
+    timelineUnit?: string;
+    timelineUnitType?: TimelineUnitType;
 }
 
 enum ChartMode {
@@ -91,8 +101,10 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
     private readonly chartRef = React.createRef<any>();
     private readonly yAxisRef: any;
     private readonly divRef = React.createRef<HTMLDivElement>();
+    private readonly timelineRef = React.createRef<SVGSVGElement>();
 
     private readonly margin = { top: 15, right: 0, bottom: 6, left: this.getYAxisWidth() };
+    private readonly timelineHeight = 30;
 
     private mouseIsDown = false;
     private isPanning = false;
@@ -134,7 +146,10 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
             allMax: 0,
             allMin: 0,
             cursor: 'default',
-            showTree: true
+            timelineUnit: this.props.timelineUnit || 'ms',
+            timelineUnitType: this.props.timelineUnitType || 'DURATION',
+            showTree: true,
+            range: new TimeRange()
         };
 
         this.addPinViewOptions(() => ({
@@ -192,7 +207,7 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
     }
 
     renderYAxis(): React.ReactNode {
-        const chartHeight = parseInt(String(this.props.style.height), 10);
+        const chartHeight = parseInt(String(this.props.style.height), 10) - this.timelineHeight;
         let yMin = this.state.allMin;
         let yMax = this.state.allMax;
         if (!Number.isFinite(yMin) || !Number.isFinite(yMax)) {
@@ -316,6 +331,8 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
                 })
             );
             this.calculateYRange();
+
+            this.updateTimeline();
             return;
         }
 
@@ -327,6 +344,52 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
         const xy = this.buildXYData(series, this.mode);
         flushSync(() => this.setState({ xyData: xy, outputStatus: model.status ?? ResponseStatus.COMPLETED }));
         this.calculateYRange();
+
+        // Extract model types from all series
+        let minStart = Number.MAX_SAFE_INTEGER;
+        let maxEnd = Number.MIN_SAFE_INTEGER;
+        let commonLabel: string | undefined;
+        let commonUnit: string | undefined;
+        let commonDataType: string | undefined;
+
+        series.forEach((s, index) => {
+            if (s.xValuesDescription) {
+                const { axisDomain, label, unit, dataType } = s.xValuesDescription;
+
+                // Track min start and max end from axisDomain
+                if (axisDomain && axisDomain.type === 'range') {
+                    const currentStart = Number(axisDomain.start);
+                    const currentEnd = Number(axisDomain.end);
+                    if (currentStart < minStart) minStart = currentStart;
+                    if (currentEnd > maxEnd) maxEnd = currentEnd;
+                }
+
+                // Check if all series have same label/unit/dataType
+                if (index === 0) {
+                    commonLabel = label;
+                    commonUnit = unit;
+                    commonDataType = dataType;
+                } else {
+                    if (commonLabel !== label) commonLabel = undefined;
+                    if (commonUnit !== unit) commonUnit = undefined;
+                    if (commonDataType !== dataType) commonDataType = undefined;
+                }
+            }
+        });
+
+        // Default to 'time' if datatype differs across series
+        const finalDataType = commonDataType || 'NUMBER';
+
+        // Update state with extracted info - always reset to avoid stale values
+        const updates: Partial<GenericXYState> = {
+            timelineUnit: commonUnit || this.props.timelineUnit || 'ms',
+            timelineUnitType: finalDataType as TimelineUnitType,
+            xAxisTitle: commonLabel,
+            range: new TimeRange(BigInt(minStart - 1), BigInt(maxEnd - 1), BigInt(1))
+        };
+        this.setState(updates as any);
+
+        this.updateTimeline();
     }
 
     private buildXYData(seriesObj: XYSeries[], mode: ChartMode): GenericXYData {
@@ -440,7 +503,16 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
         const checksChanged = prevState.checkedSeries !== this.state.checkedSeries;
 
         if (sizeChanged || viewChanged || checksChanged) {
-            if (this.getChartWidth() > 0) this._debouncedUpdateXY();
+            if (this.getChartWidth() > 0) {
+                this._debouncedUpdateXY();
+            }
+        }
+
+        // Update timeline after render if data changed
+        if (prevState.xyData !== this.state.xyData) {
+            setTimeout(() => {
+                this.updateTimeline();
+            }, 0);
         }
     }
 
@@ -520,7 +592,7 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
 
         const chartProps = {
             data: data,
-            height: parseInt(String(this.props.style.height)),
+            height: parseInt(String(this.props.style.height)) - this.timelineHeight,
             options: options,
             ref: this.chartRef
         };
@@ -716,6 +788,306 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
         }
     }
 
+    private renderTimeline(): React.ReactNode {
+        const chartWidth = this.getChartWidth();
+
+        const svgElement = (
+            <svg
+                ref={this.timelineRef}
+                width={Math.max(chartWidth, 1)}
+                height={this.timelineHeight}
+                style={{
+                    position: 'relative'
+                }}
+            />
+        );
+
+        return svgElement;
+    }
+
+    private updateTimeline(): void {
+        if (!this.timelineRef.current) return;
+
+        const svg = d3.select(this.timelineRef.current);
+        svg.selectAll('*').remove();
+
+        const chartWidth = this.getChartWidth();
+        if (chartWidth <= 0) return;
+
+        const labels = this.state.xyData.labels;
+        if (!labels.length) return;
+
+        // Create scale based on data indices (evenly spaced)
+        const scale = d3.scaleLinear().domain([0, labels.length]).range([0, chartWidth]);
+
+        // Extract actual values from labels for tick formatting
+        const tickValues = labels.map((label, i) => {
+            if (label.includes('[') && label.includes(',')) {
+                const match = label.match(/\[(.*?),/);
+                return match ? parseFloat(match[1]) : i;
+            }
+            return parseFloat(label) || i;
+        });
+        const label = labels[labels.length - 1];
+        let parsedResult = 0;
+        if (label.includes('[') && label.includes(',')) {
+            const match = label.match(/\[.*,(.*?)\]/);
+            parsedResult = match ? parseFloat(match[1]) : labels.length;
+        }
+        if (parsedResult) tickValues.push(parsedResult);
+
+        const axis = d3.axisBottom(scale).tickFormat(d => {
+            const index = Math.round(Number(d));
+            return this.formatTimelineValue(tickValues[index] ?? Number(d));
+        });
+
+        const axisGroup = svg.append('g').attr('transform', `translate(0, 0)`).call(axis);
+
+        // Set __data__ on tick elements to ensure proper data binding
+        axisGroup.selectAll('.tick').each(function (d, i) {
+            (this as any).__data__ = tickValues[Math.round(Number(d))] ?? Number(d);
+        });
+
+        // Adjust first and last labels to be fully visible
+        const tickNodes = axisGroup.selectAll('.tick text').nodes() as SVGTextElement[];
+        if (tickNodes.length > 0) {
+            const firstLabel = tickNodes[0];
+            firstLabel.setAttribute('text-anchor', 'start');
+
+            const lastLabel = tickNodes[tickNodes.length - 1];
+            lastLabel.setAttribute('text-anchor', 'end');
+        }
+
+        // Handle label overlaps
+        this.handleLabelOverlaps(axisGroup);
+
+        // Add minor ticks for range items
+        this.addMinorTicks(svg, scale, chartWidth, tickValues);
+    }
+
+    private handleLabelOverlaps(axisGroup: d3.Selection<SVGGElement, unknown, null, undefined>): void {
+        const labels = axisGroup.selectAll('.tick text');
+        const labelNodes = labels.nodes() as SVGTextElement[];
+
+        for (let i = labelNodes.length - 1; i >= 0; i--) {
+            const current = labelNodes[i];
+            if (!current.textContent || current.textContent.trim() === '') continue;
+
+            const currentBBox = current.getBoundingClientRect();
+
+            let overlaps = false;
+            let maxLabelWidth = currentBBox.width;
+
+            // Check overlap with adjacent labels and calculate available space
+            for (let j = i - 1; j >= 0; j--) {
+                const other = labelNodes[j];
+                if (!other.textContent || other.textContent.trim() === '') continue;
+
+                const otherBBox = other.getBoundingClientRect();
+
+                // Calculate available space between labels (with 5px margin)
+                const availableSpace = Math.abs(currentBBox.x - (otherBBox.x + otherBBox.width)) - 5;
+                maxLabelWidth = Math.min(maxLabelWidth, availableSpace);
+
+                // Check if bounding boxes overlap (with 5px margin)
+                if (
+                    currentBBox.x < otherBBox.x + otherBBox.width + 5 &&
+                    currentBBox.x + currentBBox.width + 5 > otherBBox.x
+                ) {
+                    overlaps = true;
+                }
+            }
+
+            if (overlaps && maxLabelWidth > 0) {
+                const originalText = current.textContent || '';
+                const truncated = this.truncateWithEllipsis(originalText, maxLabelWidth);
+
+                if (truncated.length <= 3) {
+                    current.style.display = 'none';
+                } else {
+                    current.textContent = truncated;
+                }
+            }
+        }
+    }
+
+    private truncateWithEllipsis(text: string, maxWidth: number = 80): string {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d')!;
+        ctx.font = '12px sans-serif';
+
+        if (ctx.measureText(text).width <= maxWidth) return text;
+
+        const ellipsis = '…';
+        let truncated = text;
+        while (truncated.length > 0 && ctx.measureText(truncated + ellipsis).width > maxWidth) {
+            truncated = truncated.slice(0, -1);
+        }
+
+        return truncated + ellipsis;
+    }
+
+    private addMinorTicks(
+        svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
+        scale: d3.ScaleLinear<number, number>,
+        chartWidth: number,
+        tickValues: number[]
+    ): void {
+        const labels = this.state.xyData.labels;
+        if (!labels.length) return;
+
+        // For each range item, add minor ticks at start and end
+        labels.forEach((label, i) => {
+            if (label.includes('[') && label.includes(',')) {
+                // Parse range format: "[start unit, end unit]"
+                const match = label.match(/\[(.*?),\s*(.*?)\]/);
+                if (match) {
+                    const startVal = parseFloat(match[1]);
+                    const endVal = parseFloat(match[2]);
+
+                    if (!isNaN(startVal) && !isNaN(endVal)) {
+                        const x = scale(i);
+
+                        // Add minor ticks at the data point position
+                        if (x >= 0 && x <= chartWidth) {
+                            svg.append('line')
+                                .attr('x1', x)
+                                .attr('x2', x)
+                                .attr('y1', 0)
+                                .attr('y2', 3)
+                                .attr('stroke', 'currentColor')
+                                .attr('stroke-width', 0.5);
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    private getTimelineRange(): { start: number; end: number } {
+        const labels = this.state.xyData.labels;
+
+        // If we have range labels, extract the actual range from the data
+        if (labels.length > 0 && labels[0].includes('[') && labels[0].includes(',')) {
+            let minStart = Number.MAX_SAFE_INTEGER;
+            let maxEnd = Number.MIN_SAFE_INTEGER;
+
+            labels.forEach(label => {
+                const match = label.match(/\[(.*?),\s*(.*?)\]/);
+                if (match) {
+                    const start = parseFloat(match[1]);
+                    const end = parseFloat(match[2]);
+                    if (!isNaN(start) && !isNaN(end)) {
+                        minStart = Math.min(minStart, start);
+                        maxEnd = Math.max(maxEnd, end);
+                    }
+                }
+            });
+
+            if (minStart !== Number.MAX_SAFE_INTEGER && maxEnd !== Number.MIN_SAFE_INTEGER) {
+                return { start: minStart, end: maxEnd };
+            }
+        }
+
+        // Fallback to view/range based on timeline unit type
+        switch (this.state.timelineUnitType) {
+            case 'DURATION':
+                return {
+                    start: Number(this.state.range.getStart()),
+                    end: Number(this.state.range.getEnd())
+                };
+            case 'TIME_RANGE':
+            case 'TIMESTAMP':
+                return {
+                    start: Number(this.props.viewRange.getStart()),
+                    end: Number(this.props.viewRange.getEnd())
+                };
+            case 'NUMBER':
+            case 'STRING':
+                // For non-time units, use the data range
+                if (labels.length === 0) return { start: 0, end: 1 };
+                return { start: 0, end: labels.length - 1 };
+            default:
+                return { start: 0, end: 1 };
+        }
+    }
+
+    private formatTimelineValue(value: number): string {
+        switch (this.state.timelineUnitType) {
+            case 'TIMESTAMP':
+            case 'DURATION':
+                return this.formatTime(value);
+            case 'NUMBER':
+                const dataType = this.getDataTypeFromUnit(this.state.timelineUnit);
+                switch (dataType) {
+                    case 'time':
+                        return this.formatTime(value);
+                    case 'bytes':
+                        return this.formatBytes(value);
+                    case 'bytes/sec':
+                        return this.formatDataRate(value);
+                    case 'iterations/sec':
+                        return `${d3.format('.1f')(value)} iter/s`;
+                    case 'cycles':
+                    case 'calls':
+                    case 'other':
+                    case 'unknown':
+                    default:
+                        return `${d3.format('.0f')(value)} ${this.state.timelineUnit}`;
+                }
+            default:
+                return `${value} ${this.state.timelineUnit}`;
+        }
+    }
+
+    private formatTime(value: number): string {
+        const units = [
+            { name: 'ns', factor: 1 },
+            { name: 'μs', factor: 1000 },
+            { name: 'ms', factor: 1000000 },
+            { name: 's', factor: 1000000000 }
+        ];
+
+        let unitIndex = 0;
+        let scaledValue = value;
+
+        for (let i = units.length - 1; i >= 0; i--) {
+            if (Math.abs(value) >= units[i].factor) {
+                scaledValue = value / units[i].factor;
+                unitIndex = i;
+                break;
+            }
+        }
+
+        return `${d3.format('.1f')(scaledValue)} ${units[unitIndex].name}`;
+    }
+
+    private formatDataRate(rate: number): string {
+        const units = ['B/s', 'KB/s', 'MB/s', 'GB/s'];
+        let value = rate;
+        let unitIndex = 0;
+
+        while (value >= 1024 && unitIndex < units.length - 1) {
+            value /= 1024;
+            unitIndex++;
+        }
+
+        return `${d3.format('.1f')(value)} ${units[unitIndex]}`;
+    }
+
+    private formatBytes(bytes: number): string {
+        const units = ['B', 'KB', 'MB', 'GB'];
+        let value = bytes;
+        let unitIndex = 0;
+
+        while (value >= 1024 && unitIndex < units.length - 1) {
+            value /= 1024;
+            unitIndex++;
+        }
+
+        return `${d3.format('.1f')(value)} ${units[unitIndex]}`;
+    }
+
     renderChart(): React.ReactNode {
         const isEmpty =
             this.state.outputStatus === ResponseStatus.COMPLETED && (this.state.xyData?.datasets?.length ?? 0) === 0;
@@ -725,28 +1097,54 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
         }
 
         return (
-            <div
-                id={this.getOutputComponentDomId() + 'focusContainer'}
-                className="xy-main"
-                tabIndex={0}
-                onKeyDown={e => this.onKeyDown(e)}
-                onKeyUp={e => this.onKeyUp(e)}
-                onWheel={e => this.onWheel(e)}
-                onMouseMove={e => this.onMouseMove(e)}
-                onContextMenu={e => e.preventDefault()}
-                onMouseLeave={e => this.onMouseLeave(e)}
-                onMouseDown={e => this.onMouseDown(e)}
-                style={{ height: this.props.style.height, position: 'relative', cursor: this.state.cursor }}
-                ref={this.divRef}
-            >
-                {this.chooseReactChart()}
-                {this.state.outputStatus === ResponseStatus.RUNNING && (
-                    <div className="analysis-running-overflow" style={{ width: this.getChartWidth() }}>
-                        <div>
-                            <span>Analysis running</span>
+            <div>
+                <div
+                    id={this.getOutputComponentDomId() + 'focusContainer'}
+                    className="xy-main"
+                    tabIndex={0}
+                    onKeyDown={e => this.onKeyDown(e)}
+                    onKeyUp={e => this.onKeyUp(e)}
+                    onWheel={e => this.onWheel(e)}
+                    onMouseMove={e => this.onMouseMove(e)}
+                    onContextMenu={e => e.preventDefault()}
+                    onMouseLeave={e => this.onMouseLeave(e)}
+                    onMouseDown={e => this.onMouseDown(e)}
+                    style={{
+                        height: parseInt(String(this.props.style.height)) - this.timelineHeight,
+                        position: 'relative',
+                        cursor: this.state.cursor
+                    }}
+                    ref={this.divRef}
+                >
+                    {this.chooseReactChart()}
+                    {this.state.outputStatus === ResponseStatus.RUNNING && (
+                        <div className="analysis-running-overflow" style={{ width: this.getChartWidth() }}>
+                            <div>
+                                <span>Analysis running</span>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
+                <div style={{ position: 'relative' }}>
+                    {this.renderTimeline()}
+                    {this.state.xAxisTitle && (
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                textAlign: 'center',
+                                fontSize: '12px',
+                                color: 'rgba(102, 102, 102, 0.5)',
+                                pointerEvents: 'none',
+                                zIndex: 10
+                            }}
+                        >
+                            {this.state.xAxisTitle}
+                        </div>
+                    )}
+                </div>
             </div>
         );
     }
@@ -909,5 +1307,27 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
             const abs = this.props.unitController.absoluteRange;
             this.props.unitController.viewRange = panRange(vr, abs, left);
         }
+    }
+
+    private getDataTypeFromUnit(unit: string): string {
+        const lowerUnit = unit.toLowerCase();
+
+        if (/^(ns|us|ms|s|sec|seconds?|minutes?|hours?|days?)$/.test(lowerUnit)) {
+            return 'time';
+        }
+
+        if (/^(b|kb|mb|gb|tb|bytes?)$/.test(lowerUnit)) {
+            return 'bytes';
+        }
+
+        if (/^(bps|b\/s|bytes?\/s|bytes?\/sec)$/.test(lowerUnit)) {
+            return 'bytes/sec';
+        }
+
+        if (/^(it\/s|#\/s)$/.test(lowerUnit)) {
+            return 'iterations/sec';
+        }
+
+        return 'other';
     }
 }
