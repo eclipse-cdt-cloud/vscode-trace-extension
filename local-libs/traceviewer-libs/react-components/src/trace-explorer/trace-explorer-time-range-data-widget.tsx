@@ -33,11 +33,8 @@ export class ReactTimeRangeDataWidget extends React.Component<
     ReactTimeRangeDataWidgetProps,
     ReactTimeRangeDataWidgetState
 > {
-    private experimentDataMap: TimeRangeDataMap;
-
     constructor(props: ReactTimeRangeDataWidgetProps) {
         super(props);
-        this.experimentDataMap = new TimeRangeDataMap();
         this.state = {
             inputting: false,
             userInputSelectionStartIsValid: true,
@@ -65,17 +62,17 @@ export class ReactTimeRangeDataWidget extends React.Component<
     };
 
     private onViewRangeUpdated = (payload: TimeRangeUpdatePayload): void => {
-        this.experimentDataMap.updateViewRange(payload);
+        TimeRangeDataMap.updateViewRange(payload);
         this.renderIfActive();
     };
 
     private onSelectionRangeUpdated = (payload: TimeRangeUpdatePayload): void => {
-        this.experimentDataMap.updateSelectionRange(payload);
+        TimeRangeDataMap.updateSelectionRange(payload);
         this.renderIfActive();
     };
 
     private onAbsoluteRangeUpdate = (experiment: Experiment): void => {
-        this.experimentDataMap.updateAbsoluteRange(experiment);
+        TimeRangeDataMap.updateAbsoluteRange(experiment);
         this.renderIfActive();
     };
 
@@ -85,36 +82,44 @@ export class ReactTimeRangeDataWidget extends React.Component<
     };
 
     private onExperimentSelected = (experiment: Experiment | undefined): void => {
-        let newActiveData;
+        let newActiveData: ExperimentTimeRangeData | undefined;
         if (experiment) {
-            // TODO - consider changing this logic?
+            // Update absolute range first so the entry exists/merges
             this.onAbsoluteRangeUpdate(experiment);
-            newActiveData = this.experimentDataMap.get(experiment.UUID);
+            newActiveData = TimeRangeDataMap.get(experiment.UUID);
         }
         this.setActiveExperiment(newActiveData);
     };
 
     private onExperimentClosed = (experiment: Experiment | string): void => {
-        this.experimentDataMap.delete(experiment);
+        const id = typeof experiment === 'string' ? experiment : experiment.UUID;
+        TimeRangeDataMap.delete(id);
+        // If we just closed the active one, clear local state, too
+        if (this.state.activeData?.UUID === id) {
+            this.setActiveExperiment(undefined);
+        }
     };
 
     private setActiveExperiment = (timeData?: ExperimentTimeRangeData): void => {
-        this.experimentDataMap.setActiveExperiment(timeData);
-        this.setState({ activeData: timeData ? this.experimentDataMap.get(timeData.UUID) : undefined });
+        TimeRangeDataMap.setActiveExperiment(timeData);
+        this.setState({
+            activeData: timeData ? TimeRangeDataMap.get(timeData.UUID) : undefined
+        });
     };
 
     private renderIfActive(): void {
-        const { state, experimentDataMap } = this;
-        if (state.activeData?.UUID === experimentDataMap.activeData?.UUID) {
-            const activeData = state.activeData ? experimentDataMap.get(state.activeData.UUID) : undefined;
-            this.setState({ activeData });
+        const { state } = this;
+        const globalActive = TimeRangeDataMap.activeData;
+        if (state.activeData?.UUID === globalActive?.UUID) {
+            const fresh = state.activeData ? TimeRangeDataMap.get(state.activeData.UUID) : undefined;
+            this.setState({ activeData: fresh });
         }
     }
 
     public restoreData = (mapArray: Array<ExperimentTimeRangeData>, activeData: ExperimentTimeRangeData): void => {
-        this.experimentDataMap.clear();
+        TimeRangeDataMap.clear();
         for (const experimentData of mapArray) {
-            this.experimentDataMap.set(experimentData);
+            TimeRangeDataMap.set(experimentData);
         }
         this.setActiveExperiment(activeData);
     };
