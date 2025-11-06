@@ -17,7 +17,7 @@ export interface ReactAvailableViewsProps {
     title: string;
     tspClientProvider: ITspClientProvider;
     contextMenuRenderer?: (event: React.MouseEvent<HTMLDivElement>, output: OutputDescriptor) => void;
-    onCustomizationClick?: (entry: OutputDescriptor, experiment: Experiment) => void;
+    onCustomizationClick?: (entry: OutputDescriptor, experiment: Experiment) => Promise<void>;
 }
 
 export interface ReactAvailableViewsState {
@@ -297,11 +297,11 @@ export class ReactAvailableViewsWidget extends React.Component<ReactAvailableVie
         return EnrichedContent;
     }
 
-    private handleCustomizeClick = async (entry: OutputDescriptor, e: React.MouseEvent) => {
+    private readonly handleCustomizeClick = async (entry: OutputDescriptor, e: React.MouseEvent) => {
         e.stopPropagation();
         if (this.props.onCustomizationClick && this._selectedExperiment) {
-            this.props.onCustomizationClick(entry, this._selectedExperiment);
-            this.updateAvailableViews();
+            await this.props.onCustomizationClick(entry, this._selectedExperiment);
+            await this.updateAvailableViews();
         }
     };
 
