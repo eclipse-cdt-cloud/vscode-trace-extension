@@ -317,7 +317,6 @@ export class JsonConfigEditor {
                       );
 
                 if (submit === 'Yes') {
-                    vscode.window.showInformationMessage('Configuration submitted successfully');
                     return validation.content;
                 }
 

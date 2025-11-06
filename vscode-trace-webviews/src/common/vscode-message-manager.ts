@@ -8,12 +8,14 @@ import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 import { MarkerSet } from 'tsp-typescript-client/lib/models/markerset';
 import { HOST_EXTENSION, MessageParticipant, MessengerAPI } from 'vscode-messenger-common';
 import {
+    alert,
     closeTrace,
     contextMenuItemClicked,
     deleteTrace,
     experimentClosed,
     experimentSelected,
     experimentUpdated,
+    info,
     markerCategoryContext,
     markerSetsContext,
     newStatus,
@@ -71,6 +73,14 @@ export class VsCodeMessageManager extends Messages.MessageManager implements Sta
     notifyConnection(serverStatus: boolean, _receiver?: MessageParticipant | undefined): void {
         const status: string = JSON.stringify(serverStatus);
         this._messenger.sendNotification(connectionStatus, _receiver ?? HOST_EXTENSION, { status });
+    }
+
+    notifyError(message: string, _receiver?: MessageParticipant | undefined): void {
+        this._messenger.sendNotification(alert, _receiver ?? HOST_EXTENSION, message);
+    }
+
+    notifyInfo(message: string, _receiver?: MessageParticipant | undefined): void {
+        this._messenger.sendNotification(info, _receiver ?? HOST_EXTENSION, message);
     }
 
     /**************************************************************************

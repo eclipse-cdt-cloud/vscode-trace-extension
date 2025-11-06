@@ -9,7 +9,9 @@ import {
     connectionStatus,
     outputAdded,
     experimentSelected,
-    setTspClient
+    setTspClient,
+    alert,
+    info
 } from 'vscode-trace-common/lib/messages/vscode-messages';
 import { ClientType, getTspClientUrl } from 'vscode-trace-extension/src/utils/backend-tsp-client-provider';
 import { TraceViewerPanel } from '../../trace-viewer-panel/trace-viewer-webview-panel';
@@ -66,6 +68,14 @@ export class TraceExplorerAvailableViewsProvider extends AbstractTraceExplorerPr
         }
     };
 
+    private readonly _onVscodeAlert = (text: any): void => {
+        vscode.window.showErrorMessage(text);
+    };
+
+    private readonly _onVscodeInfo = (text: any): void => {
+        vscode.window.showInformationMessage(text);
+    };
+
     protected init(
         _webviewView: vscode.WebviewView,
         _context: vscode.WebviewViewResolveContext,
@@ -82,6 +92,8 @@ export class TraceExplorerAvailableViewsProvider extends AbstractTraceExplorerPr
         this._disposables.push(
             this._messenger.onNotification<any>(experimentSelected, this._onVscodeExperimentSelected, options)
         );
+        this._disposables.push(this._messenger.onNotification<string>(alert, this._onVscodeAlert, options));
+        this._disposables.push(this._messenger.onNotification<string>(info, this._onVscodeInfo, options));
         signalManager().on('EXPERIMENT_SELECTED', this._onExperimentSelected);
     }
 
