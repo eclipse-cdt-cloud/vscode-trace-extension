@@ -108,8 +108,22 @@ class TraceExplorerViewsWidget extends React.Component<{}, AvailableViewsAppStat
         const { name, description, sourceTypeId, parameters } = userConfig;
 
         const options = new OutputConfigurationQuery(name, description, sourceTypeId, parameters);
-        await tsp.createDerivedOutput(experiment.UUID, output.id, options);
-        return;
+        const response = await tsp.createDerivedOutput(experiment.UUID, output.id, options);
+        if (!response.isOk()) {
+            const errorResponse = response.getErrorResponse();
+            let message: string = `Customization failed (${response.getStatusCode()}): '${response.getStatusMessage()}'`;
+            if (errorResponse) {
+                message = `Customization failed (${response.getStatusCode()}): '${errorResponse.title}'`;
+                // TODO Remove workaround when following fix is available
+                // https://github.com/eclipse-cdt-cloud/tsp-typescript-client/issues/148
+                if ('detail' in errorResponse) {
+                    message = message + `. Details: '${errorResponse.detail}'`;
+                }
+            }
+            this._signalHandler.notifyError(message);
+            return;
+        }
+        this._signalHandler.notifyInfo('Configuration submitted successfully');
     };
 
     public render(): React.ReactNode {

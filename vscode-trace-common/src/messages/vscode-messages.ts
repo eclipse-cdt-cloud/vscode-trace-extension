@@ -11,6 +11,7 @@ export const VSCODE_MESSAGES = {
     EXPERIMENT_SELECTED: 'experimentSelected',
     EXPERIMENT_UPDATED: 'experimentUpdated',
     EXPERIMENT_CLOSED: 'experimentClosed',
+    INFO: 'info',
     NEW_STATUS: 'newStatus',
     OPENED_TRACES_UPDATED: 'openedTracesUpdated',
     OPEN_OVERVIEW: 'open-overview',
@@ -63,6 +64,7 @@ export const setTspClient: NotificationType<any> = { method: VSCODE_MESSAGES.SET
 export const connectionStatus: NotificationType<any> = { method: VSCODE_MESSAGES.CONNECTION_STATUS };
 
 export const alert: NotificationType<any> = { method: VSCODE_MESSAGES.ALERT };
+export const info: NotificationType<any> = { method: VSCODE_MESSAGES.INFO };
 export const newStatus: NotificationType<any> = { method: VSCODE_MESSAGES.NEW_STATUS };
 export const removeStatus: NotificationType<any> = { method: VSCODE_MESSAGES.REMOVE_STATUS };
 
