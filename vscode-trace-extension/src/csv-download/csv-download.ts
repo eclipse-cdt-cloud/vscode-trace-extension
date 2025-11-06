@@ -1,11 +1,11 @@
-import { TimeRangeDataMap } from "traceviewer-react-components/src/components/utils/time-range-data-map";
+import { TimeRangeDataMap } from "traceviewer-react-components/lib/components/utils/time-range-data-map";
 import * as vscode from 'vscode'
 import * as fs from 'fs';
 import * as path from 'path';
 import { getTspClient } from "../utils/backend-tsp-client-provider";
 import { QueryHelper } from "tsp-typescript-client";
 
-export const exportCSV = async (outputID?: string) => {
+export const exportCSV = async (outputID: string = 'org.eclipse.tracecompass.internal.provisional.tmf.core.model.events.TmfEventTableDataProvider') => {
     
     // Helper FUnctions
     const REQUEST_SIZE = 1000;
@@ -63,8 +63,6 @@ export const exportCSV = async (outputID?: string) => {
     }
 
     const tsp = getTspClient();
-    outputID = outputID ||
-        'org.eclipse.tracecompass.internal.provisional.tmf.core.model.events.TmfEventTableDataProvider';
 
     await vscode.window.withProgress(
         { location: vscode.ProgressLocation.Notification, title: 'Exporting CSV…', cancellable: true },
@@ -74,6 +72,7 @@ export const exportCSV = async (outputID?: string) => {
             try {
                 // 1) Resolve headers
                 progress.report({ message: 'Fetching column headers…', increment: 5 });
+                // todo fix
                 const headersResp = await tsp.fetchTableColumns(activeData.UUID, outputID, QueryHelper.query());
                 const headersModel = headersResp.getModel()?.model;
                 if (!headersModel) {
@@ -215,4 +214,31 @@ export const exportCSV = async (outputID?: string) => {
             }
         }
     );
+}
+
+export const queryForOutputType = async () => {
+    const tsp = getTspClient();
+    const { activeData } = TimeRangeDataMap;
+    if (!activeData) {
+        console.log('no active data');
+        return;
+    }
+    const outputsResponse = await tsp.experimentOutputs(activeData?.UUID);
+    console.dir(outputsResponse);
+    const outputDescriptors = outputsResponse.getModel();
+    if (!outputDescriptors || outputDescriptors.length <= 0) {
+        console.log('no outputs');
+        return;
+    }
+    const tables = outputDescriptors?.filter(output => output.type === 'TABLE');
+    const items = tables.map(descriptor => ({ label: descriptor.name, id: descriptor.id }));
+    const selection = await vscode.window.showQuickPick(items, {
+        title: 'Select a table output',
+        placeHolder: 'pick one',
+        matchOnDescription: true,
+        canPickMany: false,
+    })
+
+    return selection?.id;
+
 }

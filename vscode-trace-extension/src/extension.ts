@@ -31,7 +31,8 @@ import { VSCODE_MESSAGES } from 'vscode-trace-common/lib/messages/vscode-message
 import { TraceViewerPanel } from './trace-viewer-panel/trace-viewer-webview-panel';
 import { TraceServerManager } from './utils/trace-server-manager';
 import { ResourceType, TraceExplorerResourceTypeHandler } from './utils/trace-explorer-resource-type-handler';
-import { exportCSV } from './csv-download/csv-download';
+import { exportCSV, queryForOutputType } from './csv-download/csv-download';
+
 
 export let traceLogger: TraceExtensionLogger;
 export const traceExtensionWebviewManager: TraceExtensionWebviewManager = new TraceExtensionWebviewManager();
@@ -128,6 +129,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
 
     context.subscriptions.push(
         vscode.commands.registerCommand('traceViewer.exportCsvFromSelectionRange', async (outputID?: string) => {
+            if (!outputID) {
+                outputID = await queryForOutputType();
+            }
             exportCSV(outputID);
         })
     );
