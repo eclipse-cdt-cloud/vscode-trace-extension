@@ -33,7 +33,6 @@ import { TraceServerManager } from './utils/trace-server-manager';
 import { ResourceType, TraceExplorerResourceTypeHandler } from './utils/trace-explorer-resource-type-handler';
 import { exportCSV, queryForOutputType } from './csv-download/csv-download';
 
-
 export let traceLogger: TraceExtensionLogger;
 export const traceExtensionWebviewManager: TraceExtensionWebviewManager = new TraceExtensionWebviewManager();
 export const traceServerManager: TraceServerManager = new TraceServerManager();

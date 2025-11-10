@@ -3,7 +3,10 @@ import { ExperimentTimeRangeData } from '../../trace-explorer/trace-explorer-tim
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 
 export class TimeRangeDataMap {
-    private static _experimentDataMap: Map<string, ExperimentTimeRangeData> = new Map<string, ExperimentTimeRangeData>();
+    private static _experimentDataMap: Map<string, ExperimentTimeRangeData> = new Map<
+        string,
+        ExperimentTimeRangeData
+    >();
     private static _activeData?: ExperimentTimeRangeData;
     constructor() {
         // Static class pattern: no instance initialization required

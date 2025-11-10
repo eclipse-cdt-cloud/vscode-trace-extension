@@ -1,12 +1,14 @@
-import { TimeRangeDataMap } from "traceviewer-react-components/lib/components/utils/time-range-data-map";
-import * as vscode from 'vscode'
+import { TimeRangeDataMap } from 'traceviewer-react-components/lib/components/utils/time-range-data-map';
+import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { getTspClient } from "../utils/backend-tsp-client-provider";
-import { QueryHelper } from "tsp-typescript-client";
+import { getTspClient } from '../utils/backend-tsp-client-provider';
+import { QueryHelper } from 'tsp-typescript-client';
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 
 export const exportCSV = async (outputID: string) => {
-    
     // Helper FUnctions
     const REQUEST_SIZE = 1000;
     const WRITE_HIGH_WATERMARK = 1 << 20; // 1 MiB
@@ -51,11 +53,9 @@ export const exportCSV = async (outputID: string) => {
 
     const uri = await vscode.window.showSaveDialog({
         title: 'Save CSV File',
-        defaultUri: vscode.Uri.file(
-            path.join(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? '', 'data.csv')
-        ),
+        defaultUri: vscode.Uri.file(path.join(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? '', 'data.csv')),
         filters: { 'CSV Files': ['csv'] },
-        saveLabel: 'Save CSV',
+        saveLabel: 'Save CSV'
     });
     if (!uri) {
         vscode.window.showInformationMessage('Save cancelled.');
@@ -94,7 +94,7 @@ export const exportCSV = async (outputID: string) => {
 
                 const indexBody = (requestedTime: bigint) => ({
                     requested_times: [requestedTime],
-                    requested_table_count: 1,
+                    requested_table_count: 1
                 });
 
                 const t1Req = await tsp.fetchTableLines(
@@ -139,11 +139,15 @@ export const exportCSV = async (outputID: string) => {
                     requested_table_column_ids: headerNames.map((_, i) => i),
                     requested_table_count: count,
                     requested_table_index: index,
-                    table_search_expressions: {},
+                    table_search_expressions: {}
                 });
 
                 // Prime first request
-                let ongoing = tsp.fetchTableLines(activeData.UUID, outputID, QueryHelper.query(makeLinesBody(nextIndex, nextCount)));
+                let ongoing = tsp.fetchTableLines(
+                    activeData.UUID,
+                    outputID,
+                    QueryHelper.query(makeLinesBody(nextIndex, nextCount))
+                );
 
                 const writeLines = async (lines: any[]) => {
                     const lineStrings: string[] = [];
@@ -173,10 +177,10 @@ export const exportCSV = async (outputID: string) => {
                     ongoing =
                         nextCount > 0
                             ? tsp.fetchTableLines(
-                                activeData.UUID,
-                                outputID,
-                                QueryHelper.query(makeLinesBody(nextIndex, nextCount))
-                            )
+                                  activeData.UUID,
+                                  outputID,
+                                  QueryHelper.query(makeLinesBody(nextIndex, nextCount))
+                              )
                             : Promise.resolve({ getModel: () => ({ model: { lines: [] } }) } as any);
 
                     await writeLines(currentLines);
@@ -189,7 +193,6 @@ export const exportCSV = async (outputID: string) => {
                         increment: pct - (progress as any)._lastPct
                     });
                     (progress as any)._lastPct = pct;
-
                 }
 
                 if (token.isCancellationRequested) {
@@ -218,7 +221,7 @@ export const exportCSV = async (outputID: string) => {
             }
         }
     );
-}
+};
 
 export const queryForOutputType = async () => {
     const tsp = getTspClient();
@@ -240,9 +243,8 @@ export const queryForOutputType = async () => {
         title: 'Select a table output',
         placeHolder: 'pick one',
         matchOnDescription: true,
-        canPickMany: false,
-    })
+        canPickMany: false
+    });
 
     return selection?.id;
-
-}
+};
