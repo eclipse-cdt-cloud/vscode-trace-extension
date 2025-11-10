@@ -27,7 +27,6 @@ export class TraceExplorerTimeRangeDataProvider extends AbstractTraceExplorerPro
             vscode.Uri.joinPath(this._extensionUri, 'lib', 'codicons')
         ]
     };
-    private _experimentDataMap = new TimeRangeDataMap();
 
     // VSCODE message handlers
     private _onVscodeRequestSelectionRangeChange = (data: any): void => {
@@ -57,8 +56,8 @@ export class TraceExplorerTimeRangeDataProvider extends AbstractTraceExplorerPro
         _webviewView.onDidChangeVisibility(() => {
             if (this._view?.visible) {
                 const data = {
-                    mapArray: Array.from(this._experimentDataMap.experimentDataMap.values()),
-                    activeData: this._experimentDataMap.activeData
+                    mapArray: Array.from(TimeRangeDataMap.experimentDataMap.values()),
+                    activeData: TimeRangeDataMap.activeData
                 };
                 this._messenger.sendNotification(restoreView, this._webviewParticipant, JSONBigUtils.stringify(data));
             }
@@ -85,7 +84,7 @@ export class TraceExplorerTimeRangeDataProvider extends AbstractTraceExplorerPro
 
     private onViewRangeUpdated = (update: TimeRangeUpdatePayload) => {
         this._messenger.sendNotification(viewRangeUpdated, this._webviewParticipant, JSONBigUtils.stringify(update));
-        this._experimentDataMap.updateViewRange(update);
+        TimeRangeDataMap.updateViewRange(update);
     };
 
     private onSelectionRangeUpdated = (update: TimeRangeUpdatePayload) => {
@@ -94,32 +93,38 @@ export class TraceExplorerTimeRangeDataProvider extends AbstractTraceExplorerPro
             this._webviewParticipant,
             JSONBigUtils.stringify(update)
         );
-        this._experimentDataMap.updateSelectionRange(update);
+        TimeRangeDataMap.updateSelectionRange(update);
     };
 
     private onExperimentSelected = (experiment: Experiment | undefined) => {
         const data = { wrapper: experiment ? JSONBigUtils.stringify(experiment) : undefined };
         this._messenger.sendNotification(experimentSelected, this._webviewParticipant, data);
+
         if (experiment) {
-            this._experimentDataMap.updateAbsoluteRange(experiment);
+            // Update absolute range first so the entry exists/merges
+            TimeRangeDataMap.updateAbsoluteRange(experiment);
+            // Ensure activeData is an ExperimentTimeRangeData, not Experiment
+            const entry = TimeRangeDataMap.get(experiment.UUID);
+            TimeRangeDataMap.setActiveExperiment(entry);
+        } else {
+            TimeRangeDataMap.setActiveExperiment(undefined);
         }
-        this._experimentDataMap.setActiveExperiment(experiment);
     };
 
     private onExperimentUpdated = (experiment: Experiment) => {
         const data = { wrapper: JSONBigUtils.stringify(experiment) };
         this._messenger.sendNotification(experimentUpdated, this._webviewParticipant, data);
-        this._experimentDataMap.updateAbsoluteRange(experiment);
+        TimeRangeDataMap.updateAbsoluteRange(experiment);
     };
 
     private onExperimentClosed = (experiment: Experiment) => {
         const data = { wrapper: JSONBigUtils.stringify(experiment) };
         this._messenger.sendNotification(experimentClosed, this._webviewParticipant, data);
-        this._experimentDataMap.delete(experiment);
+        TimeRangeDataMap.delete(experiment);
     };
 
     private onExperimentTabClosed = (experimentUUID: string) => {
         this._messenger.sendNotification(traceViewerTabClosed, this._webviewParticipant, experimentUUID);
-        this._experimentDataMap.delete(experimentUUID);
+        TimeRangeDataMap.delete(experimentUUID);
     };
 }

@@ -3,13 +3,16 @@ import { ExperimentTimeRangeData } from '../../trace-explorer/trace-explorer-tim
 import { Experiment } from 'tsp-typescript-client/lib/models/experiment';
 
 export class TimeRangeDataMap {
-    private _experimentDataMap: Map<string, ExperimentTimeRangeData>;
-    private _activeData?: ExperimentTimeRangeData;
+    private static _experimentDataMap: Map<string, ExperimentTimeRangeData> = new Map<
+        string,
+        ExperimentTimeRangeData
+    >();
+    private static _activeData?: ExperimentTimeRangeData;
     constructor() {
-        this._experimentDataMap = new Map<string, ExperimentTimeRangeData>();
+        // Static class pattern: no instance initialization required
     }
 
-    public updateViewRange = (payload: TimeRangeUpdatePayload): void => {
+    public static updateViewRange = (payload: TimeRangeUpdatePayload): void => {
         const { experimentUUID: UUID, timeRange } = payload;
 
         const update = {
@@ -20,7 +23,7 @@ export class TimeRangeDataMap {
         this.updateExperimentTimeRangeData(update);
     };
 
-    public updateSelectionRange = (payload: TimeRangeUpdatePayload): void => {
+    public static updateSelectionRange = (payload: TimeRangeUpdatePayload): void => {
         const { experimentUUID: UUID, timeRange } = payload;
 
         const update = {
@@ -31,7 +34,7 @@ export class TimeRangeDataMap {
         this.updateExperimentTimeRangeData(update);
     };
 
-    public updateAbsoluteRange = (experiment: Experiment): void => {
+    public static updateAbsoluteRange = (experiment: Experiment): void => {
         if (!experiment) {
             return;
         }
@@ -54,7 +57,7 @@ export class TimeRangeDataMap {
      * you only input the data to change and the existing values persist.
      * @param data Partial data of Experiment Time Range Data.
      */
-    private updateExperimentTimeRangeData = (data: ExperimentTimeRangeData): void => {
+    private static updateExperimentTimeRangeData = (data: ExperimentTimeRangeData): void => {
         const map = this._experimentDataMap;
         const id = data.UUID;
         const existingData = map.get(id) || {};
@@ -70,32 +73,32 @@ export class TimeRangeDataMap {
         }
     };
 
-    public setActiveExperiment(data?: ExperimentTimeRangeData): void {
+    public static setActiveExperiment(data?: ExperimentTimeRangeData): void {
         this._activeData = data;
     }
 
-    public delete = (experiment: Experiment | string): void => {
+    public static delete = (experiment: Experiment | string): void => {
         const id = typeof experiment === 'string' ? experiment : experiment.UUID;
         this._experimentDataMap.delete(id);
     };
 
-    public get(UUID: string): ExperimentTimeRangeData | undefined {
+    public static get(UUID: string): ExperimentTimeRangeData | undefined {
         return this._experimentDataMap.get(UUID);
     }
 
-    public set(data: ExperimentTimeRangeData): void {
+    public static set(data: ExperimentTimeRangeData): void {
         this._experimentDataMap.set(data.UUID, data);
     }
 
-    public clear(): void {
+    public static clear(): void {
         this._experimentDataMap.clear();
     }
 
-    get activeData(): ExperimentTimeRangeData | undefined {
+    public static get activeData(): ExperimentTimeRangeData | undefined {
         return this._activeData;
     }
 
-    get experimentDataMap(): Map<string, ExperimentTimeRangeData> {
+    public static get experimentDataMap(): Map<string, ExperimentTimeRangeData> {
         return this._experimentDataMap;
     }
 }

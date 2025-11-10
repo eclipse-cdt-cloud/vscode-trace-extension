@@ -115,6 +115,10 @@
                 "icon": "$(info)"
             },
             {
+                "command": "traceViewer.exportCsvFromSelectionRange",
+                "title": "Export CSV From Selection Range"
+            },
+            {
                 "command": "serverStatus.started",
                 "title": "Trace Server: started"
             },
@@ -334,6 +338,7 @@
         "terser": "4.8.1",
         "traceviewer-base": "0.10.0",
         "traceviewer-react-components": "0.10.0",
+        "tsp-typescript-client": "^0.9.0",
         "vscode-messenger": "^0.5.0",
         "vscode-trace-common": "0.7.0"
     },
