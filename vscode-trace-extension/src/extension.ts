@@ -132,7 +132,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
             if (!outputID) {
                 outputID = await queryForOutputType();
             }
-            exportCSV(outputID);
+            if (outputID) {
+                exportCSV(outputID);
+            }
         })
     );
 

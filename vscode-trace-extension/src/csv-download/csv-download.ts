@@ -5,7 +5,7 @@ import * as path from 'path';
 import { getTspClient } from "../utils/backend-tsp-client-provider";
 import { QueryHelper } from "tsp-typescript-client";
 
-export const exportCSV = async (outputID: string = 'org.eclipse.tracecompass.internal.provisional.tmf.core.model.events.TmfEventTableDataProvider') => {
+export const exportCSV = async (outputID: string) => {
     
     // Helper FUnctions
     const REQUEST_SIZE = 1000;
@@ -71,7 +71,7 @@ export const exportCSV = async (outputID: string = 'org.eclipse.tracecompass.int
 
             try {
                 // 1) Resolve headers
-                progress.report({ message: 'Fetching column headers…', increment: 5 });
+                progress.report({ message: 'Fetching column headers…', increment: 2 });
                 // todo fix
                 const headersResp = await tsp.fetchTableColumns(activeData.UUID, outputID, QueryHelper.query());
                 const headersModel = headersResp.getModel()?.model;
@@ -82,11 +82,15 @@ export const exportCSV = async (outputID: string = 'org.eclipse.tracecompass.int
                 const headerNames: string[] = headersModel.map((c: { name: string }) => c.name);
 
                 // 2) Compute absolute timestamps for selection
-                const START_TIME = BigInt(absoluteRange.start) + BigInt(selectionRange.start);
-                const END_TIME = BigInt(absoluteRange.start) + BigInt(selectionRange.end);
+                const t1 = BigInt(absoluteRange.start) + BigInt(selectionRange.start);
+                const t2 = BigInt(absoluteRange.start) + BigInt(selectionRange.end);
+
+                // Normalize
+                const START_TIME = t1 < t2 ? t1 : t2;
+                const END_TIME = t1 < t2 ? t2 : t1;
 
                 // 3) Resolve start/end indices by time (like your POC)
-                progress.report({ message: 'Resolving table indices…', increment: 10 });
+                progress.report({ message: 'Resolving table indices…', increment: 2 });
 
                 const indexBody = (requestedTime: bigint) => ({
                     requested_times: [requestedTime],
@@ -153,7 +157,7 @@ export const exportCSV = async (outputID: string = 'org.eclipse.tracecompass.int
                 };
 
                 let processed = 0;
-                progress.report({ message: `Exporting ${totalRows.toLocaleString()} rows…`, increment: 10 });
+                progress.report({ message: `Exporting ${totalRows.toLocaleString()} rows…`, increment: 2 });
 
                 while (rowsLeft > 0 && !token.isCancellationRequested) {
                     // Advance iterators for the *next* request before awaiting current
