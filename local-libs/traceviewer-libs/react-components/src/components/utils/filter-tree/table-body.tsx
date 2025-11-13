@@ -9,12 +9,15 @@ interface TableBodyProps {
     collapsedNodes: number[];
     isCheckable: boolean;
     isClosable: boolean;
+    isPinnable?: boolean;
+    pinnedRows?: number[];
     getCheckedStatus: (id: number) => number;
     onToggleCollapse: (id: number) => void;
     onRowClick: (id: number) => void;
     onMultipleRowClick?: (id: number, isShiftClicked?: boolean) => void;
     onClose: (id: number) => void;
     onToggleCheck: (id: number) => void;
+    onPin?: (id: number) => void;
     onContextMenu: (event: React.MouseEvent<HTMLDivElement>, id: number) => void;
     hideFillers?: boolean;
 }

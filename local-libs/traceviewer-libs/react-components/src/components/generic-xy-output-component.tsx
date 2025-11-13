@@ -178,6 +178,7 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
                 <EntryTree
                     entries={this.state.xyTree}
                     showCheckboxes={true}
+                    showPinIcons={false}
                     collapsedNodes={this.state.collapsedNodes}
                     checkedSeries={this.state.checkedSeries}
                     onToggleCheck={this.onToggleCheck}
