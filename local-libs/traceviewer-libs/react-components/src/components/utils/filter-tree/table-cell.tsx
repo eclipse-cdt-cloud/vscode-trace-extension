@@ -5,6 +5,7 @@ interface TableCellProps {
     node: TreeNode;
     index: number;
     children?: React.ReactNode | React.ReactNode[];
+    pinButton?: React.ReactNode;
 }
 
 export class TableCell extends React.Component<TableCellProps> {

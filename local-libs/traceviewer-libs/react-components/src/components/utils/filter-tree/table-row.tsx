@@ -12,10 +12,13 @@ interface TableRowProps {
     collapsedNodes: number[];
     isCheckable: boolean;
     isClosable: boolean;
+    isPinnable?: boolean;
+    pinnedRows?: number[];
     getCheckedStatus: (id: number) => number;
     onToggleCollapse: (id: number) => void;
     onClose: (id: number) => void;
     onToggleCheck: (id: number) => void;
+    onPin?: (id: number) => void;
     onRowClick: (id: number) => void;
     onMultipleRowClick?: (id: number, isShiftClicked?: boolean) => void;
     onContextMenu: (event: React.MouseEvent<HTMLDivElement>, id: number) => void;
@@ -36,6 +39,13 @@ export class TableRow extends React.Component<TableRowProps> {
 
     private handleClose = (): void => {
         this.props.onClose(this.props.node.id);
+    };
+
+    private handlePin = (e: React.MouseEvent<HTMLDivElement>): void => {
+        e.stopPropagation();
+        if (this.props.onPin) {
+            this.props.onPin(this.props.node.id);
+        }
     };
 
     renderToggleCollapse = (): React.ReactNode => {
@@ -71,6 +81,37 @@ export class TableRow extends React.Component<TableRowProps> {
             </div>
         ) : undefined;
 
+    renderPinButton = (): React.ReactNode => {
+        if (!this.props.isPinnable || !this.props.node.id) return undefined;
+
+        const isPinned = this.props.pinnedRows?.includes(this.props.node.id) || false;
+        const isSelected =
+            this.props.selectedRow === this.props.node.id ||
+            this.props.multiSelectedRows?.includes(this.props.node.id) ||
+            false;
+
+        // Show if pinned or selected
+        const shouldShow = isPinned || isSelected;
+
+        return (
+            <div
+                style={{
+                    paddingRight: 5,
+                    display: shouldShow ? 'inline' : 'none',
+                    float: 'right',
+                    transform: isPinned ? 'rotate(45deg)' : 'rotate(0deg)',
+                    WebkitTextStroke: isPinned ? 'none' : '1px currentColor',
+                    cursor: 'pointer',
+                    fontSize: '10px'
+                }}
+                onClick={this.handlePin}
+                title={isPinned ? 'Unpin row' : 'Pin row'}
+            >
+                {icons.pin}
+            </div>
+        );
+    };
+
     renderRow = (): React.ReactNode => {
         const { node } = this.props;
         const row = node.labels.map((_label: string, index) => (
@@ -78,6 +119,7 @@ export class TableRow extends React.Component<TableRowProps> {
                 {index === 0 ? this.renderToggleCollapse() : undefined}
                 {index === 0 ? this.renderCheckbox() : undefined}
                 {index === 0 ? this.renderCloseButton() : undefined}
+                {index === 0 ? this.renderPinButton() : undefined}
             </TableCell>
         ));
         if (!this.props.hideFillers) {

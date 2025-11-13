@@ -9,7 +9,8 @@ import {
     faSort,
     faSortDown,
     faSortUp,
-    faTimes
+    faTimes,
+    faThumbtack
 } from '@fortawesome/free-solid-svg-icons';
 
 interface iconsShape {
@@ -22,6 +23,7 @@ interface iconsShape {
     sortDown: React.ReactNode;
     sortUp: React.ReactNode;
     close: React.ReactNode;
+    pin: React.ReactNode;
 }
 
 const icons: iconsShape = {
@@ -33,7 +35,8 @@ const icons: iconsShape = {
     sort: <FontAwesomeIcon icon={faSort} />,
     sortDown: <FontAwesomeIcon icon={faSortDown} />,
     sortUp: <FontAwesomeIcon icon={faSortUp} />,
-    close: <FontAwesomeIcon icon={faTimes} />
+    close: <FontAwesomeIcon icon={faTimes} />,
+    pin: <FontAwesomeIcon icon={faThumbtack} />
 };
 
 export default icons;

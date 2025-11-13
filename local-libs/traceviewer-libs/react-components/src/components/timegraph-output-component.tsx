@@ -19,6 +19,7 @@ export class TimegraphOutputComponent extends AbstractGanttOutputComponent {
                 : [],
             selectedRow: undefined,
             multiSelectedRows: [],
+            pinnedRows: [],
             selectedMarkerRow: undefined,
             columns: [],
             collapsedMarkerNodes: validateNumArray(this.props.persistChartState?.collapsedMarkerNodes)
@@ -35,7 +36,24 @@ export class TimegraphOutputComponent extends AbstractGanttOutputComponent {
     renderTree(): React.ReactNode {
         this.onOrderChange = this.onOrderChange.bind(this);
         this.onOrderReset = this.onOrderReset.bind(this);
-        // TODO Show header, when we can have entries in-line with timeline-chart
+
+        // Add pinned entries at the top, maintaining tree order
+        const pinnedEntries = this.state.pinnedRows
+            ? this.state.pinnedRows
+                  .map(id => this.state.chartTree.find(entry => entry.id === id))
+                  .filter(entry => entry !== undefined)
+                  .map(entry => ({ ...entry, id: AbstractGanttOutputComponent.createNewId(entry.id), parentId: -1 }))
+            : [];
+        const entriesWithPinned = [...pinnedEntries, ...this.state.chartTree];
+
+        // Show pin icons on both original and duplicate rows
+        const extendedPinnedRows = this.state.pinnedRows
+            ? [
+                  ...this.state.pinnedRows,
+                  ...this.state.pinnedRows.map(id => AbstractGanttOutputComponent.createNewId(id))
+              ]
+            : [];
+
         return (
             <>
                 <div
@@ -55,8 +73,11 @@ export class TimegraphOutputComponent extends AbstractGanttOutputComponent {
                     <EntryTree
                         collapsedNodes={this.state.collapsedNodes}
                         showFilter={false}
-                        entries={this.state.chartTree}
+                        entries={entriesWithPinned}
                         showCheckboxes={false}
+                        showPinIcons={true}
+                        pinnedRows={extendedPinnedRows}
+                        onPin={this.onPin}
                         onToggleCollapse={this.onToggleCollapse}
                         onRowClick={this.onRowClick}
                         onMultipleRowClick={this.onMultipleRowClick}
