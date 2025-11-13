@@ -70,6 +70,7 @@ export type AbstractGanttOutputState = AbstractTreeOutputState & {
         | undefined;
     selectedRow?: number;
     multiSelectedRows?: number[];
+    pinnedRows?: number[];
     selectedMarkerRow?: number;
     collapsedNodes: number[];
     collapsedMarkerNodes: number[];
@@ -87,7 +88,6 @@ export abstract class AbstractGanttOutputComponent<
 > extends AbstractTreeOutputComponent<P, S> {
     protected MENU_ID: string;
     protected COARSE_RESOLUTION_FACTOR: number;
-
     private totalHeight = 0;
     private rowController: TimeGraphRowController;
     private markerRowController: TimeGraphRowController;
@@ -98,7 +98,6 @@ export abstract class AbstractGanttOutputComponent<
     private markerChartCursors: TimeGraphChartCursors;
     private arrowLayer: TimeGraphChartArrows;
     private rangeEventsLayer: TimeGraphRangeEventsLayer;
-
     private horizontalContainer: React.RefObject<HTMLDivElement>;
     protected chartTreeRef: React.RefObject<HTMLDivElement>;
     protected markerTreeRef: React.RefObject<HTMLDivElement>;
@@ -121,6 +120,8 @@ export abstract class AbstractGanttOutputComponent<
     private _debouncedUpdateChart = debounce(() => {
         this.chartLayer.updateChart(this.filterExpressionsMap());
     }, 500);
+
+    static NEW_ID_KEY = -3;
 
     constructor(props: P) {
         super(props);
@@ -437,15 +438,19 @@ export abstract class AbstractGanttOutputComponent<
 
     private updateTotalHeight() {
         const visibleEntries = [...this.state.chartTree].filter(entry => this.isVisible(entry));
-        this.totalHeight = visibleEntries.length * this.props.style.rowHeight;
+        const pinnedCount = this.state.pinnedRows ? this.state.pinnedRows.length : 0;
+        this.totalHeight = (visibleEntries.length + pinnedCount) * this.props.style.rowHeight;
         this.rowController.totalHeight = this.totalHeight;
     }
 
     private isVisible(entry: TimeGraphEntry): boolean {
         const { collapsedNodes, emptyNodes } = this.state;
 
+        // Convert duplicate ID back to original ID for checking
+        const originalId = entry.id < -1 ? AbstractGanttOutputComponent.getOriginalId(entry.id) : entry.id;
+
         // Check for empty nodes
-        if (this.shouldHideEmptyNodes && emptyNodes.includes(entry.id)) {
+        if (this.shouldHideEmptyNodes && emptyNodes.includes(originalId)) {
             return false;
         }
 
@@ -1017,8 +1022,18 @@ export abstract class AbstractGanttOutputComponent<
     }
 
     private getTimegraphRowIds() {
-        const { chartTree, columns, collapsedNodes } = this.state;
-        const rowIds = getAllExpandedNodeIds(listToTree(chartTree, columns), collapsedNodes);
+        const { chartTree, columns, collapsedNodes, pinnedRows } = this.state;
+        const tree = listToTree(chartTree, columns);
+        const regularRowIds = getAllExpandedNodeIds(tree, collapsedNodes);
+
+        // Add pinned rows at the beginning
+        const pinnedRowIds = pinnedRows
+            ? pinnedRows
+                  .filter(id => chartTree.some(entry => entry.id === id))
+                  .map(id => AbstractGanttOutputComponent.createNewId(id))
+            : [];
+        const rowIds = [...pinnedRowIds, ...regularRowIds];
+
         return { rowIds };
     }
 
@@ -1039,11 +1054,13 @@ export abstract class AbstractGanttOutputComponent<
 
         const strategy = additionalProperties?.filter_query_parameters?.strategy;
         const ids = rowIds ? rowIds : this.getTimegraphRowIds().rowIds;
+        const originalIds = ids.map(id => (id < -1 ? AbstractGanttOutputComponent.getOriginalId(id) : id));
+
         const { start, end } = range;
         const newRange: TimelineChart.TimeGraphRange = range;
         const nbTimes = Math.ceil(Number(end - start) / resolution) + 1;
         const timeGraphData: TimelineChart.TimeGraphModel = await this.tspDataProvider.getData(
-            ids,
+            originalIds,
             this.state.chartTree,
             fetchArrows,
             this.props.range,
@@ -1064,6 +1081,12 @@ export abstract class AbstractGanttOutputComponent<
         }
 
         let rows = timeGraphData ? timeGraphData.rows : [];
+
+        rows = rows.map((row, index) => ({
+            ...row,
+            id: ids[index]
+        }));
+
         let emptyNodes: number[] = [...this.state.emptyNodes];
         if (this.shouldHideEmptyNodes) {
             rows = rows.filter(row => {
@@ -1478,19 +1501,23 @@ export abstract class AbstractGanttOutputComponent<
      *  @param {number} id TreeNode id number
      */
     public onRowClick = (id: number): void => {
+        const originalId = id < -1 ? AbstractGanttOutputComponent.getOriginalId(id) : id;
         const rowIndex = getIndexOfNode(
-            id,
+            originalId,
             listToTree(this.state.chartTree, this.state.columns),
             this.state.collapsedNodes,
             this.state.emptyNodes
         );
-        this.chartLayer.selectAndReveal(rowIndex);
+        const pinnedCount = this.state.pinnedRows ? this.state.pinnedRows.length : 0;
+
+        const chartRowIndex = id < -1 ? (this.state.pinnedRows?.indexOf(originalId) ?? -1) : pinnedCount + rowIndex;
+
+        if (chartRowIndex >= 0) {
+            this.chartLayer.selectAndReveal(chartRowIndex);
+        }
         if (this.rowController.selectedRow?.id !== id) {
-            // This highlights the left side if the row is loading.
             this.setState({ selectedRow: id });
         }
-
-        // Regular clicking on a row should clear the multi selected rows to only include the clicked row
         this.setState({ multiSelectedRows: [id] });
     };
 
@@ -1602,5 +1629,29 @@ export abstract class AbstractGanttOutputComponent<
             this.state.emptyNodes
         );
         this.chartLayer.selectAndReveal(rowIndex);
+    }
+
+    public onPin = (id: number): void => {
+        const rows = this.state.pinnedRows ? this.state.pinnedRows.slice() : [];
+        // Handle both original ID and duplicate ID
+        const originalId = id < -1 ? AbstractGanttOutputComponent.getOriginalId(id) : id;
+        const index = rows.indexOf(originalId);
+        if (index === -1) {
+            rows.push(originalId);
+        } else {
+            rows.splice(index, 1);
+        }
+        this.setState({ pinnedRows: rows }, () => {
+            this.updateTotalHeight();
+            this.chartLayer.update();
+        });
+    };
+
+    static createNewId(originalId: number) {
+        return originalId ^ this.NEW_ID_KEY;
+    }
+
+    static getOriginalId(newId: number) {
+        return newId ^ this.NEW_ID_KEY;
     }
 }

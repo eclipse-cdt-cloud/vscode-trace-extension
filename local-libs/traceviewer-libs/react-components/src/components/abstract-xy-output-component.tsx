@@ -341,6 +341,7 @@ export abstract class AbstractXYOutputComponent<
                 <EntryTree
                     entries={this.state.xyTree}
                     showCheckboxes={true}
+                    showPinIcons={false}
                     collapsedNodes={this.state.collapsedNodes}
                     checkedSeries={this.state.checkedSeries}
                     onToggleCheck={this.onToggleCheck}

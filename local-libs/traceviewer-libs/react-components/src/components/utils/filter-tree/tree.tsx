@@ -12,6 +12,8 @@ interface FilterTreeProps {
     nodes: TreeNode[];
     showCheckboxes: boolean;
     showCloseIcons: boolean;
+    showPinIcons?: boolean;
+    pinnedRows?: number[];
     showFilter: boolean; // Optional
     checkedSeries: number[]; // Optional
     collapsedNodes: number[];
@@ -21,6 +23,7 @@ interface FilterTreeProps {
     multiSelectedRows?: number[];
     onToggleCheck: (ids: number[]) => void; // Optional
     onClose: (id: number) => void;
+    onPin?: (id: number) => void;
     onRowClick: (id: number) => void;
     onMultipleRowClick?: (id: number, isShiftClicked?: boolean) => void;
     onContextMenu: (event: React.MouseEvent<HTMLDivElement>, id: number) => void;
@@ -288,6 +291,8 @@ export class FilterTree extends React.Component<FilterTreeProps, FilterTreeState
             hideEmptyNodes={this.props.hideEmptyNodes}
             isCheckable={this.props.showCheckboxes}
             isClosable={this.props.showCloseIcons}
+            isPinnable={this.props.showPinIcons}
+            pinnedRows={this.props.pinnedRows}
             sortConfig={this.state.sortConfig}
             getCheckedStatus={this.getCheckedStatus}
             onToggleCollapse={this.handleCollapse}
@@ -296,6 +301,7 @@ export class FilterTree extends React.Component<FilterTreeProps, FilterTreeState
             onMultipleRowClick={this.props.onMultipleRowClick}
             onContextMenu={this.props.onContextMenu}
             onClose={this.handleClose}
+            onPin={this.props.onPin}
             onSort={this.handleOrderChange}
             onSortReset={this.handleOrderReset}
             onSortConfigChange={this.handleSortConfigChange}

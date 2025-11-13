@@ -10,6 +10,8 @@ interface EntryTreeProps {
     checkedSeries: number[];
     showCheckboxes: boolean;
     showCloseIcons: boolean;
+    showPinIcons?: boolean;
+    pinnedRows?: number[];
     selectedRow?: number;
     multiSelectedRows?: number[];
     collapsedNodes: number[];
@@ -17,6 +19,7 @@ interface EntryTreeProps {
     hideEmptyNodes: boolean;
     showFilter: boolean;
     onToggleCheck: (ids: number[]) => void;
+    onPin?: (id: number) => void;
     onRowClick: (id: number) => void;
     onMultipleRowClick?: (id: number, isShiftClicked?: boolean) => void;
     onContextMenu: (event: React.MouseEvent<HTMLDivElement>, id: number) => void;
@@ -54,6 +57,7 @@ export class EntryTree extends React.Component<EntryTreeProps> {
         this.props.collapsedNodes !== nextProps.collapsedNodes ||
         this.props.selectedRow !== nextProps.selectedRow ||
         this.props.multiSelectedRows !== nextProps.multiSelectedRows ||
+        this.props.pinnedRows !== nextProps.pinnedRows ||
         this.props.hideEmptyNodes !== nextProps.hideEmptyNodes ||
         this.props.emptyNodes !== nextProps.emptyNodes;
 

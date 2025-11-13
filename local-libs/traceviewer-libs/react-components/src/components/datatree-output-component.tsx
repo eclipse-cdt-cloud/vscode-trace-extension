@@ -115,6 +115,7 @@ export class DataTreeOutputComponent extends AbstractOutputComponent<AbstractOut
                 <EntryTree
                     entries={this.state.xyTree}
                     showCheckboxes={false}
+                    showPinIcons={false}
                     collapsedNodes={this.state.collapsedNodes}
                     onContextMenu={this.onContextMenu}
                     onToggleCollapse={this.onToggleCollapse}
