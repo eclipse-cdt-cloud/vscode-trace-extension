@@ -13,6 +13,8 @@ interface TableProps {
     collapsedNodes: number[];
     isCheckable: boolean;
     isClosable: boolean;
+    isPinnable?: boolean;
+    pinnedRows?: number[];
     sortConfig: SortConfig[];
     onRowClick: (id: number) => void;
     onMultipleRowClick?: (id: number, isShiftClicked?: boolean) => void;
@@ -21,6 +23,7 @@ interface TableProps {
     onToggleCollapse: (id: number) => void;
     onToggleCheck: (id: number) => void;
     onClose: (id: number) => void;
+    onPin?: (id: number) => void;
     onSort: (sortedNodes: TreeNode[]) => void;
     onSortReset: () => void;
     onSortConfigChange: (sortConfig: SortConfig[]) => void;
