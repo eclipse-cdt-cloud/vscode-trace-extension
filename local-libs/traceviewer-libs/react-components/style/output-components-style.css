@@ -626,3 +626,10 @@ input[type='reset'].input-button {
         background: var(--theia-button-secondaryHoverBackground);
     }
 }
+
+.data-output-main-area {
+    white-space: pre-wrap;
+    overflow: hidden;
+    overflow-x: scroll;
+    overflow-y: scroll;
+}
