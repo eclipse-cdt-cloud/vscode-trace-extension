@@ -3,7 +3,7 @@ import '../../style/output-components-style.css';
 import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { FilterTree } from '../components/utils/filter-tree/tree';
 import { TreeNode } from '../components/utils/filter-tree/tree-node';
-import { ItemPropertiesSignalPayload } from 'traceviewer-base/src/signals/item-properties-signal-payload';
+import { ItemPropertiesSignalPayload } from 'traceviewer-base/lib/signals/item-properties-signal-payload';
 
 export interface ReactPropertiesWidgetProps {
     id: string;
