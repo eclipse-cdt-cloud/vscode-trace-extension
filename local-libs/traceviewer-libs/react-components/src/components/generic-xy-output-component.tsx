@@ -464,7 +464,7 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
 
     private makeChartOptions(allYZero: boolean): ChartOptions {
         const yTickFix = allYZero ? { min: 0, suggestedMax: 1, beginAtZero: true } : { beginAtZero: true };
-
+        const gridColor = '#' + (this.props.backgroundTheme === 'light' ? 0xdddddd : 0x34383c).toString(16);
         return {
             responsive: true,
             maintainAspectRatio: false,
@@ -486,8 +486,8 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
                     {
                         type: 'category',
                         position: 'bottom',
-                        display: false,
-                        gridLines: { display: false, drawBorder: false, drawTicks: false },
+                        display: !this.isTimeAxis,
+                        gridLines: { display: !this.isTimeAxis, drawBorder: false, drawTicks: !this.isTimeAxis, color: gridColor },
                         ticks: {
                             display: false
                         }
