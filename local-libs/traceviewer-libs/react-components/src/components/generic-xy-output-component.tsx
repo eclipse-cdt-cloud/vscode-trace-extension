@@ -486,7 +486,12 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
                         type: 'category',
                         position: 'bottom',
                         display: !this.isTimeAxis,
-                        gridLines: { display: !this.isTimeAxis, drawBorder: false, drawTicks: !this.isTimeAxis, color: gridColor },
+                        gridLines: {
+                            display: !this.isTimeAxis,
+                            drawBorder: false,
+                            drawTicks: !this.isTimeAxis,
+                            color: gridColor
+                        },
                         ticks: {
                             display: false
                         }
