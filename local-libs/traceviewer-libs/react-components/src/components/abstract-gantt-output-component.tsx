@@ -121,7 +121,7 @@ export abstract class AbstractGanttOutputComponent<
         this.chartLayer.updateChart(this.filterExpressionsMap());
     }, 500);
 
-    static NEW_ID_KEY = -3;
+    private NEW_ID_KEY = -3;
 
     constructor(props: P) {
         super(props);
@@ -447,7 +447,7 @@ export abstract class AbstractGanttOutputComponent<
         const { collapsedNodes, emptyNodes } = this.state;
 
         // Convert duplicate ID back to original ID for checking
-        const originalId = entry.id < -1 ? AbstractGanttOutputComponent.getOriginalId(entry.id) : entry.id;
+        const originalId = entry.id < -1 ? this.getOriginalId(entry.id) : entry.id;
 
         // Check for empty nodes
         if (this.shouldHideEmptyNodes && emptyNodes.includes(originalId)) {
@@ -1028,9 +1028,7 @@ export abstract class AbstractGanttOutputComponent<
 
         // Add pinned rows at the beginning
         const pinnedRowIds = pinnedRows
-            ? pinnedRows
-                  .filter(id => chartTree.some(entry => entry.id === id))
-                  .map(id => AbstractGanttOutputComponent.createNewId(id))
+            ? pinnedRows.filter(id => chartTree.some(entry => entry.id === id)).map(id => this.createNewId(id))
             : [];
         const rowIds = [...pinnedRowIds, ...regularRowIds];
 
@@ -1054,7 +1052,7 @@ export abstract class AbstractGanttOutputComponent<
 
         const strategy = additionalProperties?.filter_query_parameters?.strategy;
         const ids = rowIds ? rowIds : this.getTimegraphRowIds().rowIds;
-        const originalIds = ids.map(id => (id < -1 ? AbstractGanttOutputComponent.getOriginalId(id) : id));
+        const originalIds = ids.map(id => (id < -1 ? this.getOriginalId(id) : id));
 
         const { start, end } = range;
         const newRange: TimelineChart.TimeGraphRange = range;
@@ -1501,7 +1499,7 @@ export abstract class AbstractGanttOutputComponent<
      *  @param {number} id TreeNode id number
      */
     public onRowClick = (id: number): void => {
-        const originalId = id < -1 ? AbstractGanttOutputComponent.getOriginalId(id) : id;
+        const originalId = id < -1 ? this.getOriginalId(id) : id;
         const rowIndex = getIndexOfNode(
             originalId,
             listToTree(this.state.chartTree, this.state.columns),
@@ -1634,7 +1632,7 @@ export abstract class AbstractGanttOutputComponent<
     public onPin = (id: number): void => {
         const rows = this.state.pinnedRows ? this.state.pinnedRows.slice() : [];
         // Handle both original ID and duplicate ID
-        const originalId = id < -1 ? AbstractGanttOutputComponent.getOriginalId(id) : id;
+        const originalId = id < -1 ? this.getOriginalId(id) : id;
         const index = rows.indexOf(originalId);
         if (index === -1) {
             rows.push(originalId);
@@ -1647,11 +1645,38 @@ export abstract class AbstractGanttOutputComponent<
         });
     };
 
-    static createNewId(originalId: number) {
-        return originalId ^ this.NEW_ID_KEY;
+    private getLastEntryId() {
+        const lastEntryIndex = this.state.chartTree.length - 1;
+        const lastEntry = this.state.chartTree[lastEntryIndex];
+        return lastEntry.id;
     }
 
-    static getOriginalId(newId: number) {
-        return newId ^ this.NEW_ID_KEY;
+    protected createNewId(originalId: number) {
+        const newId = originalId ^ this.NEW_ID_KEY;
+        return newId === -1 ? (this.getLastEntryId() + 1) ^ this.NEW_ID_KEY : newId;
+    }
+
+    protected getOriginalId(newId: number) {
+        const original1 = newId ^ this.NEW_ID_KEY;
+        const original2 = original1 === this.getLastEntryId() + 1 ? -1 ^ this.NEW_ID_KEY : original1;
+        return original2;
+    }
+
+    protected getEntriesWithPinned() {
+        const pinnedEntries = this.state.pinnedRows
+            ? this.state.pinnedRows
+                  .map(id => this.state.chartTree.find(entry => entry.id === id))
+                  .filter(entry => entry !== undefined)
+                  .map(entry => ({ ...entry, id: this.createNewId(entry.id), parentId: -1 }))
+            : [];
+        const entriesWithPinned = [...pinnedEntries, ...this.state.chartTree];
+        return entriesWithPinned;
+    }
+
+    protected getExtendedPinnedRows() {
+        const extendedPinnedRows = this.state.pinnedRows
+            ? [...this.state.pinnedRows, ...this.state.pinnedRows.map(id => this.createNewId(id))]
+            : [];
+        return extendedPinnedRows;
     }
 }
