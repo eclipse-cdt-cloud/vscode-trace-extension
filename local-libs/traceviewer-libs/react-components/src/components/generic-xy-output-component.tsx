@@ -33,6 +33,8 @@ import {
     computeYRange
 } from './utils/xy-shared';
 import { parse } from '@fortawesome/fontawesome-svg-core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 interface XYDataset {
     id?: number | string;
@@ -1118,8 +1120,13 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
                 >
                     {this.chooseReactChart()}
                     {this.state.outputStatus === ResponseStatus.RUNNING && (
-                        <div className="analysis-running-overflow" style={{ width: this.getChartWidth() }}>
+                        <div
+                            id={this.props.traceId + this.props.outputDescriptor.id + 'focusContainer'}
+                            className="analysis-running-overflow"
+                            style={{ width: this.getChartWidth() }}
+                        >
                             <div>
+                                <FontAwesomeIcon icon={faSpinner} spin style={{ marginRight: '5px' }} />
                                 <span>Analysis running</span>
                             </div>
                         </div>
