@@ -1,7 +1,7 @@
 {
     "name": "vscode-trace-webviews",
     "private": "true",
-    "version": "0.7.1",
+    "version": "0.8.0",
     "repository": "https://github.com/eclipse-cdt-cloud/vscode-trace-extension/",
     "dependencies": {
         "@emotion/react": "^11.10.5",
@@ -19,10 +19,10 @@
         "react-grid-layout": "^1.1.0",
         "react-modal": "^3.8.1",
         "react-virtualized": "^9.21.0",
-        "traceviewer-base": "0.10.1",
-        "traceviewer-react-components": "0.10.1",
+        "traceviewer-base": "0.11.0",
+        "traceviewer-react-components": "0.11.0",
         "vscode-messenger-webview": "^0.5.0",
-        "vscode-trace-common": "0.7.1"
+        "vscode-trace-common": "0.8.0"
     },
     "devDependencies": {
         "@types/jest": "^23.3.13",
