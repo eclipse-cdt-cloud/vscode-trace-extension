@@ -24,13 +24,15 @@ import * as d3 from 'd3';
 import {
     applyYAxis,
     buildTreeStateFromModel,
+    buildLegendColors,
     ColorAllocator,
     getTimeForX as timeForX,
     zoomRange,
     panRange,
     setSpinnerVisible,
     rowsToCsv,
-    computeYRange
+    computeYRange,
+    registerSeriesNames
 } from './utils/xy-shared';
 import { parse } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -71,6 +73,7 @@ interface GenericXYState extends AbstractTreeOutputState {
     collapsedNodes: number[];
     allMax: number;
     allMin: number;
+    legendColors: Record<number, string>;
     cursor: string;
     timelineUnit: string;
     timelineUnitType: TimelineUnitType;
@@ -127,6 +130,7 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
     private clickedMouseButton = -1;
 
     private readonly colors = new ColorAllocator();
+    private readonly seriesNameById = new Map<number, string>();
 
     private readonly _debouncedUpdateXY = debounce(() => this.updateXY(), 500);
 
@@ -145,6 +149,7 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
                 : [],
             xyData: { labels: [], datasets: [], labelIndices: [] },
             columns: [{ title: 'Name', sortable: true }],
+            legendColors: {},
             allMax: 0,
             allMin: 0,
             cursor: 'default',
@@ -203,6 +208,7 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
                     onOrderChange={this.onOrderChange}
                     onOrderReset={this.onOrderReset}
                     headers={this.state.columns}
+                    legendColors={this.state.legendColors}
                 />
             </div>
         ) : undefined;
@@ -246,7 +252,8 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
                         defaultOrderedIds: built.defaultOrderedIds,
                         collapsedNodes: built.collapsedNodes,
                         checkedSeries: built.checkedSeries,
-                        columns: built.columns as any
+                        columns: built.columns as any,
+                        legendColors: {}
                     },
                     () => {
                         this._debouncedUpdateXY();
@@ -343,8 +350,15 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
         this.isTimeAxis = !!series[0].xValues;
         this.mode = st === 'scatter' ? ChartMode.SCATTER : st === 'line' ? ChartMode.LINE : ChartMode.BAR;
 
+        registerSeriesNames(this.seriesNameById, series);
         const xy = this.buildXYData(series, this.mode);
-        flushSync(() => this.setState({ xyData: xy, outputStatus: model.status ?? ResponseStatus.COMPLETED }));
+        flushSync(() =>
+            this.setState({
+                xyData: xy,
+                outputStatus: model.status ?? ResponseStatus.COMPLETED,
+                legendColors: buildLegendColors(this.state.xyTree, this.colors, this.seriesNameById)
+            })
+        );
         this.calculateYRange();
 
         // Extract model types from all series

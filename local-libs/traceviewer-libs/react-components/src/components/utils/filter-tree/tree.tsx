@@ -34,6 +34,7 @@ interface FilterTreeProps {
     headers: ColumnHeader[];
     className: string;
     hideFillers?: boolean;
+    legendColors?: Record<number, string>;
 }
 
 interface FilterTreeState {
@@ -309,6 +310,7 @@ export class FilterTree extends React.Component<FilterTreeProps, FilterTreeState
             headers={this.props.headers}
             className={this.props.className}
             hideFillers={this.props.hideFillers}
+            legendColors={this.props.legendColors}
         />
     );
 

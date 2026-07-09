@@ -7,6 +7,8 @@ import icons from './icons';
 interface TableRowProps {
     node: TreeNode;
     level: number;
+    legendColumnIndex?: number;
+    legendColors?: Record<number, string>;
     selectedRow?: number;
     multiSelectedRows?: number[];
     collapsedNodes: number[];
@@ -112,14 +114,25 @@ export class TableRow extends React.Component<TableRowProps> {
         );
     };
 
+    private getControlColumnIndex(): number {
+        return 0;
+    }
+
     renderRow = (): React.ReactNode => {
         const { node } = this.props;
+        const controlColumnIndex = this.getControlColumnIndex();
         const row = node.labels.map((_label: string, index) => (
-            <TableCell key={node.id + '-' + index} index={index} node={node}>
-                {index === 0 ? this.renderToggleCollapse() : undefined}
-                {index === 0 ? this.renderCheckbox() : undefined}
-                {index === 0 ? this.renderCloseButton() : undefined}
-                {index === 0 ? this.renderPinButton() : undefined}
+            <TableCell
+                key={node.id + '-' + index}
+                index={index}
+                node={node}
+                legendColumnIndex={this.props.legendColumnIndex}
+                legendColors={this.props.legendColors}
+            >
+                {index === controlColumnIndex ? this.renderToggleCollapse() : undefined}
+                {index === controlColumnIndex ? this.renderCheckbox() : undefined}
+                {index === controlColumnIndex ? this.renderCloseButton() : undefined}
+                {index === controlColumnIndex ? this.renderPinButton() : undefined}
             </TableCell>
         ));
         if (!this.props.hideFillers) {

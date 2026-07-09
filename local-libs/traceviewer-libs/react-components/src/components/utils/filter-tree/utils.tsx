@@ -1,22 +1,52 @@
+import * as React from 'react';
 import { Entry } from 'tsp-typescript-client/lib/models/entry';
 import { TreeNode } from './tree-node';
 import ColumnHeader from './column-header';
 
-const entryToTreeNode = (entry: Entry, headers: ColumnHeader[]) => {
-    // TODO Instead of padding the labels, ColumnHeader should use a getter function  instead of just assuming strings, this will allow to get the legend for XY charts
-    const labels = entry.labels && entry.labels.length > 0 ? entry.labels : [''];
-    // Pad the labels to match the header count
-    for (let i = labels.length; i <= headers.length - 1; i++) {
-        labels[i] = '';
+export const LEGEND_COLUMN_TITLE = 'Legend';
+
+export const createLegendSwatch = (color: string): JSX.Element => (
+    <span className="xy-legend-swatch" style={{ backgroundColor: color }} aria-hidden="true" />
+);
+
+export const getLegendColumnIndex = (headers: ColumnHeader[]): number =>
+    headers.findIndex(header => header.title === LEGEND_COLUMN_TITLE);
+
+const buildLabelsForHeaders = (entry: Entry, headers: ColumnHeader[]): string[] => {
+    const legendIndex = getLegendColumnIndex(headers);
+    const labels = entry.labels?.length ? [...entry.labels] : [''];
+
+    if (legendIndex >= 0) {
+        const expectedWithoutLegendLength = headers.length - 1;
+        if (labels.length === expectedWithoutLegendLength) {
+            // Legend column was inserted in headers, so shift labels to keep column alignment.
+            labels.splice(legendIndex, 0, '');
+        } else {
+            // Legend slot already exists (or data shape is unexpected): keep layout stable by blanking it.
+            while (labels.length < headers.length) {
+                labels.push('');
+            }
+            labels[legendIndex] = '';
+        }
     }
-    return {
-        labels: labels,
-        isRoot: false,
-        id: entry.id,
-        parentId: entry.parentId,
-        children: []
-    } as TreeNode;
+
+    while (labels.length < headers.length) {
+        labels.push('');
+    }
+    if (labels.length > headers.length) {
+        labels.length = headers.length;
+    }
+
+    return labels;
 };
+
+const entryToTreeNode = (entry: Entry, headers: ColumnHeader[]): TreeNode => ({
+    labels: buildLabelsForHeaders(entry, headers),
+    isRoot: false,
+    id: entry.id,
+    parentId: entry.parentId ?? -1,
+    children: []
+});
 
 export const listToTree = (list: Entry[], headers: ColumnHeader[]): TreeNode[] => {
     const rootNodes: TreeNode[] = [];

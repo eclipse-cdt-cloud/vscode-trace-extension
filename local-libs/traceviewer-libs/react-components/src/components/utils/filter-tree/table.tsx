@@ -4,7 +4,7 @@ import { TableHeader } from './table-header';
 import { TableBody } from './table-body';
 import { SortConfig, sortState, nextSortState, sortNodes } from './sort';
 import ColumnHeader from './column-header';
-import { filterEmptyNodes } from './utils';
+import { filterEmptyNodes, getLegendColumnIndex } from './utils';
 
 interface TableProps {
     nodes: TreeNode[];
@@ -33,6 +33,8 @@ interface TableProps {
     hideFillers?: boolean;
     emptyNodes: number[];
     hideEmptyNodes: boolean;
+    legendColumnIndex?: number;
+    legendColors?: Record<number, string>;
 }
 
 export class Table extends React.Component<TableProps> {
@@ -94,6 +96,8 @@ export class Table extends React.Component<TableProps> {
             nodes = filterEmptyNodes(nodes, this.props.emptyNodes, this.props.collapsedNodes);
         }
 
+        const legendColumnIndex = getLegendColumnIndex(this.props.headers);
+
         return (
             <div>
                 <table style={{ gridTemplateColumns: gridTemplateColumns }} className={this.props.className}>
@@ -106,7 +110,7 @@ export class Table extends React.Component<TableProps> {
                             hideFillers={this.props.hideFillers}
                         />
                     )}
-                    <TableBody {...this.props} nodes={nodes} />
+                    <TableBody {...this.props} nodes={nodes} legendColumnIndex={legendColumnIndex} />
                 </table>
             </div>
         );

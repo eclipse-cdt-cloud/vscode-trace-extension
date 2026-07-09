@@ -23,10 +23,12 @@ import { isEqual } from 'lodash';
 import {
     applyYAxis,
     buildTreeStateFromModel,
+    buildLegendColors,
     ColorAllocator,
     computeYRange,
     getTimeForX as timeForX,
     getXForTime as xForTime,
+    registerSeriesNames,
     zoomRange,
     panRange,
     setSpinnerVisible
@@ -66,6 +68,7 @@ export type AbstractXYOutputState = AbstractTreeOutputState & {
     columns: ColumnHeader[];
     allMax: number;
     allMin: number;
+    legendColors: Record<number, string>;
     cursor?: string;
 };
 
@@ -156,6 +159,7 @@ export abstract class AbstractXYOutputComponent<
     private _debouncedUpdateXY = debounce(() => this.updateXY(), 500);
 
     private colors = new ColorAllocator();
+    private seriesNameById = new Map<number, string>();
 
     constructor(props: P) {
         super(props);
@@ -310,7 +314,8 @@ export abstract class AbstractXYOutputComponent<
                         defaultOrderedIds: built.defaultOrderedIds,
                         collapsedNodes: built.collapsedNodes,
                         checkedSeries: built.checkedSeries,
-                        columns: built.columns as any
+                        columns: built.columns as any,
+                        legendColors: {}
                     },
                     () => {
                         this.updateXY();
@@ -349,6 +354,7 @@ export abstract class AbstractXYOutputComponent<
                     onOrderChange={this.onOrderChange}
                     onOrderReset={this.onOrderReset}
                     headers={this.state.columns}
+                    legendColors={this.state.legendColors}
                 />
             </div>
         ) : undefined;
@@ -464,6 +470,7 @@ export abstract class AbstractXYOutputComponent<
     }
 
     private buildScatterData(seriesObj: XYSeries[]) {
+        registerSeriesNames(this.seriesNameById, seriesObj);
         const dataSetArray = new Array<any>();
         let xValues: bigint[] = [];
         const offset = this.props.viewRange.getOffset() ?? BigInt(0);
@@ -498,13 +505,17 @@ export abstract class AbstractXYOutputComponent<
 
         // flushSync: force immediate state update instead of waiting for React 18's automatic batching
         flushSync(() => {
-            this.setState({ xyData: scatterData });
+            this.setState({
+                xyData: scatterData,
+                legendColors: buildLegendColors(this.state.xyTree, this.colors, this.seriesNameById)
+            });
         });
 
         this.calculateYRange();
     }
 
     private buildXYData(seriesObj: XYSeries[]) {
+        registerSeriesNames(this.seriesNameById, seriesObj);
         const dataSetArray = new Array<any>();
         let xValues: bigint[] = [];
         seriesObj.forEach(series => {
@@ -526,7 +537,10 @@ export abstract class AbstractXYOutputComponent<
 
         // flushSync: force immediate state update instead of waiting for React 18's automatic batching
         flushSync(() => {
-            this.setState({ xyData: lineData });
+            this.setState({
+                xyData: lineData,
+                legendColors: buildLegendColors(this.state.xyTree, this.colors, this.seriesNameById)
+            });
         });
 
         this.calculateYRange();

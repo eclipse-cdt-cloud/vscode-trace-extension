@@ -53,6 +53,7 @@ export class XYOutputOverviewComponent extends AbstractXYOutputComponent<XYOutpu
             collapsedNodes: [],
             xyData: {},
             columns: [{ title: 'Name', sortable: true }],
+            legendColors: {},
             allMax: 0,
             allMin: 0,
             cursor: 'default',
