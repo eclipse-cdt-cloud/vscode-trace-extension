@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Entry } from 'tsp-typescript-client';
-import { XyEntry } from 'tsp-typescript-client/lib/models/xy';
+import { XYSeries, XyEntry } from 'tsp-typescript-client/lib/models/xy';
 import { TimeRange } from 'traceviewer-base/lib/utils/time-range';
 import { BIMath } from 'timeline-chart/lib/bigint-utils';
-import { listToTree, getCollapsedNodesFromAutoExpandLevel } from './filter-tree/utils';
+import { listToTree, getCollapsedNodesFromAutoExpandLevel, LEGEND_COLUMN_TITLE } from './filter-tree/utils';
 import { axisLeft } from 'd3-axis';
 import { scaleLinear } from 'd3-scale';
 import { select } from 'd3-selection';
@@ -18,11 +18,59 @@ export interface HeaderSpec {
     tooltip?: string;
 }
 
+export { LEGEND_COLUMN_TITLE } from './filter-tree/utils';
+
 export interface ColumnSpec {
     title: string;
     sortable?: boolean;
     resizable?: boolean;
     tooltip?: string;
+}
+
+export function withLegendColumn(columns: ColumnSpec[]): ColumnSpec[] {
+    if (columns.some(column => column.title === LEGEND_COLUMN_TITLE)) {
+        return columns;
+    }
+
+    const legendColumn: ColumnSpec = { title: LEGEND_COLUMN_TITLE, sortable: false, resizable: false };
+
+    const emptyColumnIndex = columns.findIndex((column, index) => index > 0 && !column.title?.trim());
+    if (emptyColumnIndex >= 0) {
+        const result = [...columns];
+        result[emptyColumnIndex] = legendColumn;
+        return result;
+    }
+
+    if (columns.length === 0) {
+        return [{ title: 'Name', sortable: true }, legendColumn];
+    }
+
+    const result = [...columns];
+    result.splice(1, 0, legendColumn);
+    return result;
+}
+
+export function buildLegendColors(
+    entries: Entry[],
+    colors: ColorAllocator,
+    seriesNameById: ReadonlyMap<number, string>
+): Record<number, string> {
+    const legendColors: Record<number, string> = {};
+    entries.forEach(entry => {
+        const key = seriesNameById.get(entry.id);
+        if (key === undefined) {
+            return;
+        }
+        legendColors[entry.id] = colors.get(key);
+    });
+    return legendColors;
+}
+
+export function registerSeriesNames(seriesNameById: Map<number, string>, series: XYSeries[]): void {
+    seriesNameById.clear();
+    series.forEach(item => {
+        seriesNameById.set(item.seriesId, item.seriesName);
+    });
 }
 
 export interface TreeState {
@@ -59,7 +107,7 @@ export function buildTreeStateFromModel(model: {
     autoExpandLevel?: number;
     status?: any;
 }): TreeState {
-    const columns = buildColumns(model.headers);
+    const columns = withLegendColumn(buildColumns(model.headers));
     const checkedSeries = model.entries.filter(e => (e as any).isDefault).map(e => e.id);
     const collapsedNodes = computeAutoCollapsedNodes(model.entries, columns, model.autoExpandLevel);
     const defaultOrderedIds = model.entries.map(e => e.id);

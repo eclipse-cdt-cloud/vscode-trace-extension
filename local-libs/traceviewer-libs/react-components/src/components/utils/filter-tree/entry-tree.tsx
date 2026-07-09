@@ -29,6 +29,7 @@ interface EntryTreeProps {
     onOrderReset: () => void;
     showHeader: boolean;
     headers: ColumnHeader[];
+    legendColors?: Record<number, string>;
     className: string;
     hideFillers?: boolean;
 }
@@ -59,7 +60,9 @@ export class EntryTree extends React.Component<EntryTreeProps> {
         this.props.multiSelectedRows !== nextProps.multiSelectedRows ||
         this.props.pinnedRows !== nextProps.pinnedRows ||
         this.props.hideEmptyNodes !== nextProps.hideEmptyNodes ||
-        this.props.emptyNodes !== nextProps.emptyNodes;
+        this.props.emptyNodes !== nextProps.emptyNodes ||
+        this.props.headers !== nextProps.headers ||
+        this.props.legendColors !== nextProps.legendColors;
 
     render(): JSX.Element {
         return <FilterTree nodes={listToTree(this.props.entries, this.props.headers)} {...this.props} />;

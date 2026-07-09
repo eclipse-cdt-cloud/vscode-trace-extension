@@ -20,6 +20,8 @@ interface TableBodyProps {
     onPin?: (id: number) => void;
     onContextMenu: (event: React.MouseEvent<HTMLDivElement>, id: number) => void;
     hideFillers?: boolean;
+    legendColumnIndex?: number;
+    legendColors?: Record<number, string>;
 }
 
 export class TableBody extends React.Component<TableBodyProps> {

@@ -1,9 +1,12 @@
 import * as React from 'react';
 import { TreeNode } from './tree-node';
+import { createLegendSwatch } from './utils';
 
 interface TableCellProps {
     node: TreeNode;
     index: number;
+    legendColumnIndex?: number;
+    legendColors?: Record<number, string>;
     children?: React.ReactNode | React.ReactNode[];
     pinButton?: React.ReactNode;
 }
@@ -16,7 +19,10 @@ export class TableCell extends React.Component<TableCellProps> {
         const { node, index } = this.props;
 
         let content;
-        if (node.elementIndex && node.elementIndex === index && node.getElement) {
+        const legendColor = this.props.legendColumnIndex === index ? this.props.legendColors?.[node.id] : undefined;
+        if (legendColor) {
+            content = createLegendSwatch(legendColor);
+        } else if (node.elementIndex && node.elementIndex === index && node.getElement) {
             content = node.getElement();
         } else {
             content = node.getEnrichedContent ? node.getEnrichedContent() : node.labels[index];
