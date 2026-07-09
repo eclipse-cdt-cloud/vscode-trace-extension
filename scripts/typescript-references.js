@@ -31,7 +31,13 @@ main().catch(error => {
 
 async function main() {
     const projectCwd = path.resolve(__dirname, '..')
-    const workspaces = JSON.parse(cp.execSync('yarn -s workspaces info').toString())
+    // Some yarn versions prefix stdout with terminal control codes (e.g.
+    // "\u001b[2K\u001b[1G") even in silent mode, which breaks JSON.parse. Slice
+    // from the first '{' to the last '}' to extract just the JSON payload.
+    const workspacesRaw = cp.execSync('yarn -s workspaces info').toString()
+    const jsonStart = workspacesRaw.indexOf('{')
+    const jsonEnd = workspacesRaw.lastIndexOf('}')
+    const workspaces = JSON.parse(workspacesRaw.slice(jsonStart, jsonEnd + 1))
     workspaces['monorepo'] = {
         location: ensurePosixLike(path.relative(process.cwd(), projectCwd)),
         workspaceDependencies: Object.keys(workspaces),

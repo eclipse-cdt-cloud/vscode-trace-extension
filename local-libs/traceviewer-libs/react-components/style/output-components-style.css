@@ -193,6 +193,17 @@
     line-height: 1;
 }
 
+.xy-detrend-toggle {
+    right: 72px;
+    min-width: 24px;
+    padding: 0 5px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    line-height: 1;
+    white-space: nowrap;
+}
+
 #main {
     border: 1px solid;
     margin: 10px 0;
