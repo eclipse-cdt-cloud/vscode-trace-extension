@@ -17,12 +17,38 @@ import {
 import { TimeRange } from 'traceviewer-base/lib/utils/time-range';
 import { validateNumArray } from './utils/filter-tree/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faWaveSquare, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
+import { Bar } from 'react-chartjs-2';
+import {
+    computePeriodogram,
+    DetrendMode,
+    formatPeriod,
+    resampleLinearBuckets,
+    resampleLogBuckets
+} from './utils/frequency-utils';
 
-export class XYOutputComponent extends AbstractXYOutputComponent<AbstractOutputProps, AbstractXYOutputState> {
+type XYOutputState = AbstractXYOutputState & {
+    /** When true, the chart shows the frequency/period spectrum instead of the time-domain XY plot. */
+    frequencyMode: boolean;
+    /** When true, the frequency plot's period (x) axis uses a logarithmic scale instead of linear. */
+    xAxisLogScale: boolean;
+    /** Detrending applied before the periodogram FFT ('linear' suppresses drift, 'mean' is faithful to transients). */
+    detrendMode: DetrendMode;
+};
+
+export class XYOutputComponent extends AbstractXYOutputComponent<AbstractOutputProps, XYOutputState> {
     private mousePanningStart = BigInt(0);
     private resolution = 0;
+
+    // Memoization for the (potentially expensive) periodogram computation.
+    private freqCache?: {
+        xyData: unknown;
+        width: number;
+        log: boolean;
+        detrend: DetrendMode;
+        data: { labels: number[]; datasets: any[] };
+    };
 
     constructor(props: AbstractOutputProps) {
         super(props);
@@ -43,7 +69,19 @@ export class XYOutputComponent extends AbstractXYOutputComponent<AbstractOutputP
             allMax: 0,
             allMin: 0,
             cursor: 'default',
-            showTree: true
+            showTree: true,
+            frequencyMode: false,
+            // Default to a logarithmic period axis: DFT bins are uniform in
+            // frequency, so on a linear period (= 1/f) axis they bunch up at
+            // short periods and stretch across long periods, distorting the
+            // spectrum. A log axis spreads them far more evenly.
+            xAxisLogScale: true,
+            // Default to mean (DC-only) removal, the conventional periodogram
+            // pre-processing: it reproduces transients faithfully (a step is a
+            // clean monotonic ~1/f^2 curve rather than a linear-detrend "hump").
+            // Users can switch to 'linear' detrending via the toggle when a
+            // slow drift would otherwise bury a genuine periodic component.
+            detrendMode: 'mean'
         };
         this.addPinViewOptions(() => ({
             checkedSeries: this.state.checkedSeries,
@@ -62,22 +100,7 @@ export class XYOutputComponent extends AbstractXYOutputComponent<AbstractOutputP
         }
         return (
             <React.Fragment>
-                <div
-                    id={this.props.traceId + this.props.outputDescriptor.id + 'focusContainer'}
-                    className="xy-main"
-                    tabIndex={0}
-                    onKeyDown={event => this.onKeyDown(event)}
-                    onKeyUp={event => this.onKeyUp(event)}
-                    onWheel={event => this.onWheel(event)}
-                    onMouseMove={event => this.onMouseMove(event)}
-                    onContextMenu={event => event.preventDefault()}
-                    onMouseLeave={event => this.onMouseLeave(event)}
-                    onMouseDown={event => this.onMouseDown(event)}
-                    style={{ height: this.props.style.height, position: 'relative', cursor: this.state.cursor }}
-                    ref={this.divRef}
-                >
-                    {this.isBarPlot ? this.drawD3Chart() : this.chooseChart()}
-                </div>
+                {this.state.frequencyMode ? this.renderFrequencyChart() : this.renderXYChart()}
                 {this.state.outputStatus === ResponseStatus.RUNNING && (
                     <div
                         id={this.props.traceId + this.props.outputDescriptor.id + 'focusContainer'}
@@ -92,6 +115,309 @@ export class XYOutputComponent extends AbstractXYOutputComponent<AbstractOutputP
                 )}
             </React.Fragment>
         );
+    }
+
+    /**
+     * The time-domain XY chart (line/scatter/bar) with all the mouse/keyboard
+     * interactions for panning, zooming and selection.
+     */
+    private renderXYChart(): JSX.Element {
+        return (
+            <div
+                id={this.props.traceId + this.props.outputDescriptor.id + 'focusContainer'}
+                className="xy-main"
+                tabIndex={0}
+                onKeyDown={event => this.onKeyDown(event)}
+                onKeyUp={event => this.onKeyUp(event)}
+                onWheel={event => this.onWheel(event)}
+                onMouseMove={event => this.onMouseMove(event)}
+                onContextMenu={event => event.preventDefault()}
+                onMouseLeave={event => this.onMouseLeave(event)}
+                onMouseDown={event => this.onMouseDown(event)}
+                style={{ height: this.props.style.height, position: 'relative', cursor: this.state.cursor }}
+                ref={this.divRef}
+            >
+                {this.renderFrequencyToggle()}
+                {this.isBarPlot ? this.drawD3Chart() : this.chooseChart()}
+            </div>
+        );
+    }
+
+    /**
+     * Transparent corner button that toggles between the XY plot and the
+     * frequency/period spectrum.
+     */
+    private renderFrequencyToggle(): JSX.Element {
+        const active = this.state.frequencyMode;
+        const label = active ? 'Show XY plot' : 'Show frequency (period) plot';
+        return (
+            <button
+                type="button"
+                className={`xy-chart-toggle xy-frequency-toggle${active ? ' active' : ''}`}
+                title={label}
+                aria-label={label}
+                aria-pressed={active}
+                onMouseDown={event => event.stopPropagation()}
+                onMouseMove={event => event.stopPropagation()}
+                onWheel={event => event.stopPropagation()}
+                onClick={event => {
+                    event.stopPropagation();
+                    this.toggleFrequencyMode();
+                }}
+            >
+                <FontAwesomeIcon icon={active ? faChartLine : faWaveSquare} />
+            </button>
+        );
+    }
+
+    private toggleFrequencyMode(): void {
+        this.setState(prev => ({ frequencyMode: !prev.frequencyMode }));
+    }
+
+    /**
+     * Transparent corner button (frequency mode only) that toggles the period
+     * (x) axis between a linear and a logarithmic scale.
+     */
+    private renderScaleToggle(): JSX.Element {
+        const log = this.state.xAxisLogScale;
+        const label = `Switch to ${log ? 'linear' : 'logarithmic'} period axis`;
+        return (
+            <button
+                type="button"
+                className={`xy-chart-toggle xy-scale-toggle${log ? ' active' : ''}`}
+                title={label}
+                aria-label={label}
+                aria-pressed={log}
+                onMouseDown={event => event.stopPropagation()}
+                onMouseMove={event => event.stopPropagation()}
+                onWheel={event => event.stopPropagation()}
+                onClick={event => {
+                    event.stopPropagation();
+                    this.toggleXAxisScale();
+                }}
+            >
+                {log ? 'log' : 'lin'}
+            </button>
+        );
+    }
+
+    /**
+     * Transparent corner button (frequency mode only) that toggles the detrend
+     * applied before the FFT between 'linear' (removes drift so a rhythm on a
+     * ramp is visible) and 'mean' (DC-only, faithful to steps/transients).
+     */
+    private renderDetrendToggle(): JSX.Element {
+        const linear = this.state.detrendMode === 'linear';
+        const label = `Detrend: ${linear ? 'linear (removes drift)' : 'mean (DC only)'} — click to switch`;
+        return (
+            <button
+                type="button"
+                className={`xy-chart-toggle xy-detrend-toggle${linear ? ' active' : ''}`}
+                title={label}
+                aria-label={label}
+                aria-pressed={linear}
+                onMouseDown={event => event.stopPropagation()}
+                onMouseMove={event => event.stopPropagation()}
+                onWheel={event => event.stopPropagation()}
+                onClick={event => {
+                    event.stopPropagation();
+                    this.toggleDetrendMode();
+                }}
+            >
+                {linear ? 'detrend' : 'dc'}
+            </button>
+        );
+    }
+
+    private toggleXAxisScale(): void {
+        // Log and linear axes use different bucket layouts, so drop the cached
+        // spectrum and force a fresh re-sample for the newly selected axis on
+        // the next render.
+        this.freqCache = undefined;
+        this.setState(prev => ({ xAxisLogScale: !prev.xAxisLogScale }));
+    }
+
+    private toggleDetrendMode(): void {
+        // Changing the detrend mode changes the spectrum entirely; drop the
+        // cache so it is recomputed on the next render.
+        this.freqCache = undefined;
+        this.setState(prev => ({ detrendMode: prev.detrendMode === 'linear' ? 'mean' : 'linear' }));
+    }
+
+    /**
+     * Builds the periodogram data for every currently displayed series as
+     * stacked-bar datasets over a shared bucket grid. Every series is resampled
+     * onto the same {period} buckets so the bars align and can be stacked.
+     * Cached on the current xyData/width/axis/detrend so repeated renders are
+     * cheap.
+     */
+    private buildFrequencyData(): { labels: number[]; datasets: any[] } {
+        const width = this.getChartWidth();
+        const log = this.state.xAxisLogScale;
+        const detrend = this.state.detrendMode;
+        if (
+            this.freqCache &&
+            this.freqCache.xyData === this.state.xyData &&
+            this.freqCache.width === width &&
+            this.freqCache.log === log &&
+            this.freqCache.detrend === detrend
+        ) {
+            return this.freqCache.data;
+        }
+
+        const datasets: any[] = this.state.xyData?.datasets ?? [];
+        const range = this.getDisplayedRange();
+        const timeSpan = range ? Number(range.getEnd() - range.getStart()) : 0;
+        // Aim for roughly one bucket every ~8px of chart width.
+        const numBuckets = Math.max(20, Math.min(120, Math.round(width / 8)));
+
+        // Periodogram for each series.
+        const spectra = datasets.map((dSet: any) => {
+            const yValues: number[] = this.isScatterPlot
+                ? (dSet.data as any[]).map((p: any) => Number(p.y))
+                : (dSet.data as any[]).map((v: any) => Number(v));
+            return { dSet, spectrum: computePeriodogram(yValues, timeSpan, detrend) };
+        });
+
+        // A single shared period range across all series, so every series is
+        // redistributed onto the *same* bucket grid. Aligned buckets are what
+        // let the bars stack on top of each other.
+        let minPeriod = Infinity;
+        let maxPeriod = -Infinity;
+        for (const { spectrum } of spectra) {
+            if (spectrum.length) {
+                minPeriod = Math.min(minPeriod, spectrum[0].period);
+                maxPeriod = Math.max(maxPeriod, spectrum[spectrum.length - 1].period);
+            }
+        }
+
+        let labels: number[] = [];
+        let outDatasets: any[] = [];
+        if (Number.isFinite(minPeriod) && maxPeriod > minPeriod) {
+            const gridRange = { min: minPeriod, max: maxPeriod };
+            outDatasets = spectra.map(({ dSet, spectrum }) => {
+                const buckets = log
+                    ? resampleLogBuckets(spectrum, numBuckets, gridRange)
+                    : resampleLinearBuckets(spectrum, numBuckets, gridRange);
+                if (!labels.length) {
+                    labels = buckets.map(b => b.period);
+                }
+                return {
+                    label: dSet.label,
+                    // One power value per shared bucket.
+                    data: buckets.map(b => (Number.isFinite(b.power) ? b.power : 0)),
+                    backgroundColor: dSet.borderColor,
+                    borderColor: dSet.borderColor,
+                    borderWidth: 0,
+                    // All series share one stack so their power adds up.
+                    stack: 'spectrum',
+                    // Contiguous bars (histogram look).
+                    categoryPercentage: 1.0,
+                    barPercentage: 1.0
+                };
+            });
+        }
+
+        const data = { labels, datasets: outDatasets };
+        this.freqCache = { xyData: this.state.xyData, width, log, detrend, data };
+        return data;
+    }
+
+    /**
+     * The frequency-domain chart: spectral power (y) versus period (x), drawn
+     * as stacked bars (one stack per period bucket, one segment per series).
+     * The period buckets are pre-spaced for the selected axis (log or linear),
+     * so a Chart.js category axis reproduces that spacing while allowing the
+     * series to stack.
+     */
+    private renderFrequencyChart(): JSX.Element {
+        const data = this.buildFrequencyData();
+        const chartHeight = parseInt(this.props.style.height.toString());
+        const gridColor = this.props.backgroundTheme === 'light' ? '#dddddd' : '#34383c';
+        const fontColor = this.props.backgroundTheme === 'light' ? '#333333' : '#bbbbbb';
+        const log = this.state.xAxisLogScale;
+
+        const options: any = {
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: { display: false },
+            tooltips: {
+                enabled: true,
+                mode: 'index',
+                intersect: false,
+                callbacks: {
+                    title: (items: any[]) =>
+                        items && items.length ? `Period: ${formatPeriod(Number(items[0].xLabel))}` : '',
+                    label: (item: any, chartData: any) => {
+                        const name = chartData.datasets[item.datasetIndex]?.label ?? '';
+                        const power = Number(item.yLabel);
+                        return `${name}: ${Number.isFinite(power) ? power.toPrecision(4) : power}`;
+                    }
+                }
+            },
+            layout: { padding: { left: 5, right: 10, top: 15, bottom: 5 } },
+            scales: {
+                xAxes: [
+                    {
+                        type: 'category',
+                        stacked: true,
+                        position: 'bottom',
+                        display: true,
+                        scaleLabel: { display: true, labelString: 'Period', fontColor },
+                        gridLines: { display: false, drawBorder: true, color: gridColor },
+                        ticks: {
+                            fontColor,
+                            maxRotation: 0,
+                            autoSkip: true,
+                            maxTicksLimit: 10,
+                            callback: (value: number) => formatPeriod(Number(value))
+                        }
+                    }
+                ],
+                yAxes: [
+                    {
+                        stacked: true,
+                        display: true,
+                        scaleLabel: { display: true, labelString: 'Power', fontColor },
+                        gridLines: { color: gridColor, drawBorder: true },
+                        ticks: { beginAtZero: true, fontColor }
+                    }
+                ]
+            },
+            animation: { duration: 0 }
+        };
+
+        const isEmpty = !data.datasets.length || data.datasets.every((d: any) => !d.data.length);
+
+        return (
+            <div className="xy-main" style={{ height: this.props.style.height, position: 'relative' }}>
+                {this.renderFrequencyToggle()}
+                {this.renderScaleToggle()}
+                {this.renderDetrendToggle()}
+                {isEmpty ? (
+                    <div className="chart-message">Not enough data to compute a frequency spectrum</div>
+                ) : (
+                    <Bar
+                        key={`freq-${log ? 'log' : 'lin'}`}
+                        data={data}
+                        height={chartHeight}
+                        width={this.getChartWidth()}
+                        options={options}
+                    />
+                )}
+            </div>
+        );
+    }
+
+    /**
+     * Hide the D3-rendered y-axis while in frequency mode: the frequency chart
+     * draws its own (power) axis, so the time-domain value axis is irrelevant.
+     */
+    renderYAxis(): React.ReactNode {
+        if (this.state.frequencyMode) {
+            return <React.Fragment />;
+        }
+        return super.renderYAxis();
     }
 
     private drawD3Chart(): JSX.Element {

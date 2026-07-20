@@ -1662,15 +1662,15 @@ export abstract class AbstractGanttOutputComponent<
         return original2;
     }
 
-    protected getEntriesWithPinned() {
+    protected getEntriesWithPinned(): Entry[] {
         const pinnedEntries = this.state.pinnedRows
             ? this.state.pinnedRows
                   .map(id => this.state.chartTree.find(entry => entry.id === id))
-                  .filter(entry => entry !== undefined)
+                  .filter((entry): entry is TimeGraphEntry => entry !== undefined)
                   .map(entry => ({ ...entry, id: this.createNewId(entry.id), parentId: -1 }))
             : [];
         const entriesWithPinned = [...pinnedEntries, ...this.state.chartTree];
-        return entriesWithPinned;
+        return entriesWithPinned as Entry[];
     }
 
     protected getExtendedPinnedRows() {
