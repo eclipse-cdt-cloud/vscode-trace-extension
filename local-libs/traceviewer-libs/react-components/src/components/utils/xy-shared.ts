@@ -127,6 +127,127 @@ export function rowsToCsv(columns: ColumnSpec[], rows: Entry[]): string {
     return header + '\n' + body;
 }
 
+export interface XyChartDataForCsv {
+    labels?: Array<string | number | bigint>;
+    datasets?: Array<{
+        label?: string;
+        data?: Array<number | { x?: string | number | bigint; y?: number }>;
+    }>;
+}
+
+interface ChartCsvRow {
+    timestamp: string | number | bigint;
+    category: string;
+    value: string | number;
+}
+
+function isIntegerLikeString(value: string): boolean {
+    return /^-?\d+$/.test(value);
+}
+
+function normalizeIntegerDigits(digits: string): string {
+    const withoutLeadingZeros = digits.replace(/^0+/, '');
+    return withoutLeadingZeros === '' ? '0' : withoutLeadingZeros;
+}
+
+function compareIntegerLikeStrings(left: string, right: string): number {
+    const leftNegative = left.charAt(0) === '-';
+    const rightNegative = right.charAt(0) === '-';
+    if (leftNegative !== rightNegative) {
+        return leftNegative ? -1 : 1;
+    }
+
+    const leftDigits = normalizeIntegerDigits(leftNegative ? left.slice(1) : left);
+    const rightDigits = normalizeIntegerDigits(rightNegative ? right.slice(1) : right);
+    if (leftDigits.length !== rightDigits.length) {
+        const cmp = leftDigits.length < rightDigits.length ? -1 : 1;
+        return leftNegative ? -cmp : cmp;
+    }
+    if (leftDigits === rightDigits) {
+        return 0;
+    }
+    const cmp = leftDigits < rightDigits ? -1 : 1;
+    return leftNegative ? -cmp : cmp;
+}
+
+function toIntegerLikeString(value: string | number | bigint): string | undefined {
+    if (typeof value === 'bigint') {
+        return value.toString();
+    }
+    if (typeof value === 'number') {
+        if (!Number.isFinite(value) || !Number.isInteger(value)) {
+            return undefined;
+        }
+        return BigInt(value).toString();
+    }
+    if (isIntegerLikeString(value)) {
+        return value;
+    }
+    return undefined;
+}
+
+function compareTimestamps(a: string | number | bigint, b: string | number | bigint): number {
+    const leftInt = toIntegerLikeString(a);
+    const rightInt = toIntegerLikeString(b);
+    if (leftInt !== undefined && rightInt !== undefined) {
+        return compareIntegerLikeStrings(leftInt, rightInt);
+    }
+    const leftNum = Number(a);
+    const rightNum = Number(b);
+    if (Number.isFinite(leftNum) && Number.isFinite(rightNum)) {
+        return leftNum < rightNum ? -1 : leftNum > rightNum ? 1 : 0;
+    }
+    return String(a).localeCompare(String(b), undefined, { numeric: true });
+}
+
+function compareChartCsvRows(a: ChartCsvRow, b: ChartCsvRow): number {
+    const categoryCmp = a.category.localeCompare(b.category, undefined, { numeric: true });
+    if (categoryCmp !== 0) {
+        return categoryCmp;
+    }
+    return compareTimestamps(a.timestamp, b.timestamp);
+}
+
+/**
+ * Build a long-format CSV from chart xyData:
+ * Timestamp, Category, Value
+ * (one row per series sample; series name used as category column).
+ * Rows are intentionally grouped by category, then sorted by timestamp within each category.
+ */
+export function xyChartDataToCsv(xyData?: XyChartDataForCsv): string {
+    const header = ['Timestamp', 'Category', 'Value'].map(csvEscape).join(',');
+    const labels = xyData?.labels ?? [];
+    const datasets = xyData?.datasets ?? [];
+    if (!datasets.length) {
+        return header;
+    }
+
+    const rows: ChartCsvRow[] = [];
+    datasets.forEach(dataset => {
+        const category = dataset.label ?? '';
+        const data = dataset.data ?? [];
+        data.forEach((point, index) => {
+            let timestamp: string | number | bigint = '';
+            let value: string | number = '';
+            if (point && typeof point === 'object') {
+                timestamp = point.x ?? '';
+                value = point.y ?? '';
+            } else {
+                timestamp = labels[index] ?? '';
+                value = point as number;
+            }
+            rows.push({ timestamp, category, value });
+        });
+    });
+
+    if (!rows.length) {
+        return header;
+    }
+
+    rows.sort(compareChartCsvRows);
+    return header + '\n' + rows.map(r => [r.timestamp, r.category, r.value].map(csvEscape).join(',')).join('\n');
+}
+
 /** Abbreviate large magnitudes: 1.2K, 3.4M, 5.6B, 7.8G */
 function abbrNumber(n: number): string {
     const v = Number(n);
