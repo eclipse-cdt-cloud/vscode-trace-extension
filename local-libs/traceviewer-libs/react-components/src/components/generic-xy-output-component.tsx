@@ -31,6 +31,7 @@ import {
     panRange,
     setSpinnerVisible,
     rowsToCsv,
+    xyChartDataToCsv,
     computeYRange,
     registerSeriesNames
 } from './utils/xy-shared';
@@ -164,6 +165,7 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
             collapsedNodes: this.state.collapsedNodes
         }));
         this.addOptions('Export table to CSV...', () => this.exportOutput());
+        this.addOptions('Export chart to CSV...', () => this.exportChartOutput());
     }
 
     private readonly onToggleCollapse = (id: number) => {
@@ -486,6 +488,14 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
     private exportOutput() {
         const csv = rowsToCsv(this.state.columns as any, this.state.xyTree);
         signalManager().emit('SAVE_AS_CSV', this.props.traceId, csv);
+    }
+
+    private exportChartOutput() {
+        const csv = xyChartDataToCsv(this.state.xyData);
+        signalManager().emit('SAVE_AS_CSV', this.props.traceId, csv);
+        this.setState({
+            dropDownOpen: false
+        });
     }
 
     private calculateYRange() {

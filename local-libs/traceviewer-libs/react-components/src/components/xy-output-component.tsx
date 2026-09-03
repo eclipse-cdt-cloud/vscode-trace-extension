@@ -19,6 +19,7 @@ import { validateNumArray } from './utils/filter-tree/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
+import { xyChartDataToCsv } from './utils/xy-shared';
 
 export class XYOutputComponent extends AbstractXYOutputComponent<AbstractOutputProps, AbstractXYOutputState> {
     private mousePanningStart = BigInt(0);
@@ -50,6 +51,7 @@ export class XYOutputComponent extends AbstractXYOutputComponent<AbstractOutputP
             collapsedNodes: this.state.collapsedNodes
         }));
         this.addOptions('Export table to CSV...', () => this.exportOutput());
+        this.addOptions('Export chart to CSV...', () => this.exportChartOutput());
     }
 
     renderChart(): React.ReactNode {
@@ -406,6 +408,14 @@ export class XYOutputComponent extends AbstractXYOutputComponent<AbstractOutputP
         const tableContent = this.state.xyTree.map(rowData => rowData.labels);
         const tableString = columnLabels.join(',') + '\n' + tableContent.map(row => row.join(',')).join('\n');
         signalManager().emit('SAVE_AS_CSV', this.props.traceId, tableString);
+        this.setState({
+            dropDownOpen: false
+        });
+    }
+
+    private exportChartOutput() {
+        const csv = xyChartDataToCsv(this.state.xyData);
+        signalManager().emit('SAVE_AS_CSV', this.props.traceId, csv);
         this.setState({
             dropDownOpen: false
         });
