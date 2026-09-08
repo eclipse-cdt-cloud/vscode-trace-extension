@@ -2,8 +2,8 @@
     "project": "ecd.cdt-cloud",
     "review": false,
     "inputFile": "yarn.lock",
-    "batch": 500,
-    "timeout": 200,
+    "batch": 25,
+    "timeout": 60,
     "summary": "license-check-summary.txt",
     "exclusions": "configs/license-check-exclusions.json"
 }

@@ -24,7 +24,7 @@ jobs:
         java: [11]
 
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -38,15 +38,58 @@ jobs:
           node-version: ${{ matrix.node }}
 
       - name: Use Java ${{ matrix.java }}
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: ${{ matrix.java }}
 
       - name: Run dash-licenses
         shell: bash
         run: |
           yarn --frozen-lockfile --ignore-scripts
-          yarn license:check
+          # Work around @eclipse-dash/nodejs-wrapper@0.0.1 downloading the jar from the
+          # decommissioned repo.eclipse.org (Nexus 2) URL. Pre-fetch from the current
+          # Nexus 3 URL into the path the wrapper checks so it skips its broken download.
+          JAR_DIR="node_modules/@eclipse-dash/nodejs-wrapper/download"
+          mkdir -p "$JAR_DIR"
+          curl -fSL -o "$JAR_DIR/dash-licenses.jar" \
+            "https://repo.eclipse.org/service/rest/v1/search/assets/download?sort=version&repository=dash-maven2-releases&maven.groupId=org.eclipse.dash&maven.artifactId=org.eclipse.dash.licenses&maven.extension=jar"
+          # ClearlyDefined (fronted by Cloudflare) intermittently returns HTTP 524
+          # (origin timeout) on some batches. The failure is transient and
+          # server-side: it is NOT tied to a specific dependency (the slow batch
+          # moves between runs). When it happens, dash-licenses aborts with exit
+          # code 127 ("internal error - run inconclusive"). We ONLY retry that
+          # case; any other non-zero exit means real restricted dependencies were
+          # found, which retrying cannot fix, so we fail fast.
+          #
+          # Batch size and per-batch timeout are kept small (see
+          # configs/license-check-config.json) so a stalled batch aborts quickly
+          # and blocks fewer coordinates, letting retries complete within the job
+          # time budget.
+          attempts=6
+          delay=30
+          rc=0
+          for i in $(seq 1 "$attempts"); do
+            echo "::group::license:check attempt $i of $attempts"
+            set +e
+            yarn license:check
+            rc=$?
+            set -e
+            echo "::endgroup::"
+            if [ "$rc" -eq 0 ]; then
+              exit 0
+            fi
+            if [ "$rc" -ne 127 ]; then
+              echo "license:check found genuine license issues (exit $rc) - not a transient backend error; failing."
+              exit "$rc"
+            fi
+            echo "license:check was inconclusive due to a ClearlyDefined backend error (exit 127)."
+            if [ "$i" -lt "$attempts" ]; then
+              echo "Retrying in ${delay}s..."
+              sleep "$delay"
+            fi
+          done
+          echo "license:check remained inconclusive after $attempts attempts (ClearlyDefined backend unavailable)."
+          exit 1
         env:
           DASH_TOKEN: ${{ secrets.DASH_LICENSES_PAT }}
