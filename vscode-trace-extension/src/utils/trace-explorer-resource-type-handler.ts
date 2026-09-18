@@ -67,7 +67,7 @@ export class TraceExplorerResourceTypeHandler {
      *
      * @returns TraceResourceType to be handled
      */
-    async detectOrPromptForTraceResouceType(): Promise<ResourceType | undefined> {
+    async detectOrPromptForTraceResourceType(): Promise<ResourceType | undefined> {
         // Try to figure out from context set
         if (this.handleFiles() && !this.handleFolders()) {
             return 'File';
