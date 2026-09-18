@@ -223,7 +223,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
             } else if (resourceType && resourceType === 'Folder') {
                 traceUri = await openDialog(false);
             } else {
-                const type: ResourceType | undefined = await resourceTypeHandler.detectOrPromptForTraceResouceType();
+                const type: ResourceType | undefined = await resourceTypeHandler.detectOrPromptForTraceResourceType();
                 if (!type) return;
                 const selectFiles = type === 'File' ? true : false;
                 traceUri = await openDialog(selectFiles);
