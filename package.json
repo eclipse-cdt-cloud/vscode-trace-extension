@@ -45,6 +45,7 @@
     ],
     "resolutions": {
         "@vscode/vsce": "2.25.0",
-        "@types/react": "18.3.8"
+        "@types/react": "18.3.8",
+        "pixi.js-legacy": "^7.3.2"
     }
 }

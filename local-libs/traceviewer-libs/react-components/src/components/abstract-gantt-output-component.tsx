@@ -8,6 +8,7 @@ import { TimeGraphChartCursors } from 'timeline-chart/lib/layer/time-graph-chart
 import { TimeGraphMarkersChartCursors } from 'timeline-chart/lib/layer/time-graph-markers-chart-cursors';
 import { TimeGraphChartGrid } from 'timeline-chart/lib/layer/time-graph-chart-grid';
 import { TimeGraphChartSelectionRange } from 'timeline-chart/lib/layer/time-graph-chart-selection-range';
+import { TimeGraphChartRichCursor } from 'timeline-chart/lib/layer/time-graph-chart-rich-cursor';
 import { TimeGraphVerticalScrollbar } from 'timeline-chart/lib/layer/time-graph-vertical-scrollbar';
 import { TimelineChart } from 'timeline-chart/lib/time-graph-model';
 import { TimeGraphRowController } from 'timeline-chart/lib/time-graph-row-controller';
@@ -975,7 +976,8 @@ export abstract class AbstractGanttOutputComponent<
                     selectionRange,
                     this.chartCursors,
                     this.arrowLayer,
-                    this.rangeEventsLayer
+                    this.rangeEventsLayer,
+                    new TimeGraphChartRichCursor('chart-rich-cursor', this.chartLayer, this.rowController)
                 ]}
             />
         );

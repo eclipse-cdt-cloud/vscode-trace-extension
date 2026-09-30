@@ -92,7 +92,7 @@ export class TooltipComponent extends React.Component<TooltipProps, TooltipState
     public render(): React.ReactPortal {
         const tooltipStyle: React.CSSProperties = {
             position: 'fixed',
-            pointerEvents: 'auto',
+            pointerEvents: 'none',
             opacity: this.state.visible ? 1 : 0,
             transition: `opacity ${this.props.fadeTransition}ms ease-in-out`,
             zIndex: this.state.zIndex,
