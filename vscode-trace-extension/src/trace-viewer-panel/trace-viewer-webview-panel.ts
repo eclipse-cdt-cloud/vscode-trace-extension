@@ -15,6 +15,7 @@ import {
     removeStatus,
     updateProperties,
     saveAsCSV,
+    saveAsJSON,
     connectionStatus,
     showMarkerCategories,
     sendMarkerSets,
@@ -104,6 +105,10 @@ export class TraceViewerPanel {
 
     private _onVscodeSaveAsCsv = (data: any): void => {
         this.doHandleVscodeSaveAsCsv(data);
+    };
+
+    private _onVscodeSaveAsJson = (data: any): void => {
+        this.doHandleVscodeSaveAsJson(data);
     };
 
     private _onVscodeConnectionStatus = (data: any): void => {
@@ -251,6 +256,28 @@ export class TraceViewerPanel {
         }
     }
 
+    private static async saveTraceJson(jsonData: string, defaultFileName: string) {
+        const saveDialogOptions = {
+            defaultUri: vscode.workspace.workspaceFolders
+                ? vscode.Uri.file(path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, defaultFileName))
+                : undefined,
+            saveLabel: 'Save as JSON',
+            filters: {
+                'JSON Files': ['json']
+            }
+        };
+        const uri = await vscode.window.showSaveDialog(saveDialogOptions);
+        if (uri) {
+            fs.writeFile(uri.fsPath, jsonData, err => {
+                if (err) {
+                    vscode.window.showErrorMessage(`Failed to save JSON: ${err.message}`);
+                } else {
+                    vscode.window.showInformationMessage('JSON saved successfully');
+                }
+            });
+        }
+    }
+
     /**
      * Directly sends a VSCode Message to all activePanel's webviews.
      * @param {string} command - command from `VSCODE_MESSAGES` object
@@ -355,6 +382,7 @@ export class TraceViewerPanel {
             this._messenger.onNotification<any>(updateProperties, this._onVscodeUpdateProperties, options)
         );
         this._disposables.push(this._messenger.onNotification<any>(saveAsCSV, this._onVscodeSaveAsCsv, options));
+        this._disposables.push(this._messenger.onNotification<any>(saveAsJSON, this._onVscodeSaveAsJson, options));
         this._disposables.push(
             this._messenger.onNotification<any>(connectionStatus, this._onVscodeConnectionStatus, options)
         );
@@ -589,6 +617,19 @@ export class TraceViewerPanel {
                 payload.data,
                 (this._experiment !== undefined ? this._experiment.name : 'trace') + '.csv'
             );
+        }
+    }
+
+    private doHandleVscodeSaveAsJson(payload: any): void {
+        if (payload.data && typeof payload.data === 'string') {
+            const experimentName = this._experiment !== undefined ? this._experiment.name : 'trace';
+            const viewSuffix = payload.viewName
+                ? '_' +
+                  String(payload.viewName)
+                      .replace(/[^a-zA-Z0-9]+/g, '_')
+                      .replace(/^_|_$/g, '')
+                : '';
+            TraceViewerPanel.saveTraceJson(payload.data, `${experimentName}${viewSuffix}.json`);
         }
     }
 

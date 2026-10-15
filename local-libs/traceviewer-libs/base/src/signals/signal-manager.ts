@@ -42,6 +42,7 @@ export interface Signals {
     OPEN_OVERVIEW_OUTPUT: [traceId: string];
     OVERVIEW_OUTPUT_SELECTED: [traceId: string, outputDescriptor: OutputDescriptor];
     SAVE_AS_CSV: [traceId: string, data: string];
+    SAVE_AS_JSON: [traceId: string, data: string, viewName?: string];
     VIEW_RANGE_UPDATED: [payload: TimeRangeUpdatePayload];
     SELECTION_RANGE_UPDATED: [payload: TimeRangeUpdatePayload];
     REQUEST_SELECTION_RANGE_CHANGE: [payload: TimeRangeUpdatePayload];

@@ -28,6 +28,7 @@ import {
     requestSelectionChange,
     rowSelectionChanged,
     saveAsCSV,
+    saveAsJSON,
     selectionRangeUpdated,
     sendMarkerSets,
     showMarkerCategories,
@@ -155,6 +156,13 @@ export class VsCodeMessageManager extends Messages.MessageManager implements Sta
 
     saveAsCSV(payload: { traceId: string; data: string }, _receiver?: MessageParticipant | undefined): void {
         this._messenger.sendNotification(saveAsCSV, _receiver ?? HOST_EXTENSION, payload);
+    }
+
+    saveAsJSON(
+        payload: { traceId: string; data: string; viewName?: string },
+        _receiver?: MessageParticipant | undefined
+    ): void {
+        this._messenger.sendNotification(saveAsJSON, _receiver ?? HOST_EXTENSION, payload);
     }
 
     fetchMarkerCategories(
