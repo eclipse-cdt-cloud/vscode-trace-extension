@@ -62,6 +62,8 @@ export abstract class AbstractOutputComponent<
 
     protected dropDownMenuRef: React.RefObject<DropDownComponent>;
 
+    private optionsMenuContainerRef: React.RefObject<HTMLDivElement>;
+
     private titleRef: React.RefObject<HTMLSpanElement>;
 
     private titleBarLabelRef: React.RefObject<HTMLDivElement>;
@@ -82,9 +84,15 @@ export abstract class AbstractOutputComponent<
         this.toggleDropDown = this.toggleDropDown.bind(this);
         this.openDropDown = this.openDropDown.bind(this);
         this.closeDropDown = this.closeDropDown.bind(this);
+        this.handleDocumentMouseDown = this.handleDocumentMouseDown.bind(this);
         this.dropDownMenuRef = React.createRef();
+        this.optionsMenuContainerRef = React.createRef();
         this.titleRef = React.createRef();
         this.titleBarLabelRef = React.createRef();
+    }
+
+    componentWillUnmount(): void {
+        this.removeDropDownOutsideClickListener();
     }
 
     render(): JSX.Element {
@@ -140,7 +148,7 @@ export abstract class AbstractOutputComponent<
                     <FontAwesomeIcon icon={faTimes} />
                 </button>
                 {this.showViewOptionsCondition() && (
-                    <div className="options-menu-container">
+                    <div className="options-menu-container" ref={this.optionsMenuContainerRef}>
                         <button title="Show View Options" className="options-menu-button" onClick={this.toggleDropDown}>
                             <FontAwesomeIcon icon={faBars} />
                         </button>
@@ -190,15 +198,35 @@ export abstract class AbstractOutputComponent<
     }
 
     protected closeDropDown(): void {
-        this.setState({
-            dropDownOpen: false
-        });
+        this.removeDropDownOutsideClickListener();
+        if (this.state.dropDownOpen) {
+            this.setState({
+                dropDownOpen: false
+            });
+        }
     }
 
     protected openDropDown(): void {
-        this.setState({
-            dropDownOpen: true
-        });
+        this.setState(
+            {
+                dropDownOpen: true
+            },
+            () => {
+                this.removeDropDownOutsideClickListener();
+                document.addEventListener('mousedown', this.handleDocumentMouseDown);
+            }
+        );
+    }
+
+    private handleDocumentMouseDown(event: MouseEvent): void {
+        const container = this.optionsMenuContainerRef.current;
+        if (container && !container.contains(event.target as Node)) {
+            this.closeDropDown();
+        }
+    }
+
+    private removeDropDownOutsideClickListener(): void {
+        document.removeEventListener('mousedown', this.handleDocumentMouseDown);
     }
 
     private closeComponent() {

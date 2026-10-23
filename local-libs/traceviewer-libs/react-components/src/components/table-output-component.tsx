@@ -219,6 +219,7 @@ export class TableOutputComponent extends AbstractOutputComponent<TableOutputPro
     }
 
     componentWillUnmount(): void {
+        super.componentWillUnmount();
         // TODO: replace with removing the handler from unit controller
         // See timeline-chart issue #98
         // In the meantime, replace the handler with a noop on unmount

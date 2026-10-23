@@ -234,11 +234,10 @@ export class TraceViewerPanel {
         return TraceViewerPanel.currentPanel?._experiment;
     }
 
-    private static async saveTraceCsv(csvData: string, defaultFileName: string) {
+    private static async saveTraceCsv(csvData: string, defaultFileName: string, defaultDirectory?: string) {
+        const baseDir = defaultDirectory ?? vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
         const saveDialogOptions = {
-            defaultUri: vscode.workspace.workspaceFolders
-                ? vscode.Uri.file(path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, defaultFileName))
-                : undefined,
+            defaultUri: baseDir ? vscode.Uri.file(path.join(baseDir, defaultFileName)) : undefined,
             saveLabel: 'Save as CSV',
             filters: {
                 'CSV Files': ['csv']
@@ -256,11 +255,10 @@ export class TraceViewerPanel {
         }
     }
 
-    private static async saveTraceJson(jsonData: string, defaultFileName: string) {
+    private static async saveTraceJson(jsonData: string, defaultFileName: string, defaultDirectory?: string) {
+        const baseDir = defaultDirectory ?? vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
         const saveDialogOptions = {
-            defaultUri: vscode.workspace.workspaceFolders
-                ? vscode.Uri.file(path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, defaultFileName))
-                : undefined,
+            defaultUri: baseDir ? vscode.Uri.file(path.join(baseDir, defaultFileName)) : undefined,
             saveLabel: 'Save as JSON',
             filters: {
                 'JSON Files': ['json']
@@ -276,6 +274,25 @@ export class TraceViewerPanel {
                 }
             });
         }
+    }
+
+    /**
+     * Resolves the directory of the imported trace data for save dialogs.
+     * Prefers the first trace path from the current experiment.
+     */
+    private getImportedTraceDirectory(): string | undefined {
+        const tracePath = this._experiment?.traces?.[0]?.path;
+        if (!tracePath) {
+            return undefined;
+        }
+        try {
+            if (fs.existsSync(tracePath) && fs.statSync(tracePath).isDirectory()) {
+                return tracePath;
+            }
+        } catch {
+            // Fall through to dirname if the path cannot be stated.
+        }
+        return path.dirname(tracePath);
     }
 
     /**
@@ -615,7 +632,8 @@ export class TraceViewerPanel {
         if (payload.data && typeof payload.data === 'string') {
             TraceViewerPanel.saveTraceCsv(
                 payload.data,
-                (this._experiment !== undefined ? this._experiment.name : 'trace') + '.csv'
+                (this._experiment !== undefined ? this._experiment.name : 'trace') + '.csv',
+                this.getImportedTraceDirectory()
             );
         }
     }
@@ -629,7 +647,11 @@ export class TraceViewerPanel {
                       .replace(/[^a-zA-Z0-9]+/g, '_')
                       .replace(/^_|_$/g, '')
                 : '';
-            TraceViewerPanel.saveTraceJson(payload.data, `${experimentName}${viewSuffix}.json`);
+            TraceViewerPanel.saveTraceJson(
+                payload.data,
+                `${experimentName}${viewSuffix}.json`,
+                this.getImportedTraceDirectory()
+            );
         }
     }
 

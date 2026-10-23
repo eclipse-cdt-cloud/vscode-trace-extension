@@ -116,6 +116,7 @@ export abstract class AbstractTreeOutputComponent<
     }
 
     componentWillUnmount(): void {
+        super.componentWillUnmount();
         // fix Warning: Can't perform a React state update on an unmounted component
         this.setState = (_state, _callback) => undefined;
     }
