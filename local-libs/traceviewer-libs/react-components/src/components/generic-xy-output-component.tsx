@@ -35,6 +35,7 @@ import {
     computeYRange,
     registerSeriesNames
 } from './utils/xy-shared';
+import { XyChartChromeJsonExporter } from './utils/chrome-json-exporter';
 import { parse } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
@@ -62,6 +63,10 @@ interface GenericXYData {
     labels: string[]; // Note: Array<string> is the same as string[]
     labelIndices: number[];
     datasets: XYDataset[];
+    /** Raw X samples before display formatting (timestamps, range starts, categories). */
+    rawXValues?: Array<string | number | bigint>;
+    /** Unit of `rawXValues` as reported by the model, or `ns` for timestamp sampling. */
+    xUnit?: string;
 }
 
 interface GenericXYState extends AbstractTreeOutputState {
@@ -166,6 +171,7 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
         }));
         this.addOptions('Export table to CSV...', () => this.exportOutput());
         this.addOptions('Export chart to CSV...', () => this.exportChartOutput());
+        this.addOptions('Export Chrome JSON Trace file...', () => this.exportChartAsChromeJson());
     }
 
     private readonly onToggleCollapse = (id: number) => {
@@ -423,9 +429,7 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
     }
 
     private buildBarChartData(seriesObj: XYSeries[]): GenericXYData {
-        const xValues = seriesObj[0].xValues ?? seriesObj[0].xRanges ?? seriesObj[0].xCategories;
-        const unit = seriesObj[0]?.xValuesDescription?.unit || '';
-        const labels = this.buildLabels(xValues as Sampling, unit);
+        const { labels, rawXValues, xUnit } = this.getXAxisSamples(seriesObj);
         const datasets: GenericXYData['datasets'] = seriesObj.map(s => {
             const color = this.colors.get(s.seriesName);
             return {
@@ -438,13 +442,11 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
         });
 
         const labelIndices = Array.from({ length: labels.length }, (_, i) => i);
-        return { labels, labelIndices, datasets };
+        return { labels, labelIndices, datasets, rawXValues, xUnit };
     }
 
     private buildLineOrScatterChartData(seriesObj: XYSeries[], mode: ChartMode): GenericXYData {
-        const xValues = seriesObj[0].xValues ?? seriesObj[0].xRanges ?? seriesObj[0].xCategories;
-        const unit = seriesObj[0]?.xValuesDescription?.unit || '';
-        const labels = this.buildLabels(xValues as Sampling, unit);
+        const { labels, rawXValues, xUnit } = this.getXAxisSamples(seriesObj);
 
         const datasets: GenericXYData['datasets'] = seriesObj.map(s => {
             const color = this.colors.get(s.seriesName);
@@ -464,7 +466,42 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
         });
 
         const labelIndices = Array.from({ length: labels.length }, (_, i) => i);
-        return { labels, labelIndices, datasets };
+        return { labels, labelIndices, datasets, rawXValues, xUnit };
+    }
+
+    private getXAxisSamples(seriesObj: XYSeries[]): {
+        labels: string[];
+        rawXValues: Array<string | number | bigint>;
+        xUnit?: string;
+    } {
+        const xValues = (seriesObj[0].xValues ?? seriesObj[0].xRanges ?? seriesObj[0].xCategories) as Sampling;
+        const unit = seriesObj[0]?.xValuesDescription?.unit || '';
+        const labels = this.buildLabels(xValues, unit);
+        const { rawXValues, xUnit } = this.extractRawXSamples(xValues, unit);
+        return { labels, rawXValues, xUnit };
+    }
+
+    /**
+     * Keep the original sampling values (and their unit) next to formatted chart
+     * labels so export can use timestamps / range starts instead of display strings.
+     */
+    private extractRawXSamples(
+        xValues: Sampling,
+        unit: string
+    ): { rawXValues: Array<string | number | bigint>; xUnit?: string } {
+        if (isTimestampSampling(xValues)) {
+            // TSP timestamp samples are nanoseconds; chart labels are offset,
+            // translated, and suffixed with " s".
+            return { rawXValues: [...xValues], xUnit: 'ns' };
+        }
+        if (isRangeSampling(xValues)) {
+            return { rawXValues: xValues.map(range => range.start), xUnit: unit || 'ns' };
+        }
+        if (isCategorySampling(xValues)) {
+            // Explicit empty unit: do not assume nanoseconds for category axes.
+            return { rawXValues: [...xValues], xUnit: unit };
+        }
+        return { rawXValues: (xValues as any[]).map(v => v), xUnit: unit || undefined };
     }
 
     private buildLabels(xValues: Sampling, unit: string): string[] {
@@ -493,9 +530,18 @@ export class GenericXYOutputComponent extends AbstractTreeOutputComponent<Generi
     private exportChartOutput() {
         const csv = xyChartDataToCsv(this.state.xyData);
         signalManager().emit('SAVE_AS_CSV', this.props.traceId, csv);
-        this.setState({
-            dropDownOpen: false
+        this.closeDropDown();
+    }
+
+    private exportChartAsChromeJson() {
+        const exporter = new XyChartChromeJsonExporter(this.props.outputDescriptor.name);
+        const json = exporter.export({
+            labels: this.state.xyData.rawXValues ?? this.state.xyData.labels,
+            datasets: this.state.xyData.datasets,
+            sourceUnit: this.state.xyData.xUnit
         });
+        signalManager().emit('SAVE_AS_JSON', this.props.traceId, json, this.props.outputDescriptor.name);
+        this.closeDropDown();
     }
 
     private calculateYRange() {

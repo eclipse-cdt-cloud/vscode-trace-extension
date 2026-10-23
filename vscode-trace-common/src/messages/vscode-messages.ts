@@ -21,6 +21,7 @@ export const VSCODE_MESSAGES = {
     REMOVE_STATUS: 'rmStatus',
     RESET_ZOOM: 'reset-zoom',
     SAVE_AS_CSV: 'saveAsCsv',
+    SAVE_AS_JSON: 'saveAsJson',
     SET_EXPERIMENT: 'set-experiment',
     SET_THEME: 'set-theme',
     SET_TSP_CLIENT: 'set-tspClient',
@@ -69,6 +70,7 @@ export const newStatus: NotificationType<any> = { method: VSCODE_MESSAGES.NEW_ST
 export const removeStatus: NotificationType<any> = { method: VSCODE_MESSAGES.REMOVE_STATUS };
 
 export const saveAsCSV: NotificationType<any> = { method: VSCODE_MESSAGES.SAVE_AS_CSV };
+export const saveAsJSON: NotificationType<any> = { method: VSCODE_MESSAGES.SAVE_AS_JSON };
 export const showMarkerCategories: NotificationType<any> = { method: VSCODE_MESSAGES.SHOW_MARKER_CATEGORIES };
 export const sendMarkerSets: NotificationType<any> = { method: VSCODE_MESSAGES.SEND_MARKER_SETS };
 export const markerSetsContext: NotificationType<any> = { method: VSCODE_MESSAGES.MARKER_SETS_CONTEXT };

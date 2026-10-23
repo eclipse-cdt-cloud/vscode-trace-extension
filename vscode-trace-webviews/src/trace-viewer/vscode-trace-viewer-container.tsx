@@ -81,6 +81,10 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
         this._signalHandler.saveAsCSV({ traceId, data });
     };
 
+    private _onSaveAsJSON = (traceId: string, data: string, viewName?: string): void => {
+        this._signalHandler.saveAsJSON({ traceId, data, viewName });
+    };
+
     private _onRowSelectionChanged = (payload: RowSelectionsChangedSignalPayload): void => {
         this._signalHandler.rowSelectChanged(payload);
     };
@@ -270,6 +274,7 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
         signalManager().on('ROW_SELECTIONS_CHANGED', this._onRowSelectionChanged);
         signalManager().on('ITEM_PROPERTIES_UPDATED', this._onProperties);
         signalManager().on('SAVE_AS_CSV', this._onSaveAsCSV);
+        signalManager().on('SAVE_AS_JSON', this._onSaveAsJSON);
         signalManager().on('MARKER_CATEGORY_CLOSED', this.onMarkerCategoryClosedSignal);
         signalManager().on('VIEW_RANGE_UPDATED', this.onViewRangeUpdated);
         signalManager().on('SELECTION_RANGE_UPDATED', this.onSelectionRangeUpdated);
@@ -282,6 +287,7 @@ class TraceViewerContainer extends React.Component<{}, VscodeAppState> {
         signalManager().off('ITEM_PROPERTIES_UPDATED', this._onProperties);
         signalManager().off('OVERVIEW_OUTPUT_SELECTED', this._onOverviewSelected);
         signalManager().off('SAVE_AS_CSV', this._onSaveAsCSV);
+        signalManager().off('SAVE_AS_JSON', this._onSaveAsJSON);
         signalManager().off('MARKER_CATEGORY_CLOSED', this.onMarkerCategoryClosedSignal);
         signalManager().off('VIEW_RANGE_UPDATED', this.onViewRangeUpdated);
         signalManager().off('SELECTION_RANGE_UPDATED', this.onSelectionRangeUpdated);
