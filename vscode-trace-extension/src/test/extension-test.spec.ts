@@ -1,4 +1,4 @@
-import { test, expect, Locator } from '@playwright/test';
+import { test, expect, Locator, Page } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:3000');
@@ -15,9 +15,21 @@ test('Open Trace from Explorer', async ({ page }) => {
 });
 
 test('Open Trace from Trace Viewer', async ({ page }) => {
+    await openTraceFromTraceViewer(page);
+    await expect(page.getByRole('tab', { name: 'cat-kernel' })).toBeVisible();
+});
+
+test('Open Trace offers XML File option', async ({ page }) => {
+    await openTraceViewer(page);
+    await page.getByRole('button', { name: 'Open Trace' }).hover();
+    await page.getByRole('button', { name: 'Open Trace' }).click();
+    await expect(page.getByRole('option', { name: 'XML File' })).toBeVisible();
+});
+
+async function openTraceViewer(page: Page): Promise<void> {
     await page.getByRole('tab', { name: 'Trace Viewer' }).locator('a').click();
 
-    // Locate the welcome view button or the open traces view (when trace exists already)
+    // Locate the welcome view button or the open traces view (when trace exists already).
     const index = await waitForFirstLocator([
         page.getByLabel('Opened Traces Section'),
         page.getByRole('button', { name: 'Open Trace' })
@@ -26,7 +38,10 @@ test('Open Trace from Trace Viewer', async ({ page }) => {
     if (index === 0) {
         await page.getByLabel('Opened Traces Section').hover();
     }
+}
 
+async function openTraceFromTraceViewer(page: Page): Promise<void> {
+    await openTraceViewer(page);
     await page.getByRole('button', { name: 'Open Trace' }).hover();
     await page.getByRole('button', { name: 'Open Trace' }).click();
     await page.getByRole('option', { name: 'Folder' }).locator('a').click();
@@ -35,7 +50,7 @@ test('Open Trace from Trace Viewer', async ({ page }) => {
     await page.waitForTimeout(1000);
     await page.getByRole('button', { name: 'OK' }).click();
     await expect(page.getByRole('tab', { name: 'cat-kernel' })).toBeVisible();
-});
+}
 
 export async function waitForFirstLocator(locators: Locator[]): Promise<number> {
     // return the first promise that resolves

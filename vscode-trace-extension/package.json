@@ -105,6 +105,11 @@
                 "icon": "$(new-folder)"
             },
             {
+                "command": "openedTraces.clearTraceServer",
+                "title": "Clear Trace Server",
+                "icon": "$(trash)"
+            },
+            {
                 "command": "trace-explorer.refreshContext",
                 "title": "Refresh Trace Explorer",
                 "icon": "$(refresh)"
@@ -195,12 +200,17 @@
                 {
                     "command": "openedTraces.openTrace",
                     "when": "view == traceExplorer.openedTracesView && !trace-explorer.noExperiments",
-                    "group": "navigation"
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "openedTraces.clearTraceServer",
+                    "when": "(view == traceExplorer.openedTracesView && !trace-explorer.noExperiments) || (view == welcome && traceViewer.serverUp)",
+                    "group": "navigation@2"
                 },
                 {
                     "command": "trace-explorer.refreshContext",
                     "when": "view == welcome || view == traceExplorer.openedTracesView",
-                    "group": "navigation"
+                    "group": "navigation@3"
                 }
             ],
             "explorer/context": [

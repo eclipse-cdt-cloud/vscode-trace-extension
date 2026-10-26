@@ -5,7 +5,7 @@
  ***************************************************************************************/
 import * as vscode from 'vscode';
 
-export type ResourceType = 'File' | 'Folder';
+export type ResourceType = 'File' | 'Folder' | 'XML';
 export type ResourceTypeQuickPickItem = vscode.QuickPickItem & { type: ResourceType };
 
 export class TraceExplorerResourceTypeHandler {
@@ -16,6 +16,11 @@ export class TraceExplorerResourceTypeHandler {
         { label: 'File', type: 'File' },
         { label: 'Folder', type: 'Folder' }
     ];
+    private xmlQuickpickItem: ResourceTypeQuickPickItem = {
+        label: 'XML File',
+        description: 'Load an XML data-driven analysis',
+        type: 'XML'
+    };
 
     private constructor() {
         /** Empty constructor */
@@ -65,20 +70,27 @@ export class TraceExplorerResourceTypeHandler {
      * If both file and folder resource types are to be handled, a quick pick is prompted to let the user
      * decide which type should be handled.
      *
+     * @param includeXml true to include XML analysis files as an additional resource type
      * @returns TraceResourceType to be handled
      */
-    async detectOrPromptForTraceResouceType(): Promise<ResourceType | undefined> {
-        // Try to figure out from context set
+    async detectOrPromptForTraceResouceType(includeXml = false): Promise<ResourceType | undefined> {
+        let quickpickItems = this.quickpickItems;
         if (this.handleFiles() && !this.handleFolders()) {
-            return 'File';
+            quickpickItems = this.quickpickItems.filter(item => item.type === 'File');
         } else if (!this.handleFiles() && this.handleFolders()) {
-            return 'Folder';
-        } else {
-            const selection = await vscode.window.showQuickPick(this.quickpickItems, {
-                title: 'Select the trace resource type to open'
-            });
-            if (!selection) return undefined;
-            return selection.type;
+            quickpickItems = this.quickpickItems.filter(item => item.type === 'Folder');
         }
+        if (includeXml && this.handleFiles()) {
+            quickpickItems = [...quickpickItems, this.xmlQuickpickItem];
+        }
+        if (quickpickItems.length === 1) {
+            return quickpickItems[0].type;
+        }
+
+        const selection = await vscode.window.showQuickPick(quickpickItems, {
+            title: 'Select the trace resource type to open'
+        });
+        if (!selection) return undefined;
+        return selection.type;
     }
 }
