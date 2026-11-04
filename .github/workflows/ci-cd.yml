@@ -17,7 +17,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        # Pinned to ubuntu-22.04: Playwright's `install --with-deps` does not yet
+        # provide an apt dependency list for Ubuntu 26.04 ("resolute"), which
+        # `ubuntu-latest` now resolves to, causing browser install to fail
+        # (libicu74/libvpx9/libxml2/libx264-164 not found).
+        os: [ubuntu-22.04]
         node-version: [18,20,22]
 
     steps:
@@ -68,7 +72,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-22.04]
         node-version: [20]
 
     steps:
