@@ -7,7 +7,7 @@
         "experimentalDecorators": true,
         "jsx": "react",
         "lib": [
-            "es6",
+            "ES2022",
             "dom"
         ],
         "module": "commonjs",
@@ -17,7 +17,7 @@
         "strict": true,
         "sourceMap": true,
         "strictPropertyInitialization": false,
-        "target": "ES2017",
+        "target": "ES2022",
         "esModuleInterop": true,
         "baseUrl": ".",
         "composite": true
