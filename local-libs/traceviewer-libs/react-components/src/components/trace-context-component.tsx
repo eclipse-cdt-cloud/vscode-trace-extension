@@ -22,6 +22,7 @@ import { AbstractOutputProps } from './abstract-output-component';
 import * as Messages from 'traceviewer-base/lib/message-manager';
 import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { BIMath } from 'timeline-chart/lib/bigint-utils';
+import { DataOutputComponent } from './data-output-component';
 import { DataTreeOutputComponent } from './datatree-output-component';
 import { cloneDeep } from 'lodash';
 import { UnitControllerHistoryHandler } from './utils/unit-controller-history-handler';
@@ -867,6 +868,14 @@ export class TraceContextComponent extends React.Component<TraceContextProps, Tr
                                 </GanttChartOutputComponent>
                             );
                         }
+                        case ProviderType.DATA:
+                            return (
+                                <DataOutputComponent
+                                    key={output.id}
+                                    {...outputProps}
+                                    className={this.state.pinnedView?.id === output.id ? 'pinned-view-shadow' : ''}
+                                />
+                            );
                         default:
                             return (
                                 <NullOutputComponent
