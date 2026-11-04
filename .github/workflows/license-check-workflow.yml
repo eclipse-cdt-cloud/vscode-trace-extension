@@ -21,7 +21,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         node: [20]
-        java: [11]
+        java: [25]
 
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
