@@ -49,38 +49,33 @@ jobs:
           java-version: ${{ matrix.java }}
 
       # Decide whether to run a full scan of yarn.lock or scan only the
-      # coordinates added since the base ref. We scope to the changed
-      # dependencies ONLY for Dependabot version-bump PRs that touch nothing
-      # but yarn.lock. Every other trigger (manual, scheduled, pushes to
-      # master, human PRs) gets a full scan. Releases ALWAYS get a full scan,
-      # even for Dependabot, so a release is vetted against the entire
-      # dependency graph and not just whatever a bump happened to change.
+      # coordinates added since the base ref.
+      #
+      #   full     releases and pushes to master (and anything else, such as
+      #            scheduled / manual runs, which have no PR base to diff
+      #            against) -- vetted against the entire dependency graph.
+      #   changed  any pull request (human or Dependabot) -- scan only the
+      #            coordinates added to yarn.lock vs the PR base. A PR that
+      #            adds no new dependencies has nothing to scan.
       - name: Determine scan scope
         id: scope
         shell: bash
         env:
           EVENT_NAME: ${{ github.event_name }}
-          PR_ACTOR: ${{ github.actor }}
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           mode="full"
           base_ref=""
 
-          if [ "$EVENT_NAME" = "release" ]; then
-            # A release must be vetted against the full dependency graph.
-            echo "Release event: forcing a full license scan."
-          elif [ "$EVENT_NAME" = "pull_request" ] && [ "$PR_ACTOR" = "dependabot[bot]" ]; then
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            # Pull requests (human or Dependabot) are scanned on the delta:
+            # only the coordinates added to yarn.lock since the PR base.
+            mode="changed"
             base_ref="$PR_BASE_SHA"
-            # Only scope to changed coordinates when the PR changes nothing but
-            # yarn.lock; otherwise fall back to a full scan to be safe.
-            changed_files="$(git diff --name-only "$base_ref"...HEAD)"
-            echo "Files changed vs base:"
-            echo "$changed_files"
-            if [ "$changed_files" = "yarn.lock" ]; then
-              mode="changed"
-            else
-              echo "Dependabot PR changes more than yarn.lock; using full scan."
-            fi
+          else
+            # Releases, pushes to master, scheduled and manual runs are vetted
+            # against the full dependency graph.
+            echo "Event '$EVENT_NAME' uses a full license scan."
           fi
 
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
