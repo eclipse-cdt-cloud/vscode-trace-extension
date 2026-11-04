@@ -8,6 +8,9 @@ on:
   pull_request:
     branches:
       - master
+  release:
+    types:
+      - published
   schedule:
     - cron: '0 4 * * *' # Runs every day at 4am: https://docs.github.com/en/actions/reference/events-that-trigger-workflows#scheduled-events-schedule
 
@@ -30,7 +33,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          # Need full history so we can diff yarn.lock against the PR base /
+          # previous push to scope the scan to just the changed dependencies.
+          fetch-depth: 0
 
       - name: Use Node.js ${{ matrix.node }}
         uses: actions/setup-node@v4
@@ -43,53 +48,44 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
 
+      # Decide whether to run a full scan of yarn.lock or scan only the
+      # coordinates added since the base ref.
+      #
+      #   full     releases and pushes to master (and anything else, such as
+      #            scheduled / manual runs, which have no PR base to diff
+      #            against) -- vetted against the entire dependency graph.
+      #   changed  any pull request (human or Dependabot) -- scan only the
+      #            coordinates added to yarn.lock vs the PR base. A PR that
+      #            adds no new dependencies has nothing to scan.
+      - name: Determine scan scope
+        id: scope
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          mode="full"
+          base_ref=""
+
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            # Pull requests (human or Dependabot) are scanned on the delta:
+            # only the coordinates added to yarn.lock since the PR base.
+            mode="changed"
+            base_ref="$PR_BASE_SHA"
+          else
+            # Releases, pushes to master, scheduled and manual runs are vetted
+            # against the full dependency graph.
+            echo "Event '$EVENT_NAME' uses a full license scan."
+          fi
+
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          echo "base_ref=$base_ref" >> "$GITHUB_OUTPUT"
+          echo "Selected license-check mode: $mode"
+
       - name: Run dash-licenses
         shell: bash
         run: |
           yarn --frozen-lockfile --ignore-scripts
-          # Work around @eclipse-dash/nodejs-wrapper@0.0.1 downloading the jar from the
-          # decommissioned repo.eclipse.org (Nexus 2) URL. Pre-fetch from the current
-          # Nexus 3 URL into the path the wrapper checks so it skips its broken download.
-          JAR_DIR="node_modules/@eclipse-dash/nodejs-wrapper/download"
-          mkdir -p "$JAR_DIR"
-          curl -fSL -o "$JAR_DIR/dash-licenses.jar" \
-            "https://repo.eclipse.org/service/rest/v1/search/assets/download?sort=version&repository=dash-maven2-releases&maven.groupId=org.eclipse.dash&maven.artifactId=org.eclipse.dash.licenses&maven.extension=jar"
-          # ClearlyDefined (fronted by Cloudflare) intermittently returns HTTP 524
-          # (origin timeout) on some batches. The failure is transient and
-          # server-side: it is NOT tied to a specific dependency (the slow batch
-          # moves between runs). When it happens, dash-licenses aborts with exit
-          # code 127 ("internal error - run inconclusive"). We ONLY retry that
-          # case; any other non-zero exit means real restricted dependencies were
-          # found, which retrying cannot fix, so we fail fast.
-          #
-          # Batch size and per-batch timeout are kept small (see
-          # configs/license-check-config.json) so a stalled batch aborts quickly
-          # and blocks fewer coordinates, letting retries complete within the job
-          # time budget.
-          attempts=6
-          delay=30
-          rc=0
-          for i in $(seq 1 "$attempts"); do
-            echo "::group::license:check attempt $i of $attempts"
-            set +e
-            yarn license:check
-            rc=$?
-            set -e
-            echo "::endgroup::"
-            if [ "$rc" -eq 0 ]; then
-              exit 0
-            fi
-            if [ "$rc" -ne 127 ]; then
-              echo "license:check found genuine license issues (exit $rc) - not a transient backend error; failing."
-              exit "$rc"
-            fi
-            echo "license:check was inconclusive due to a ClearlyDefined backend error (exit 127)."
-            if [ "$i" -lt "$attempts" ]; then
-              echo "Retrying in ${delay}s..."
-              sleep "$delay"
-            fi
-          done
-          echo "license:check remained inconclusive after $attempts attempts (ClearlyDefined backend unavailable)."
-          exit 1
+          scripts/license-check.sh "${{ steps.scope.outputs.mode }}" "${{ steps.scope.outputs.base_ref }}"
         env:
           DASH_TOKEN: ${{ secrets.DASH_LICENSES_PAT }}
