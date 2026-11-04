@@ -46,7 +46,7 @@ jobs:
       - name: Run dash-licenses
         shell: bash
         run: |
-          yarn --frozen-lockfile --ignore-scripts
+          npm ci --ignore-scripts
           # Work around @eclipse-dash/nodejs-wrapper@0.0.1 downloading the jar from the
           # decommissioned repo.eclipse.org (Nexus 2) URL. Pre-fetch from the current
           # Nexus 3 URL into the path the wrapper checks so it skips its broken download.
@@ -72,7 +72,7 @@ jobs:
           for i in $(seq 1 "$attempts"); do
             echo "::group::license:check attempt $i of $attempts"
             set +e
-            yarn license:check
+            npm run license:check
             rc=$?
             set -e
             echo "::endgroup::"

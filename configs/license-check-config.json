@@ -1,7 +1,7 @@
 {
     "project": "ecd.cdt-cloud",
     "review": false,
-    "inputFile": "yarn.lock",
+    "inputFile": "package-lock.json",
     "batch": 25,
     "timeout": 60,
     "summary": "license-check-summary.txt",

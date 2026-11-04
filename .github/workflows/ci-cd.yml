@@ -34,25 +34,25 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
     - name: Install npm dependencies and build
-      run: yarn --frozen-lockfile
+      run: npm ci
     - name: Package as VSCode Extension
-      run: yarn vsce:package
+      run: npm run vsce:package
     - name: Download sample traces
-      run: yarn download:sample-traces
+      run: npm run download:sample-traces
     - name: Download trace server
-      run: yarn download:server
+      run: npm run download:server
     - name: Start trace server
-      run: yarn start:server &
+      run: npm run start:server &
     - name: Download openvscode-server
-      run: yarn download:openvscode-server
+      run: npm run download:openvscode-server
     - name: Configure openvscode-server
-      run: yarn configure:openvscode-server
+      run: npm run configure:openvscode-server
     - name: Start openvscode-server
-      run: yarn start:openvscode-server &
+      run: npm run start:openvscode-server &
     - name: Install Playwright Browsers
-      run: yarn playwright install --with-deps
+      run: npx playwright install --with-deps
     - name: Run Playwright tests
-      run: yarn playwright test
+      run: npx playwright test
     - uses: actions/upload-artifact@v4
       if: always()
       with:
@@ -83,11 +83,11 @@ jobs:
         node-version: ${{ matrix.node-version }}
     # ESLint and Prettier must be in `package.json`
     - name: Install dependencies
-      run: yarn --frozen-lockfile --ignore-scripts
+      run: npm ci --ignore-scripts
     - name: Run lint
-      run: yarn lint
+      run: npm run lint
     - name: Run format check
-      run: yarn format:check
+      run: npm run format:check
 
   publish-oxsv:
     # https://open-vsx.org/
@@ -112,7 +112,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies
-        run: yarn --frozen-lockfile --ignore-scripts
+        run: npm ci --ignore-scripts
       - name: Publish extension
         run: |
           ls -al  vscode-trace-extension/*.vsix
@@ -145,7 +145,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies
-        run: yarn --frozen-lockfile --ignore-scripts
+        run: npm ci --ignore-scripts
       - name: Publish extension
         run: |
           ls -al  vscode-trace-extension/*.vsix
