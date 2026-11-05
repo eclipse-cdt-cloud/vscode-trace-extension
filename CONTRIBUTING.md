@@ -69,9 +69,9 @@ have written the code and that, from a licensing perspective, the >
 If a commit fails to pass CI checks because of its format, contributors can use Prettier, which is already conveniently set up in the project,
 to quickly format their commit.
 
-* To format a single file, simply run `yarn prettier --write <path-to-file>`.
-* To run Prettier on all source code files, run `yarn format:write`. Prettier will only format files that are not formatted correctly.
-* To check if new changes comply with Prettier rules, run `yarn prettier --check <path-to-file>` or `yarn format:check` to perform the check on a single file
+* To format a single file, simply run `npx prettier --write <path-to-file>`.
+* To run Prettier on all source code files, run `npm run format:write`. Prettier will only format files that are not formatted correctly.
+* To check if new changes comply with Prettier rules, run `npx prettier --check <path-to-file>` or `npm run format:check` to perform the check on a single file
   or all source code file, respectively.
   
 ## Ignoring linting/formatting commits

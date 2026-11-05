@@ -12,7 +12,7 @@ This project started from the [VSCode webview react project][vscode-webview-reac
 
 ## Prerequisites
 
-First, you need Node.js and yarn:
+First, you need Node.js and npm (npm ships with Node.js):
 
 It's suggested to install [nvm](https://github.com/nvm-sh/nvm#installing-and-updating) to manage node on your machine. Once that's done, install the required version:
 
@@ -24,11 +24,7 @@ It's suggested to install [nvm](https://github.com/nvm-sh/nvm#installing-and-upd
    nvm use 20
 ```
 
-Then install `yarn`:
-
-```bash
-npm i -g yarn  # the default version should be ok
-```
+Installing Node.js via nvm also provides `npm`, so no separate package-manager install is required.
 
 ## Installation Instructions
 
@@ -41,10 +37,10 @@ The `traceviewer` libraries (traceviewer-base and traceviewer-react-components) 
 - traceviewer-base (local subtree)
 - traceviewer-react-components (local subtree)
 
-To build the VSCode extension, run the `yarn` command:
+To build the VSCode extension, run the `npm install` command:
 
 ``` bash
-yarn
+npm install
 ```
 ### Building from local sources
 
@@ -52,40 +48,40 @@ As a contributor to the Trace Viewer for VSCode extension, you may have to chang
 
 However, for easier local development and tests, it's possible to set things up such that the repo here will use a local version of those libraries, where you have performed the necessary changes and built. Follow the README instructions for each library, to clone and build them. 
 
-After that's done, you need to link each using command `yarn link`, which creates a symbolic link into the user's home, under directory `~/.config/yarn/link`. 
+After that's done, you need to link each using command `npm link`, which registers the package globally so it can be linked into this repo.
 
-The `yarn link` command makes sure that the libraries are available locally and can be linked from the `vscode-trace-extension`. 
+The `npm link` command makes sure that the libraries are available locally and can be linked from the `vscode-trace-extension`. 
 
-First, make sure that you don't have existing links in `~/.config/yarn/link` from other repositories than relevant for the Trace Viewer for VSCode. If there are, remove them beforehand.
+First, make sure that you don't have existing global links from other repositories than relevant for the Trace Viewer for VSCode. If there are, remove them beforehand (`npm ls -g --link` lists globally linked packages).
 
 Assuming all repositories are stored in your home directory under the `rootDir=~/git`
 
 ```bash
 cd $rootDir/tsp-typescript-client
-yarn
+npm install
 cd tsp-typescript-client
-yarn link
+npm link
 ```
 
 ```bash
 cd $rootDir/timeline-chart
-yarn
+npm install
 cd timeline-chart
-yarn link
+npm link
 ```
 
 To link the local dependencies to this repository, run the following commands:
 
 ```bash
 cd $rootDir/vscode-trace-extension
-yarn link tsp-typescript-client
-yarn link timeline-chart
+npm link tsp-typescript-client
+npm link timeline-chart
 ```
 
-After linking the local dependencies on this repo and before running the vscode extension, run the `yarn` command:
+After linking the local dependencies on this repo and before running the vscode extension, run the `npm install` command:
 
 ```bash
-yarn
+npm install
 ```
 
 ### Removing links to local sources
@@ -94,14 +90,14 @@ To remove the links execute the following commands:
 
 ```bash
 cd $rootDir/vscode-trace-extension
-yarn unlink tsp-typescript-client
-yarn unlink timeline-chart
+npm unlink tsp-typescript-client
+npm unlink timeline-chart
 ```
 
-Note that you will need to run `yarn install --force` to re-install the packages that were linked.
+Note that you will need to run `npm install --force` to re-install the packages that were linked.
 
 ```bash
-yarn install --force
+npm install --force
 ```
 
 ## Running the extension
@@ -122,7 +118,7 @@ The `Views` tab shows all the available views for the selected trace. Click on a
 
 ## Package as a VSCode extension (.vsix)
 
-To package it as VSCode extension, run the command `yarn vsce:package`. If you get errors about case-sensitive files, just delete the node_modules folder and run `yarn` again.
+To package it as VSCode extension, run the command `npm run vsce:package`. If you get errors about case-sensitive files, just delete the node_modules folder and run `npm install` again.
 
 The packaging will produce a `vscode-trace-extension-x.x.x.vsix` file in the subdirectory `vscode-trace-extension` of the repository.
 
@@ -143,7 +139,7 @@ ln -s <vscode-trace-extension root>/vscode-trace-extension-x.x.x.vsix ./
 
 ## Developing the extension
 
-From the root directory execute `yarn run watch`.  This will watch and bundle `vscode-trace-common`, `vscode-trace-extension`, and `vscode-trace-webviews`.  All outputs will be in one terminal.  Changes can be observed and tested in the `Extension Development Host` by pressing `F5`.
+From the root directory execute `npm run watch`.  This will watch and bundle `vscode-trace-common`, `vscode-trace-extension`, and `vscode-trace-webviews`.  All outputs will be in one terminal.  Changes can be observed and tested in the `Extension Development Host` by pressing `F5`.
 
 For more information about `VSCode WebView API` see [here][vscode-webview].
 
@@ -223,11 +219,11 @@ Right-click on the vscode activity bar and make sure `Trace Viewer` is checked.
 
 ## Run the Trace Server
 
-In order to open traces, you need a trace server running on the same machine as the trace extension. You can download the [Eclipse Trace Compass server][tc-server] or let `yarn` download and run it:
+In order to open traces, you need a trace server running on the same machine as the trace extension. You can download the [Eclipse Trace Compass server][tc-server] or let `npm` download and run it:
 
 ```bash
-yarn download:server
-yarn start:server
+npm run download:server
+npm run start:server
 ```
 
 You can also build the trace-server yourself using Trace Compass and the Incubator. Take a look at the [instructions here][tc-server-build].
@@ -237,7 +233,7 @@ You can also build the trace-server yourself using Trace Compass and the Incubat
 To get sample traces to try run the following command. The traces will be stored under the subdirectory `TraceCompassTutorialTraces` of the repository.
 
 ```bash
-yarn download:sample-traces
+npm run download:sample-traces
 ```
 
 ## Running UI tests
@@ -247,40 +243,40 @@ To run the UI tests locally, use the following commands.
 Steps for setup that only need to be run once:
 
 ```bash
-yarn download:sample-traces
-yarn download:server
-yarn download:openvscode-server
-yarn configure:openvscode-server
-yarn playwright install --with-deps
+npm run download:sample-traces
+npm run download:server
+npm run download:openvscode-server
+npm run configure:openvscode-server
+npx playwright install --with-deps
 ```
 
 Steps to run once and again every time the application code is modified:
 
 ```bash
-yarn
-yarn vsce:package
+npm install
+npm run vsce:package
 # kill openvscode-server if running and restart it below
 ```
 
 Steps to run once if the corresponding server is not already running:
 
 ```bash
-yarn start:server & # or run in a separate shell
-yarn start:openvscode-server & # or run in a separate shell
+npm run start:server & # or run in a separate shell
+npm run start:openvscode-server & # or run in a separate shell
 ```
 
 To run or re-run the tests after test code is modified:
 
 ```bash
-yarn playwright test
+npx playwright test
 ```
 
 To test in debug mode, test with tracing on, or test with retries on failure, use the following options:
 
 ```bash
-yarn playwright test --debug
-yarn playwright test --trace on
-yarn playwright test --retries <retries>
+npx playwright test --debug
+npx playwright test --trace on
+npx playwright test --retries <retries>
 ```
 
 ## External API
@@ -320,11 +316,11 @@ git branch new-release && git checkout new-release
 Then decide if the release shall be a `Major`, `Minor` or `Patch` release and use the corresponding command below to step the package's versions, according to the release type. A new release commit will be created:
 
 ``` bash
-yarn version:major
+npm run version:major
 # or
-yarn version:minor
+npm run version:minor
 # or
-yarn version:patch
+npm run version:patch
 ```
 
 Modify the _version tag_ in file `./RELEASE`, to match the new release. Amend the release commit to include this change:

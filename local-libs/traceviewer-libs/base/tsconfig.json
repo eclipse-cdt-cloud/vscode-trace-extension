@@ -6,7 +6,7 @@
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
         "module": "commonjs",
-        "target": "ES2017",
+        "target": "ES2022",
         "downlevelIteration": true,
         "rootDir": "src",
         "outDir": "lib",

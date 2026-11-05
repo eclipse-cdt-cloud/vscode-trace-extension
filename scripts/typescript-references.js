@@ -31,7 +31,7 @@ main().catch(error => {
 
 async function main() {
     const projectCwd = path.resolve(__dirname, '..')
-    const workspaces = JSON.parse(cp.execSync('yarn -s workspaces info').toString())
+    const workspaces = getWorkspaces(projectCwd)
     workspaces['monorepo'] = {
         location: ensurePosixLike(path.relative(process.cwd(), projectCwd)),
         workspaceDependencies: Object.keys(workspaces),
@@ -67,6 +67,51 @@ async function main() {
             await fs.promises.writeFile(tsconfigPath, updated, 'utf8')
         }
     }))
+}
+
+/**
+ * Reproduces the shape of `yarn workspaces info`, i.e. a map of
+ * workspace package name -> { location, workspaceDependencies }, using npm.
+ *
+ * `location` is the workspace path relative to the monorepo root (POSIX-like).
+ * `workspaceDependencies` are the names of other workspaces that this
+ * workspace depends on (via dependencies/devDependencies/peerDependencies/
+ * optionalDependencies), matching yarn's behaviour.
+ *
+ * @param {string} projectCwd absolute path to the monorepo root
+ * @returns {Record<string, { location: string, workspaceDependencies: string[] }>}
+ */
+function getWorkspaces(projectCwd) {
+    // `npm query .workspace` returns one entry per workspace package, each with
+    // its on-disk `location` and parsed package.json fields.
+    const queried = JSON.parse(
+        cp.execSync('npm query .workspace', { cwd: projectCwd }).toString()
+    )
+
+    const byName = {}
+    for (const pkg of queried) {
+        if (pkg.name) {
+            byName[pkg.name] = pkg
+        }
+    }
+    const names = new Set(Object.keys(byName))
+
+    /** @type {Record<string, { location: string, workspaceDependencies: string[] }>} */
+    const workspaces = {}
+    for (const [name, pkg] of Object.entries(byName)) {
+        const location = ensurePosixLike(
+            path.relative(projectCwd, pkg.realpath || pkg.path || pkg.location)
+        )
+        const allDeps = {
+            ...(pkg.dependencies || {}),
+            ...(pkg.devDependencies || {}),
+            ...(pkg.peerDependencies || {}),
+            ...(pkg.optionalDependencies || {}),
+        }
+        const workspaceDependencies = Object.keys(allDeps).filter(dep => names.has(dep))
+        workspaces[name] = { location, workspaceDependencies }
+    }
+    return workspaces
 }
 
 /**
