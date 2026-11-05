@@ -14,7 +14,9 @@ import {
     undoRedoHandler,
     zoomHandler,
     keyboardShortcutsHandler,
-    deleteExperiment
+    deleteExperiment,
+    xmlAnalysisHandler,
+    promptAndClearTraceServer
 } from './trace-explorer/trace-utils';
 import { TraceServerConnectionStatusService } from './utils/trace-server-status';
 import {
@@ -95,6 +97,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
 
     // TODO: For now, a different command opens traces from file explorer. Remove when we have a proper trace finder
     const fileOpenHandler = fileHandler();
+    const xmlOpenHandler = xmlAnalysisHandler();
     context.subscriptions.push(
         vscode.commands.registerCommand('traces.openTraceFile', async (file: vscode.Uri) => {
             let result = undefined;
@@ -217,26 +220,47 @@ export async function activate(context: vscode.ExtensionContext): Promise<Extern
 
     context.subscriptions.push(
         vscode.commands.registerCommand('openedTraces.openTrace', async (resourceType?: ResourceType) => {
-            let traceUri = undefined;
-            if (resourceType && resourceType === 'File') {
-                traceUri = await openDialog(true);
-            } else if (resourceType && resourceType === 'Folder') {
-                traceUri = await openDialog(false);
-            } else {
-                const type: ResourceType | undefined = await resourceTypeHandler.detectOrPromptForTraceResouceType();
-                if (!type) return;
-                const selectFiles = type === 'File' ? true : false;
-                traceUri = await openDialog(selectFiles);
+            const type = resourceType ?? (await resourceTypeHandler.detectOrPromptForTraceResouceType(true));
+            if (!type) {
+                return;
             }
 
+            const traceUri = await openDialog(type, context);
             if (!traceUri) {
                 return;
             }
-            await startTraceServerIfAvailable(traceUri.fsPath);
-            if (await isTraceServerUp()) {
-                fileOpenHandler(context, traceUri);
+
+            const traceServerPath = type === 'XML' ? '' : traceUri.fsPath;
+            // For XML imports, start the server without a trace-specific path so adopters whose
+            // isApplicable() validates real trace paths can still contribute a server.
+            await startTraceServerIfAvailable(traceServerPath);
+            if (!(await isTraceServerUp())) {
+                return;
+            }
+
+            if (type === 'XML') {
+                if (await xmlOpenHandler(traceUri)) {
+                    await serverStatusService.updateServerStatus(true);
+                    await vscode.commands.executeCommand('trace-explorer.refreshContext');
+                }
+                return;
+            }
+
+            fileOpenHandler(context, traceUri);
+            serverStatusService.updateServerStatus(true);
+            await vscode.commands.executeCommand('setContext', 'trace-explorer.noExperiments', false);
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('openedTraces.clearTraceServer', async () => {
+            if (!(await isTraceServerUp())) {
+                vscode.window.showWarningMessage('Trace server is not running.');
+                return;
+            }
+            if (await promptAndClearTraceServer(context.extensionUri)) {
                 serverStatusService.updateServerStatus(true);
-                vscode.commands.executeCommand('setContext', 'trace-explorer.noExperiments', false);
+                await vscode.commands.executeCommand('trace-explorer.refreshContext');
             }
         })
     );

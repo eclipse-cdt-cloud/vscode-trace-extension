@@ -72,8 +72,9 @@ export async function updateNoExperimentsContext(): Promise<void> {
     if (!response.isOk()) {
         return;
     }
+
     const noExperiments = !response.getModel()?.length;
-    vscode.commands.executeCommand('setContext', 'trace-explorer.noExperiments', noExperiments);
+    await vscode.commands.executeCommand('setContext', 'trace-explorer.noExperiments', noExperiments);
     return;
 }
 
