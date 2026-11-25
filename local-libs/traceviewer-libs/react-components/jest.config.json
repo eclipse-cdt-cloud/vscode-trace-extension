@@ -8,6 +8,9 @@
         "^.+\\.tsx?$": "ts-jest"
     },
     "testEnvironment": "jsdom",
+    "testEnvironmentOptions": {
+        "customExportConditions": ["browser", "umd"]
+    },
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
     "moduleFileExtensions": [
         "ts",

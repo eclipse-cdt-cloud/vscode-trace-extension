@@ -74,7 +74,7 @@ describe('xyChartDataToCsv', () => {
     });
 
     it('sorts mixed bigint and number timestamps by the exact stored integer value', () => {
-        const larger = 9007199254740993n;
+        const larger = BigInt('9007199254740993');
         const smaller = 9007199254740992;
         expect(Number(larger)).toBe(Number(smaller));
 
