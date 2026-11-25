@@ -201,3 +201,21 @@ export function getClosestPointForScatterPlot(params: GetClosestPointParam): XYP
 export function numberFormat(rawNumber: number): string {
     return new Intl.NumberFormat().format(rawNumber);
 }
+
+// Plain numbers, optionally signed, with optional thousands separators, decimals and exponent
+// (e.g. -42, +1,234.5, -.5, -1e-3). A mantissa digit is required, so '+E1' or '-e3' do not match.
+const CSV_NUMERIC = /^[+-]?((\d{1,3}(,\d{3})+|\d+)(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/;
+
+export function csvEscape(v: string | number | bigint | null | undefined): string {
+    let s = String(v ?? '');
+    // Neutralise spreadsheet formula triggers (OWASP CSV-injection guidance).
+    // Plain numeric values (e.g. -42) are left untouched so exports stay lossless.
+    if (/^[=+\-@\t\r\n]/.test(s) && !CSV_NUMERIC.test(s)) {
+        s = "'" + s;
+    }
+    // RFC-4180 quoting for structural characters
+    if (/[",\n\r]/.test(s)) {
+        s = '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+}

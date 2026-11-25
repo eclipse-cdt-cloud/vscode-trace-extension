@@ -21,6 +21,7 @@ import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import { xyChartDataToCsv } from './utils/xy-shared';
 import { XyChartChromeJsonExporter } from './utils/chrome-json-exporter';
+import { csvEscape } from './utils/xy-output-component-utils';
 
 export class XYOutputComponent extends AbstractXYOutputComponent<AbstractOutputProps, AbstractXYOutputState> {
     private mousePanningStart = BigInt(0);
@@ -408,7 +409,10 @@ export class XYOutputComponent extends AbstractXYOutputComponent<AbstractOutputP
     private exportOutput() {
         const columnLabels = this.state.columns.map(col => col.title);
         const tableContent = this.state.xyTree.map(rowData => rowData.labels);
-        const tableString = columnLabels.join(',') + '\n' + tableContent.map(row => row.join(',')).join('\n');
+        const tableString =
+            columnLabels.map(csvEscape).join(',') +
+            '\n' +
+            tableContent.map(row => row.map(csvEscape).join(',')).join('\n');
         signalManager().emit('SAVE_AS_CSV', this.props.traceId, tableString);
         this.closeDropDown();
     }

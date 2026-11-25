@@ -7,6 +7,7 @@ import { listToTree, getCollapsedNodesFromAutoExpandLevel, LEGEND_COLUMN_TITLE }
 import { axisLeft } from 'd3-axis';
 import { scaleLinear } from 'd3-scale';
 import { select } from 'd3-selection';
+import { csvEscape } from './xy-output-component-utils';
 
 /**
  * This file contains shared utilities between time-based
@@ -112,12 +113,6 @@ export function buildTreeStateFromModel(model: {
     const collapsedNodes = computeAutoCollapsedNodes(model.entries, columns, model.autoExpandLevel);
     const defaultOrderedIds = model.entries.map(e => e.id);
     return { columns, checkedSeries, collapsedNodes, defaultOrderedIds, xyTree: model.entries };
-}
-
-function csvEscape(cell: any): string {
-    const s = String(cell ?? '');
-    if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
-    return s;
 }
 
 /** Build a CSV string from columns + tree rows (rows use .labels like in your components). */
