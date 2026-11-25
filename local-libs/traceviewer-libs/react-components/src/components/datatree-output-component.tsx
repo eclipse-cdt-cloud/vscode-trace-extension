@@ -15,6 +15,7 @@ import { signalManager } from 'traceviewer-base/lib/signals/signal-manager';
 import '../../style/react-contextify.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { csvEscape } from './utils/xy-output-component-utils';
 
 type DataTreeOutputProps = AbstractOutputProps & {};
 
@@ -27,6 +28,10 @@ type DataTreeOuputState = AbstractOutputState & {
 };
 
 const MENU_ID = 'datatree.context.menuId ';
+
+// Trailing non-breaking-space padding that the table header renderer appends to column titles.
+// Built from the char code so the source stays plain ASCII.
+const HEADER_PADDING = new RegExp(String.fromCharCode(0xa0) + '+$');
 
 export class DataTreeOutputComponent extends AbstractOutputComponent<AbstractOutputProps, DataTreeOuputState> {
     treeRef: React.RefObject<HTMLDivElement> = React.createRef();
@@ -358,14 +363,18 @@ export class DataTreeOutputComponent extends AbstractOutputComponent<AbstractOut
                     const row = [];
                     const cols = rows[i].querySelectorAll('td, th');
                     for (let j = 0; j < cols.length - 1; j++) {
-                        let data;
-                        const content = cols[j].textContent;
-                        if (content) {
-                            data = content.replace(/\s*\|/g, '');
-                        } else {
-                            data = content;
+                        let data = cols[j].textContent;
+                        if (cols[j].tagName === 'TH') {
+                            // Header cells contain UI-only decorations: a resize handle ('|') and
+                            // trailing non-breaking-space padding. Remove those via the DOM rather
+                            // than with a regex so that genuine '|' characters in cell content survive.
+                            const clone = cols[j].cloneNode(true) as Element;
+                            clone.querySelectorAll('.resize-handle, .sort-icon').forEach(el => el.remove());
+                            // Strip only the renderer-added padding, so any real trailing whitespace
+                            // (e.g. a newline) in the column title is preserved.
+                            data = (clone.textContent ?? '').replace(HEADER_PADDING, '');
                         }
-                        row.push(data);
+                        row.push(csvEscape(data));
                     }
                     csvArray.push(row.join(','));
                 }
